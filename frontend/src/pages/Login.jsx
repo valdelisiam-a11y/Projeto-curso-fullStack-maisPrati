@@ -6,6 +6,9 @@ function Login() {
 
         <section className="login-image"> {/* Lado esquerdo da tela */}
             <div className="image-placeholder">Imagem</div> {/* Espaço reservado para a imagem */}
+            <p className="login-message">Organize seus trabalhos. Saiba o que falta.
+                                        <br />Encontre seus documentos. Conclua.
+            </p>
         </section>
 
         <section className="login-form"> {/* Lado direito da tela */}
@@ -26,7 +29,7 @@ function Login() {
                     />
                 </div>
 
-                <button type="submit">Entrar</button> {/* Botão de envio */}
+                <button className="login-button" type="submit"> Entrar</button> {/* Botão de envio */}
 
                 {/* Links de navegação */}
                 {/*
