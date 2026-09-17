@@ -72,6 +72,22 @@
     font-weight: 700;
 }
 
+.login-form a {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #9E52DB;
+}
+
+.login-button + a {
+    margin-top: 20px;
+}
+
+.login-form a + a {
+    margin-top: 13px;
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
