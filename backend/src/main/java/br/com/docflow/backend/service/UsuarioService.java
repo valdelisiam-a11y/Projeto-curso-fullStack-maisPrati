@@ -43,6 +43,7 @@ public class UsuarioService {
 
         empresa = empresaRepository.save(empresa);
 
+
         Usuario usuario = new Usuario();
 
         usuario.setNome(dto.getNome());
@@ -50,6 +51,7 @@ public class UsuarioService {
         usuario.setDataCadastro(LocalDateTime.now());
         usuario.setAtivo(true);
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+        usuario.setEmpresa(empresa);
 
         return usuarioRepository.save(usuario);
     }
