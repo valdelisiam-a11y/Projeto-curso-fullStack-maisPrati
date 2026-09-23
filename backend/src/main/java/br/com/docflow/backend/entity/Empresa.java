@@ -21,8 +21,10 @@ public class Empresa {
     @Column(unique = true, length = 18)
     private String cnpj;
 
+    @Column(nullable = false)
     private LocalDateTime dataCadastro;
 
+    @Column(nullable = false)
     private Boolean ativo;
 
     public Long getId() {

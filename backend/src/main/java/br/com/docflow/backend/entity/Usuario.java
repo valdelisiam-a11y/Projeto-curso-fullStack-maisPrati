@@ -15,15 +15,24 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 150)
     private String nome;
-    @Column(nullable = false, unique = true)
+
+    @Column(nullable = false, unique = true, length = 150)
     private String email;
+
+    @Column(nullable = false, length = 255)
     private String senha;
+
+    @Column(nullable = false)
     private LocalDateTime dataCadastro;
+
+    @Column(nullable = false)
     private Boolean ativo;
 
     @ManyToOne
-    @JoinColumn(name = "empresa_id")
+    @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
 
     public Long getId() {
