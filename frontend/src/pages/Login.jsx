@@ -1,5 +1,6 @@
 import './Login.css'
 import { useState } from 'react'
+import "./Cadastro"
 
 function Login() {
     const [email, setEmail] = useState('')
@@ -63,7 +64,7 @@ function Login() {
                */}
                 <a href="#">Esqueci minha senha</a>
 
-                <a href="#">Criar minha conta</a>
+                <a href="./Cadastro">Criar minha conta</a>
             </form>
         </section>
     </main>
