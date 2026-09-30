@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import br.com.docflow.backend.dto.TrabalhoStatusDTO;
 import br.com.docflow.backend.entity.HistoricoTrabalho;
 import br.com.docflow.backend.repository.HistoricoTrabalhoRepository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -52,6 +54,8 @@ public class TrabalhoService {
         trabalho.setTitulo(dto.getTitulo());
         trabalho.setDescricao(dto.getDescricao());
         trabalho.setStatus(StatusTrabalho.PENDENTE);
+        trabalho.setDataCriacao(LocalDateTime.now());
+        trabalho.setDataAtualizacao(LocalDateTime.now());
         trabalho.setEmpresa(empresa);
         trabalho.setCriadoPor(usuario);
 
@@ -91,16 +95,20 @@ public class TrabalhoService {
 
         trabalho.setTitulo(dto.getTitulo());
         trabalho.setDescricao(dto.getDescricao());
+        trabalho.setDataAtualizacao(LocalDateTime.now());
 
         Trabalho trabalhoAtualizado = trabalhoRepository.save(trabalho);
 
         return converterParaResposta(trabalhoAtualizado);
     }
 
+    @Transactional
     public void excluir(Long id) {
 
         Trabalho trabalho = trabalhoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trabalho não encontrado"));
+
+        historicoTrabalhoRepository.deleteByTrabalhoId(id);
 
         trabalhoRepository.delete(trabalho);
     }
@@ -114,6 +122,7 @@ public class TrabalhoService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         trabalho.setStatus(dto.getStatus());
+        trabalho.setDataAtualizacao(LocalDateTime.now());
 
         if (dto.getStatus() == StatusTrabalho.CONCLUIDO) {
             trabalho.setDataConclusao(java.time.LocalDateTime.now());
