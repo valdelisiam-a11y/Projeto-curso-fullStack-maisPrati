@@ -388,11 +388,50 @@ Os status atualmente definidos para `Trabalho` são:
 **Observação:** `PRECISA_DE_ATENCAO` não é um status do trabalho. Essa informação será tratada como uma condição derivada para o dashboard, conforme as regras de negócio do sistema.
 
 ---
+## 10. Persistência e integração com PostgreSQL
 
-## 10. Observações sobre a documentação atual
+A API está integrada a um banco de dados PostgreSQL utilizado no ambiente de desenvolvimento e integração do projeto.
 
-A documentação dos endpoints de `Trabalho` corresponde à implementação atual do Back-end.
+A conexão com o banco é configurada no `application.properties`, utilizando as informações de conexão e a variável de ambiente `DB_PASSWORD` para a senha.
 
-A integração e validação desses endpoints com o PostgreSQL será realizada em uma etapa específica do projeto.
+A persistência é realizada utilizando JPA/Hibernate.
 
-O projeto ainda não utiliza Swagger/OpenAPI para geração automática da documentação. Este arquivo é mantido manualmente e deverá ser atualizado conforme novos endpoints forem implementados.
+As entidades relacionadas a esta etapa e persistidas no banco são:
+
+* `Empresa`
+* `Usuario`
+* `Trabalho`
+* `HistoricoTrabalho`
+
+A integração com o PostgreSQL foi validada por meio das operações realizadas pela API e de consultas diretamente no banco de dados.
+
+## 11. Validações realizadas
+
+Foram realizados testes da integração da API com o PostgreSQL, incluindo:
+
+* criação de usuário e persistência no banco;
+* criação automática da empresa associada ao usuário;
+* armazenamento da senha utilizando hash;
+* validação de e-mail duplicado;
+* validações dos campos obrigatórios e formato do e-mail;
+* criação de `Trabalho`;
+* listagem de trabalhos;
+* busca de trabalho por ID;
+* busca de trabalho por título;
+* atualização de dados do trabalho;
+* alteração de status;
+* registro do histórico de status em `HistoricoTrabalho`;
+* persistência das datas de criação, atualização e conclusão;
+* exclusão de `Trabalho`.
+
+Durante a validação da exclusão, foi identificado que `HistoricoTrabalho` possui uma chave estrangeira relacionada a `Trabalho`. O serviço foi ajustado para excluir primeiro os registros do histórico relacionados ao trabalho e, em seguida, realizar a exclusão do trabalho.
+
+A exclusão foi validada com retorno `HTTP 204 No Content` e confirmada diretamente no PostgreSQL, verificando que não permaneceram registros do trabalho nem de seu histórico.
+
+## 12. Observações sobre a documentação
+
+A documentação dos endpoints da API é mantida manualmente neste arquivo e deve ser atualizada conforme novos endpoints forem implementados ou houver alterações no comportamento da API.
+
+O projeto ainda não utiliza Swagger/OpenAPI para geração automática da documentação.
+
+As informações sensíveis de acesso ao banco de dados não são armazenadas diretamente na documentação ou no código versionado. A senha do banco é fornecida por meio da variável de ambiente `DB_PASSWORD`.
