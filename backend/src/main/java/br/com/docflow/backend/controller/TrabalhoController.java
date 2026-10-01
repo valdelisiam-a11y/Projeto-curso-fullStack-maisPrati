@@ -5,6 +5,7 @@ import br.com.docflow.backend.dto.TrabalhoCadastroDTO;
 import br.com.docflow.backend.dto.TrabalhoRespostaDTO;
 import br.com.docflow.backend.dto.TrabalhoStatusDTO;
 import br.com.docflow.backend.service.TrabalhoService;
+import br.com.docflow.backend.service.UsuarioEmpresaDiferenteException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +24,19 @@ public class TrabalhoController {
 
     @PostMapping
     public ResponseEntity<TrabalhoRespostaDTO> cadastrar(
-            @RequestBody TrabalhoCadastroDTO dto) {
+        @RequestBody TrabalhoCadastroDTO dto) {
 
+    try {
         TrabalhoRespostaDTO resposta = trabalhoService.cadastrar(dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
+
+    } catch (UsuarioEmpresaDiferenteException e) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .build();
     }
+}
 
     @GetMapping
     public ResponseEntity<List<TrabalhoRespostaDTO>> listarTodos() {

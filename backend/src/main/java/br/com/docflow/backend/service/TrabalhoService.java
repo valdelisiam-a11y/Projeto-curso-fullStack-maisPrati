@@ -47,9 +47,16 @@ public class TrabalhoService {
                 .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
 
         Usuario usuario = usuarioRepository.findById(dto.getCriadoPorId())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        Trabalho trabalho = new Trabalho();
+        if (usuario.getEmpresa() == null ||
+        !usuario.getEmpresa().getId().equals(empresa.getId())) {
+        throw new UsuarioEmpresaDiferenteException(
+            "Usuário não pertence à empresa informada para o trabalho."
+    );
+}
+
+Trabalho trabalho = new Trabalho();
 
         trabalho.setTitulo(dto.getTitulo());
         trabalho.setDescricao(dto.getDescricao());
