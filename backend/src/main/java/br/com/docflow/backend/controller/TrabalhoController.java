@@ -8,6 +8,7 @@ import br.com.docflow.backend.service.TrabalhoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import br.com.docflow.backend.dto.HistoricoTrabalhoRespostaDTO;
 
 import java.util.List;
 
@@ -76,6 +77,15 @@ public class TrabalhoController {
                 trabalhoService.alterarStatus(id, dto);
 
         return ResponseEntity.ok(trabalhoAtualizado);
+    }
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<List<HistoricoTrabalhoRespostaDTO>> listarHistorico(
+            @PathVariable Long id) {
+
+        List<HistoricoTrabalhoRespostaDTO> historico =
+                trabalhoService.listarHistorico(id);
+
+        return ResponseEntity.ok(historico);
     }
 
     @DeleteMapping("/{id}")

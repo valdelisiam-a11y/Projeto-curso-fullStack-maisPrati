@@ -1,34 +1,17 @@
-package br.com.docflow.backend.entity;
+package br.com.docflow.backend.dto;
 
-import jakarta.persistence.*;
+import br.com.docflow.backend.entity.StatusTrabalho;
 
 import java.time.LocalDateTime;
 
-@Entity
-public class HistoricoTrabalho {
+public class HistoricoTrabalhoRespostaDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
     private StatusTrabalho statusAnterior;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
     private StatusTrabalho statusNovo;
-
-    @Column(nullable = false)
     private LocalDateTime dataAlteracao;
-
-    @ManyToOne
-    @JoinColumn(name = "trabalho_id", nullable = false)
-    private Trabalho trabalho;
-
-    @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    private Long usuarioId;
+    private String usuarioNome;
 
     public Long getId() {
         return id;
@@ -62,19 +45,19 @@ public class HistoricoTrabalho {
         this.dataAlteracao = dataAlteracao;
     }
 
-    public Trabalho getTrabalho() {
-        return trabalho;
+    public Long getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setTrabalho(Trabalho trabalho) {
-        this.trabalho = trabalho;
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public String getUsuarioNome() {
+        return usuarioNome;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setUsuarioNome(String usuarioNome) {
+        this.usuarioNome = usuarioNome;
     }
 }

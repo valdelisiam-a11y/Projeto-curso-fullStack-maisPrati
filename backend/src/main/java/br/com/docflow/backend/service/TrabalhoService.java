@@ -3,6 +3,7 @@ package br.com.docflow.backend.service;
 import br.com.docflow.backend.dto.TrabalhoAtualizacaoDTO;
 import br.com.docflow.backend.dto.TrabalhoCadastroDTO;
 import br.com.docflow.backend.dto.TrabalhoRespostaDTO;
+import br.com.docflow.backend.dto.HistoricoTrabalhoRespostaDTO;
 import br.com.docflow.backend.entity.Empresa;
 import br.com.docflow.backend.entity.StatusTrabalho;
 import br.com.docflow.backend.entity.Trabalho;
@@ -113,6 +114,7 @@ public class TrabalhoService {
         trabalhoRepository.delete(trabalho);
     }
 
+    @Transactional
     public TrabalhoRespostaDTO alterarStatus(Long id, TrabalhoStatusDTO dto) {
 
         Trabalho trabalho = trabalhoRepository.findById(id)
@@ -121,25 +123,48 @@ public class TrabalhoService {
         Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
+        if (!trabalho.getEmpresa().getId().equals(usuario.getEmpresa().getId())) {
+            throw new RuntimeException("Usuário não pertence à empresa do Trabalho");
+        }
+
+        StatusTrabalho statusAnterior = trabalho.getStatus();
+
+        if (statusAnterior == dto.getStatus()) {
+            throw new RuntimeException("O Trabalho já está com este status");
+        }
+
         trabalho.setStatus(dto.getStatus());
         trabalho.setDataAtualizacao(LocalDateTime.now());
 
         if (dto.getStatus() == StatusTrabalho.CONCLUIDO) {
-            trabalho.setDataConclusao(java.time.LocalDateTime.now());
+            trabalho.setDataConclusao(LocalDateTime.now());
         }
 
         Trabalho trabalhoAtualizado = trabalhoRepository.save(trabalho);
 
         HistoricoTrabalho historico = new HistoricoTrabalho();
 
-        historico.setStatus(dto.getStatus());
-        historico.setDataAlteracao(java.time.LocalDateTime.now());
+        historico.setStatusAnterior(statusAnterior);
+        historico.setStatusNovo(dto.getStatus());
+        historico.setDataAlteracao(LocalDateTime.now());
         historico.setTrabalho(trabalhoAtualizado);
         historico.setUsuario(usuario);
 
         historicoTrabalhoRepository.save(historico);
 
         return converterParaResposta(trabalhoAtualizado);
+    }
+
+    public List<HistoricoTrabalhoRespostaDTO> listarHistorico(Long trabalhoId) {
+
+        Trabalho trabalho = trabalhoRepository.findById(trabalhoId)
+                .orElseThrow(() -> new RuntimeException("Trabalho não encontrado"));
+
+        return historicoTrabalhoRepository
+                .findByTrabalhoIdOrderByDataAlteracaoDesc(trabalho.getId())
+                .stream()
+                .map(this::converterHistoricoParaResposta)
+                .toList();
     }
 
     private TrabalhoRespostaDTO converterParaResposta(Trabalho trabalho) {
@@ -155,6 +180,20 @@ public class TrabalhoService {
         resposta.setDataConclusao(trabalho.getDataConclusao());
         resposta.setEmpresaId(trabalho.getEmpresa().getId());
         resposta.setCriadoPorId(trabalho.getCriadoPor().getId());
+
+        return resposta;
+    }
+
+    private HistoricoTrabalhoRespostaDTO converterHistoricoParaResposta(HistoricoTrabalho historico) {
+
+        HistoricoTrabalhoRespostaDTO resposta = new HistoricoTrabalhoRespostaDTO();
+
+        resposta.setId(historico.getId());
+        resposta.setStatusAnterior(historico.getStatusAnterior());
+        resposta.setStatusNovo(historico.getStatusNovo());
+        resposta.setDataAlteracao(historico.getDataAlteracao());
+        resposta.setUsuarioId(historico.getUsuario().getId());
+        resposta.setUsuarioNome(historico.getUsuario().getNome());
 
         return resposta;
     }
