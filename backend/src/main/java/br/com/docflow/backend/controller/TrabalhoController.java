@@ -5,7 +5,6 @@ import br.com.docflow.backend.dto.TrabalhoCadastroDTO;
 import br.com.docflow.backend.dto.TrabalhoRespostaDTO;
 import br.com.docflow.backend.dto.TrabalhoStatusDTO;
 import br.com.docflow.backend.service.TrabalhoService;
-import br.com.docflow.backend.service.UsuarioEmpresaDiferenteException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,20 +22,13 @@ public class TrabalhoController {
     }
 
     @PostMapping
-    public ResponseEntity<TrabalhoRespostaDTO> cadastrar(
-        @RequestBody TrabalhoCadastroDTO dto) {
+    public ResponseEntity<TrabalhoRespostaDTO> cadastrar(@RequestBody TrabalhoCadastroDTO dto) {
 
-    try {
+        
         TrabalhoRespostaDTO resposta = trabalhoService.cadastrar(dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
-
-    } catch (UsuarioEmpresaDiferenteException e) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .build();
     }
-}
 
     @GetMapping
     public ResponseEntity<List<TrabalhoRespostaDTO>> listarTodos() {
@@ -55,11 +47,9 @@ public class TrabalhoController {
     }
 
     @GetMapping("/busca")
-    public ResponseEntity<List<TrabalhoRespostaDTO>> buscarPorTitulo(
-            @RequestParam String titulo) {
+    public ResponseEntity<List<TrabalhoRespostaDTO>> buscarPorTitulo(@RequestParam String titulo) {
 
-        List<TrabalhoRespostaDTO> trabalhos =
-                trabalhoService.buscarPorTitulo(titulo);
+        List<TrabalhoRespostaDTO> trabalhos = trabalhoService.buscarPorTitulo(titulo);
 
         return ResponseEntity.ok(trabalhos);
     }
@@ -69,8 +59,7 @@ public class TrabalhoController {
             @PathVariable Long id,
             @RequestBody TrabalhoAtualizacaoDTO dto) {
 
-        TrabalhoRespostaDTO trabalhoAtualizado =
-                trabalhoService.atualizar(id, dto);
+        TrabalhoRespostaDTO trabalhoAtualizado = trabalhoService.atualizar(id, dto);
 
         return ResponseEntity.ok(trabalhoAtualizado);
     }
@@ -80,8 +69,7 @@ public class TrabalhoController {
             @PathVariable Long id,
             @RequestBody TrabalhoStatusDTO dto) {
 
-        TrabalhoRespostaDTO trabalhoAtualizado =
-                trabalhoService.alterarStatus(id, dto);
+        TrabalhoRespostaDTO trabalhoAtualizado = trabalhoService.alterarStatus(id, dto);
 
         return ResponseEntity.ok(trabalhoAtualizado);
     }

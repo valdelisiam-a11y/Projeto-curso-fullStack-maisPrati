@@ -1,7 +1,6 @@
 package br.com.docflow.backend.service;
 
 import br.com.docflow.backend.dto.UsuarioTrabalhoRespostaDTO;
-import br.com.docflow.backend.service.ParticipanteJaAssociadoException;
 import br.com.docflow.backend.entity.Trabalho;
 import br.com.docflow.backend.entity.Usuario;
 import br.com.docflow.backend.entity.UsuarioTrabalho;
@@ -35,17 +34,16 @@ public class UsuarioTrabalhoService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-    
+        // Validação da empresa do Usuário x Trabalho (Retorna mensagem padronizada no 409 Conflict)
         if (usuario.getEmpresa() == null || trabalho.getEmpresa() == null ||
             !usuario.getEmpresa().equals(trabalho.getEmpresa())) {
-            throw new RuntimeException("Usuário não pertence à mesma empresa do trabalho");
+            throw new UsuarioEmpresaDiferenteException("O usuário e o trabalho pertencem a empresas diferentes");
         }
 
+        // Validação de duplicidade (Retorna mensagem padronizada no 409 Conflict)
         if (usuarioTrabalhoRepository.findByTrabalhoAndUsuario(trabalho, usuario).isPresent()) {
-            throw new ParticipanteJaAssociadoException(
-            "Usuário já está associado ao trabalho"
-    );
-}
+            throw new ParticipanteJaAssociadoException("Usuário já está associado ao trabalho");
+        }
 
         UsuarioTrabalho usuarioTrabalho = new UsuarioTrabalho();
         usuarioTrabalho.setTrabalho(trabalho);
@@ -76,11 +74,8 @@ public class UsuarioTrabalhoService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        UsuarioTrabalho participante =
-                usuarioTrabalhoRepository.findByTrabalhoAndUsuario(trabalho, usuario)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Participante não encontrado para este trabalho"));
+        UsuarioTrabalho participante = usuarioTrabalhoRepository.findByTrabalhoAndUsuario(trabalho, usuario)
+                .orElseThrow(() -> new RuntimeException("Participante não encontrado para este trabalho"));
 
         usuarioTrabalhoRepository.delete(participante);
     }
