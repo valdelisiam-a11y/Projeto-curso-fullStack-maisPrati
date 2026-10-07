@@ -1,19 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --background: oklch(99% .006 320);
+  --foreground: oklch(26% .045 300);
+
+  --sidebar: oklch(99.5% .006 320);
+  --sidebar-foreground: oklch(26% .045 300);
+  --sidebar-border: oklch(92% .015 315);
+
+  --primary: oklch(61% .19 305);
+  --primary-foreground: oklch(99% .005 320);
+
+  --primary-soft: oklch(95% .035 310);
+
+  --secondary: oklch(96% .02 320);
+  --secondary-foreground: oklch(34% .07 305);
+
+  --accent: oklch(95% .045 340);
+--accent-foreground: oklch(36% .12 340);
+
+  --muted: oklch(96.5% .012 315);
+  --muted-foreground: oklch(53% .03 300);
+
+  --border: oklch(92% .015 315);
+
+  --radius: .9rem;
+}
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    min-height: 100vh;
-
-    background: linear-gradient(
-        135deg,
-        #e9e2fe,
-        #F6ECFB
-    );
-
-    font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 }

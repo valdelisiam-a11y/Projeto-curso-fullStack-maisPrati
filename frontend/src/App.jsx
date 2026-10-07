@@ -1,8 +1,40 @@
 import "./App.css";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+
 import Login from "./pages/Login";
+import Inicio from "./pages/Inicio";
+import MeusTrabalhos from "./pages/MeusTrabalhos";
+import Documentos from "./pages/Documentos";
+import Configuracoes from "./pages/Configuracoes";
+import Sidebar from "./components/sidebar/Sidebar";
+
+function Layout() {
+  return (
+    <div className="layout">
+      <Sidebar />
+
+      <main className="layout__content">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
 
 function App() {
-  return <Login />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+
+        <Route element={<Layout />}>
+          <Route path="/" element={<Inicio />} />
+          <Route path="/trabalhos" element={<MeusTrabalhos />} />
+          <Route path="/documentos" element={<Documentos />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
