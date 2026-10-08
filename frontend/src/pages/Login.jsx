@@ -1,5 +1,6 @@
 import './Login.css'
 import { useState } from 'react'
+import { Link } from "react-router-dom";
 
 function Login() {
     const [email, setEmail] = useState('')
@@ -63,7 +64,7 @@ function Login() {
                */}
                 <a href="#">Esqueci minha senha</a>
 
-                <a href="#">Criar minha conta</a>
+                <Link to="/cadastro">Criar minha conta</Link>
             </form>
         </section>
     </main>
