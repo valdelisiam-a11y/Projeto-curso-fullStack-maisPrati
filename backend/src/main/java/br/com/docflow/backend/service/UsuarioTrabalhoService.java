@@ -75,7 +75,7 @@ public class UsuarioTrabalhoService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         UsuarioTrabalho participante = usuarioTrabalhoRepository.findByTrabalhoAndUsuario(trabalho, usuario)
-                .orElseThrow(() -> new RuntimeException("Participante não encontrado para este trabalho"));
+                .orElseThrow(() -> new ParticipanteNaoEncontradoException("Participante não encontrado para este trabalho"));
 
         usuarioTrabalhoRepository.delete(participante);
     }
