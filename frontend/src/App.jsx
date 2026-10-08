@@ -2,6 +2,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
 import Login from "./pages/Login";
+import Cadastro from "./pages/Cadastro";
 import Inicio from "./pages/Inicio";
 import MeusTrabalhos from "./pages/MeusTrabalhos";
 import Documentos from "./pages/Documentos";
@@ -25,6 +26,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/cadastro" element={<Cadastro />} />
 
         <Route element={<Layout />}>
           <Route path="/" element={<Inicio />} />
