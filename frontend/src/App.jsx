@@ -8,6 +8,8 @@ import MeusTrabalhos from "./pages/MeusTrabalhos";
 import Documentos from "./pages/Documentos";
 import Configuracoes from "./pages/Configuracoes";
 import Sidebar from "./components/sidebar/Sidebar";
+import DetalhesTrabalho from "./pages/DetalhesTrabalho";
+import PaginaNaoEncontrada from "./pages/PaginaNaoEncontrada";
 
 function Layout() {
   return (
@@ -31,9 +33,12 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Inicio />} />
           <Route path="/trabalhos" element={<MeusTrabalhos />} />
+          <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />
           <Route path="/documentos" element={<Documentos />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+           
         </Route>
+        <Route path="*" element={<PaginaNaoEncontrada />} />
       </Routes>
     </BrowserRouter>
   );
