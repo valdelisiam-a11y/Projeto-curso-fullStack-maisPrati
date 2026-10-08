@@ -20,7 +20,6 @@ export default function Cadastro() {
       alert('As senhas não coincidem!');
       return;
     }
-    console.log('Dados enviados:', formData);
     
   };
 
