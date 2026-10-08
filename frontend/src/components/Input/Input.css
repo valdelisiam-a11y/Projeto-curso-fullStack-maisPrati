@@ -1,0 +1,53 @@
+.df-field {
+  display: grid;
+  gap: 0.48rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.df-field__label {
+  color: #34344b;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.df-field__input {
+  background: #fff;
+  border: 1px solid #dedfeb;
+  border-radius: 9px;
+  color: #28283d;
+  font: inherit;
+  font-size: 0.94rem;
+  min-height: 48px;
+  outline: none;
+  padding: 0.75rem 0.9rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+  width: 100%;
+}
+
+.df-field__input::placeholder {
+  color: #a1a1b3;
+}
+
+.df-field__input:focus {
+  border-color: #7776e2;
+  box-shadow: 0 0 0 3px rgb(87 86 216 / 12%);
+}
+
+.df-field__input--invalid {
+  border-color: #d84f62;
+}
+
+.df-field__input--invalid:focus {
+  box-shadow: 0 0 0 3px rgb(216 79 98 / 12%);
+}
+
+.df-field__error {
+  color: #bd3549;
+  font-size: 0.8rem;
+}
+
+.df-field__hint {
+  color: #89899b;
+  font-size: 0.8rem;
+}

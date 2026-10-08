@@ -1,0 +1,52 @@
+#root {
+  min-height: 100vh;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+}
+
+.demo-page {
+  align-items: center;
+  background: #f7f8fc;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+.demo-card {
+  background: #fff;
+  border: 1px solid #eeeff5;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgb(46 48 84 / 10%);
+  max-width: 440px;
+  padding: clamp(1.5rem, 6vw, 2.5rem);
+  width: 100%;
+}
+
+.demo-eyebrow {
+  color: #5756d8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.demo-card h1 {
+  color: #29293f;
+  font-size: clamp(1.6rem, 5vw, 2rem);
+  margin: 0.65rem 0 0.5rem;
+}
+
+.demo-description {
+  color: #77778c;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.demo-form {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 1.7rem;
+}
