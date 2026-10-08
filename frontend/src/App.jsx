@@ -6,21 +6,31 @@ import './App.css'
 
 function App() {
   const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState('')
   const [message, setMessage] = useState(null)
 
   function handleChange(event) {
     setEmail(event.target.value)
+    setEmailError('')
     setMessage(null)
   }
 
   function handleSubmit(event) {
     event.preventDefault()
+    const emailInput = event.currentTarget.elements.namedItem('email')
 
-    if (!email.trim()) {
-      setMessage({ type: 'error', text: 'Confira seus dados.' })
+    if (
+      !email.trim() ||
+      !(emailInput instanceof HTMLInputElement) ||
+      !emailInput.validity.valid
+    ) {
+      const errorText = 'Digite um endereço de e-mail válido.'
+      setEmailError(errorText)
+      setMessage({ type: 'error', text: errorText })
       return
     }
 
+    setEmailError('')
     setMessage({
       type: 'success',
       text: 'E-mail validado. Esta tela ainda não está conectada à autenticação.',
@@ -36,14 +46,7 @@ function App() {
           Um exemplo de uso dos componentes reutilizáveis do projeto.
         </p>
 
-        <form
-          className="demo-form"
-          onSubmit={handleSubmit}
-          onInvalid={(event) => {
-            event.preventDefault()
-            setMessage({ type: 'error', text: 'Confira seus dados.' })
-          }}
-        >
+        <form className="demo-form" onSubmit={handleSubmit} noValidate>
           <Input
             label="E-mail"
             type="email"
@@ -52,6 +55,7 @@ function App() {
             onChange={handleChange}
             placeholder="voce@exemplo.com"
             required
+            error={emailError}
           />
 
           {message && <Message type={message.type}>{message.text}</Message>}
