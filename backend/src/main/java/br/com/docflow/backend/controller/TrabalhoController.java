@@ -23,9 +23,9 @@ public class TrabalhoController {
     }
 
     @PostMapping
-    public ResponseEntity<TrabalhoRespostaDTO> cadastrar(
-            @RequestBody TrabalhoCadastroDTO dto) {
+    public ResponseEntity<TrabalhoRespostaDTO> cadastrar(@RequestBody TrabalhoCadastroDTO dto) {
 
+        
         TrabalhoRespostaDTO resposta = trabalhoService.cadastrar(dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
@@ -48,11 +48,9 @@ public class TrabalhoController {
     }
 
     @GetMapping("/busca")
-    public ResponseEntity<List<TrabalhoRespostaDTO>> buscarPorTitulo(
-            @RequestParam String titulo) {
+    public ResponseEntity<List<TrabalhoRespostaDTO>> buscarPorTitulo(@RequestParam String titulo) {
 
-        List<TrabalhoRespostaDTO> trabalhos =
-                trabalhoService.buscarPorTitulo(titulo);
+        List<TrabalhoRespostaDTO> trabalhos = trabalhoService.buscarPorTitulo(titulo);
 
         return ResponseEntity.ok(trabalhos);
     }
@@ -62,8 +60,7 @@ public class TrabalhoController {
             @PathVariable Long id,
             @RequestBody TrabalhoAtualizacaoDTO dto) {
 
-        TrabalhoRespostaDTO trabalhoAtualizado =
-                trabalhoService.atualizar(id, dto);
+        TrabalhoRespostaDTO trabalhoAtualizado = trabalhoService.atualizar(id, dto);
 
         return ResponseEntity.ok(trabalhoAtualizado);
     }
@@ -73,8 +70,7 @@ public class TrabalhoController {
             @PathVariable Long id,
             @RequestBody TrabalhoStatusDTO dto) {
 
-        TrabalhoRespostaDTO trabalhoAtualizado =
-                trabalhoService.alterarStatus(id, dto);
+        TrabalhoRespostaDTO trabalhoAtualizado = trabalhoService.alterarStatus(id, dto);
 
         return ResponseEntity.ok(trabalhoAtualizado);
     }
