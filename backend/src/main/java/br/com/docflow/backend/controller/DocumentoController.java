@@ -1,6 +1,7 @@
 package br.com.docflow.backend.controller;
 
-import br.com.docflow.backend.entity.Documento;
+import br.com.docflow.backend.dto.DocumentoRequestDTO;
+import br.com.docflow.backend.dto.DocumentoResponseDTO;
 import br.com.docflow.backend.service.DocumentoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,28 +17,28 @@ public class DocumentoController {
     private DocumentoService documentoService;
 
     @PostMapping
-    public ResponseEntity<Documento> adicionar(
+    public ResponseEntity<DocumentoResponseDTO> adicionar(
             @PathVariable Long trabalhoId,
             @PathVariable Long etapaId,
-            @RequestBody Documento documento) {
-        Documento novoDocumento = documentoService.adicionarDocumento(trabalhoId, etapaId, documento);
+            @RequestBody DocumentoRequestDTO dto) {
+        DocumentoResponseDTO novoDocumento = documentoService.adicionarDocumento(trabalhoId, etapaId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoDocumento);
     }
 
     @GetMapping
-    public ResponseEntity<List<Documento>> listar(
+    public ResponseEntity<List<DocumentoResponseDTO>> listar(
             @PathVariable Long trabalhoId,
             @PathVariable Long etapaId) {
-        List<Documento> documentos = documentoService.listarDocumentosDaEtapa(trabalhoId, etapaId);
+        List<DocumentoResponseDTO> documentos = documentoService.listarDocumentosDaEtapa(trabalhoId, etapaId);
         return ResponseEntity.ok(documentos);
     }
 
     @GetMapping("/{documentoId}")
-    public ResponseEntity<Documento> consultar(
+    public ResponseEntity<DocumentoResponseDTO> consultar(
             @PathVariable Long trabalhoId,
             @PathVariable Long etapaId,
             @PathVariable Long documentoId) {
-        Documento documento = documentoService.consultarDocumento(trabalhoId, etapaId, documentoId);
+        DocumentoResponseDTO documento = documentoService.consultarDocumento(trabalhoId, etapaId, documentoId);
         return ResponseEntity.ok(documento);
     }
 
