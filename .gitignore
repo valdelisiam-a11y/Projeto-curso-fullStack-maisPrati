@@ -1,0 +1,21 @@
+# IntelliJ e IDEs
+.idea/
+*.iml
+*.iws
+.vscode/
+
+# Build do Java / Spring
+target/
+*.class
+*.jar
+*.war
+
+# Frontend / Node
+node_modules/
+dist/
+.env*.local
+
+# Logs e arquivos do sistema
+*.log
+.DS_Store
+Thumbs.db
