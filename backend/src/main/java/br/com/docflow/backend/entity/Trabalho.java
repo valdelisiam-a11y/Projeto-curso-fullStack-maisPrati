@@ -7,6 +7,18 @@ import java.time.LocalDateTime;
 @Entity
 public class Trabalho {
 
+    @PrePersist
+    void aoCriar() {
+        LocalDateTime agora = LocalDateTime.now();
+        this.dataCriacao = agora;
+        this.dataAtualizacao = agora;
+    }
+
+    @PreUpdate
+    void aoAtualizar() {
+        this.dataAtualizacao = LocalDateTime.now();
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
