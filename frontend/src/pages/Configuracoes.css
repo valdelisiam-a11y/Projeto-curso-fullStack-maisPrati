@@ -1,0 +1,355 @@
+/* ==========================================================================
+   1. ESTRUTURA GERAL E CABEÇALHO
+   ========================================================================== */
+.configuracoes-container {
+  padding: 2.5rem 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+  font-family: inherit;
+  color: #261c35;
+}
+
+.configuracoes-main-header {
+  margin-bottom: 2rem;
+}
+
+.configuracoes-main-header h1 {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: #261c35;
+  margin: 0 0 0.35rem 0;
+}
+
+.configuracoes-main-header p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ==========================================================================
+   2. CARDS E FORMULÁRIOS (TEMA CLARO)
+   ========================================================================== */
+.config-card {
+  background-color: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e8e2f0;
+  box-shadow: 0 4px 16px rgba(38, 28, 53, 0.04);
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.75rem;
+}
+
+.config-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #261c35;
+  margin-bottom: 1.5rem;
+}
+
+.icon-title {
+  width: 18px;
+  height: 18px;
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+/* Form Grid */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.form-group label {
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.7rem 0.875rem;
+  border: 1px solid #dcd5e8;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background-color: #ffffff;
+  color: #261c35;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+/* Botões */
+.form-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.btn-purple {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #8b5cf6;
+  color: #ffffff;
+  padding: 0.55rem 1.125rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-purple:hover {
+  background-color: #7c3aed;
+}
+
+.btn-purple-light {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+  padding: 0.55rem 1.125rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-purple-light:hover {
+  background-color: #e9d5ff;
+}
+
+/* ==========================================================================
+   3. PREFERÊNCIAS E SWITCHES (TEMA CLARO)
+   ========================================================================== */
+.preferences-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.preference-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preference-label-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.preference-inline-icon {
+  width: 16px;
+  height: 16px;
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.preference-label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+/* Switch Customizado */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #8b5cf6;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.feedback-alert {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+/* ==========================================================================
+   4. TEMA ESCURO GLOBAL (OVERRIDES)
+   ========================================================================== */
+body.dark-theme {
+  background-color: #0f0d13 !important;
+  color: #f3f4f6 !important;
+}
+
+body.dark-theme .layout,
+body.dark-theme .layout__content,
+body.dark-theme .configuracoes-container {
+  background-color: #0f0d13 !important;
+  color: #f3f4f6 !important;
+}
+
+body.dark-theme aside,
+body.dark-theme .sidebar {
+  background-color: #181522 !important;
+  border-right: 1px solid #282238;
+}
+
+body.dark-theme .sidebar a,
+body.dark-theme .sidebar span,
+body.dark-theme .sidebar svg {
+  color: #d1d5db !important;
+}
+
+body.dark-theme .sidebar a:hover,
+body.dark-theme .sidebar .active {
+  background-color: #282238 !important;
+  color: #a78bfa !important;
+}
+
+body.dark-theme .configuracoes-main-header h1,
+body.dark-theme .config-card-title {
+  color: #ffffff !important;
+}
+
+body.dark-theme .configuracoes-main-header p,
+body.dark-theme .form-group label {
+  color: #9ca3af !important;
+}
+
+body.dark-theme .config-card {
+  background-color: #181522 !important;
+  border: 1px solid #282238 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-theme .icon-title,
+body.dark-theme .preference-inline-icon {
+  color: #a78bfa !important;
+}
+
+body.dark-theme .form-group input {
+  background-color: #1e1a2b !important;
+  border-color: #352f4a !important;
+  color: #ffffff !important;
+}
+
+body.dark-theme .form-group input:focus {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
+}
+
+body.dark-theme .preference-label {
+  color: #e5e7eb !important;
+}
+
+body.dark-theme .feedback-alert {
+  background-color: #064e3b;
+  border-color: #047857;
+  color: #d1fae5;
+}
+
+/* --- RESPONSIVIDADE PARA TELEMÓVEIS (Ecrãs abaixo de 768px) --- */
+@media (max-width: 768px) {
+  /* Se a sidebar estiver visível, podemos transformá-la num menu compacto ou ocultá-la em telas muito pequenas */
+  .sidebar,
+  aside {
+    width: 100%;
+    max-width: 260px;
+    position: fixed;
+    left: -100%; /* Esconde a sidebar por predefinição em mobile */
+    transition: left 0.3s ease;
+    z-index: 1000;
+  }
+
+  /* Quando ativa/aberta, ela aparece */
+  .sidebar.open,
+  aside.open {
+    left: 0;
+  }
+
+  /* Ajusta o container de configurações para ocupar toda a largura do ecrã mobile */
+  .configuracoes-container {
+    padding: 1.25rem 1rem;
+    max-width: 100%;
+  }
+
+  /* Reduz ligeiramente os paddings dos cards em telemóveis */
+  .config-card {
+    padding: 1.25rem 1rem;
+  }
+}
+
+/* --- LAYOUT MOBILE ESPECÍFICO (ABAIXO DE 768px) --- */
+@media (max-width: 768px) {
+  /* Esconde a barra lateral padrão em modo desktop se estiver a ocupar o ecrã todo */
+  .sidebar,
+  aside {
+    display: none;
+  }
+
+  /* Ajusta o espaçamento do container principal para acomodar a barra inferior */
+  .configuracoes-container {
+    padding: 1.5rem 1rem 5rem 1rem; /* Margem inferior extra para o conteúdo não ficar por baixo da barra */
+    max-width: 100%;
+  }
+}
