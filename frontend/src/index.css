@@ -11,7 +11,14 @@
   --primary: oklch(61% .19 305);
   --primary-foreground: oklch(99% .005 320);
 
-  --primary-soft: oklch(95% .035 310);
+ background: linear-gradient(
+  135deg,
+  var(--primary-soft),
+  var(--accent)
+);
+
+  --info: oklch(60% .14 255);
+  --info-soft: oklch(94% .04 255);
 
   --secondary: oklch(96% .02 320);
   --secondary-foreground: oklch(34% .07 305);
