@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.feedback-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feedback-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Header */
+.feedback-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feedback-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #f3e8ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feedback-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  color: #9333ea;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.feedback-user-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.feedback-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  min-height: 1.2em; /* Garante estrutura firme mesmo sem texto */
+}
+
+.feedback-role {
+  font-size: 0.8rem;
+  color: #6b7280;
+  min-height: 1.2em;
+}
+
+.feedback-date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+/* Corpo do Feedback */
+.feedback-body {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+}
+
+.feedback-comment {
+  font-size: 0.9rem;
+  color: #374151;
+  line-height: 1.5;
+  margin: 0;
+  min-height: 1.5em;
+}
