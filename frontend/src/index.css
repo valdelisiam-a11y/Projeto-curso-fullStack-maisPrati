@@ -15,6 +15,8 @@
 
   --destructive: oklch(58% .21 25);
 
+  --sidebar-accent: oklch(96.179% 0.01807 314.499);
+
 --shadow-soft:
   0 1px 2px oklch(26% .045 300 / .06),
   0 8px 24px -12px oklch(26% .045 300 / .18);

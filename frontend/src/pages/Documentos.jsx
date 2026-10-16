@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./Documentos.css";
+import ModalUploadDocumento from "../components/documentosUpload/ModalUploadDocumento.jsx";
 
 const documentosIniciais = [
   {
@@ -45,6 +46,7 @@ function Documentos() {
   const [documentos, setDocumentos] = useState(documentosIniciais);
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState("Todos");
+  const [modalAberto, setModalAberto] = useState(false);
 
   const navigate = useNavigate();
 
@@ -90,14 +92,14 @@ function Documentos() {
           <p>Encontre rapidamente os documentos dos seus trabalhos.</p>
         </div>
 
-        <button
-          type="button"
-          className="documentos__botao-adicionar"
-          onClick={() => navigate("/documentos/upload")}
-        >
-          <Plus size={18} />
-          Adicionar documento
-        </button>
+      <button
+        type="button"
+        className="documentos__botao-adicionar"
+        onClick={() => setModalAberto(true)}
+      >
+        <Plus size={18} />
+        Adicionar documento
+      </button>
       </header>
 
       <section
@@ -230,6 +232,20 @@ function Documentos() {
           </div>
         )}
       </section>
+
+      <ModalUploadDocumento
+        aberto={modalAberto}
+        onFechar={() => setModalAberto(false)}
+        onAdicionar={(novoDocumento) => {
+          setDocumentos((lista) => [
+            {
+              ...novoDocumento,
+              id: Date.now(),
+            },
+            ...lista,
+          ]);
+        }}
+      />
     </main>
   );
 }
