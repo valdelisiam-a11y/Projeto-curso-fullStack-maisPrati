@@ -92,11 +92,11 @@
     display: flex;
     flex-direction: column;
     gap: 7px;
-    margin-top: 26px;
+    margin-top: 18px;
 }
 
 .form-group + .form-group {
-    margin-top: 22px;
+    margin-top: 16px;
 }
 
 .form-group label {
@@ -135,9 +135,31 @@
 .login-button {
     width: 400px;
     height: 46px;
-    margin-top: 20px;
+    margin-top: 8px;
     background-color: #9E52DB;
 
     border: none;
     border-radius: 11px;
 }
+
+
+
+.login-error-container {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+}
+
+.login-error {
+    width: 100%;
+    box-sizing: border-box;
+    color: #b91c1c;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 8px;
+    margin: 0;
+    font-size: 13px;
+    text-align: center;
+}
+

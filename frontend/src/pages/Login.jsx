@@ -1,14 +1,25 @@
-import './Login.css'
-import { useState } from 'react'
-import { Link } from "react-router-dom";
+
+import './Login.css';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/useAuth';
+
 
 function Login() {
     const [email, setEmail] = useState('')
     const [senha, setSenha] = useState('')
+    const [erro, setErro] = useState('');
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        
+    const { login } = useAuth();
+    const navigate = useNavigate();
+
+
+    
+const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErro('');
+
+    try {
         const resposta = await fetch('http://localhost:8080/auth/login', {
             method: 'POST',
             headers: {
@@ -18,8 +29,36 @@ function Login() {
                 email: email,
                 senha: senha
             })
-        })
+        });
+
+        if (!resposta.ok) {
+            throw new Error('E-mail ou senha inválidos.');
+        }
+
+        const dados = await resposta.json();
+
+        if (!dados.token) {
+            throw new Error('O servidor não retornou um token.');
+        }
+
+        login(dados);
+
+        navigate('/');
+
+    
+    } catch (error) {
+        console.error('Erro ao realizar login:', error);
+
+        if (error instanceof TypeError) {
+            setErro('Não foi possível conectar ao servidor. Tente novamente.');
+        } else {
+            setErro(error.message || 'Ocorreu um erro inesperado.');
+        }
     }
+
+
+};
+
 
     return (
         <main className="login">
@@ -55,6 +94,15 @@ function Login() {
                         onChange={(e) => setSenha(e.target.value)}
                     />
                 </div>
+                
+                <div className="login-error-container">
+                    {erro && (
+                        <p className="login-error" role="alert">
+                            {erro}
+                        </p>
+                    )}
+                </div>
+
 
                 <button className="login-button" type="submit"> Entrar</button> {/* Botão de envio */}
 
