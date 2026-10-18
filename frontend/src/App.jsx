@@ -1,5 +1,6 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { AuthProvider } from './contexts/AuthContext.jsx';
 
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
@@ -25,22 +26,24 @@ function Layout() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/cadastro" element={<Cadastro />} />
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
 
-        <Route element={<Layout />}>
-          <Route path="/" element={<Inicio />} />
-          <Route path="/trabalhos" element={<MeusTrabalhos />} />
-          <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />
-          <Route path="/documentos" element={<Documentos />} />
-          <Route path="/configuracoes" element={<Configuracoes />} />
-           
-        </Route>
-        <Route path="*" element={<PaginaNaoEncontrada />} />
-      </Routes>
-    </BrowserRouter>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Inicio />} />
+            <Route path="/trabalhos" element={<MeusTrabalhos />} />
+            <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />
+            <Route path="/documentos" element={<Documentos />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+            
+          </Route>
+          <Route path="*" element={<PaginaNaoEncontrada />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
