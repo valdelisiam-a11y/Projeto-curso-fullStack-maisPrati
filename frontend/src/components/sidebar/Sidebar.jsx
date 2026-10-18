@@ -12,9 +12,11 @@ import {
   X,
 } from "lucide-react";
 import "./Sidebar.css";
+import { useAuth } from "../../contexts/useAuth";
 
 function Sidebar() {
   const [menuAberto, setMenuAberto] = useState(false);
+    const { usuario, logout } = useAuth();
 
   function fecharMenu() {
     setMenuAberto(false);
@@ -104,18 +106,21 @@ function Sidebar() {
 
             <div className="sidebar__user-text">
               <span>Perfil</span>
-              <span>Maria</span>
+              <span>{usuario?.nome || "Usuário"}</span>
             </div>
           </div>
 
-          <NavLink
-            to="/login"
+          <button
+            type="button"
             className="sidebar__logout"
-            onClick={fecharMenu}
+            onClick={() => {
+              logout();
+              fecharMenu();
+            }}
           >
             <LogOut size={20} />
             <span>Sair</span>
-          </NavLink>
+          </button>
         </div>
       </aside>
     </>
