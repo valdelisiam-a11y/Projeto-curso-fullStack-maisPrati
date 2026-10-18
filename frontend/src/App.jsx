@@ -1,6 +1,7 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from './contexts/AuthContext.jsx';
+import RotaProtegida from "./components/RotaProtegida.jsx";
 
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
@@ -24,27 +25,43 @@ function Layout() {
   );
 }
 
+
 function App() {
   return (
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Rotas públicas */}
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<Cadastro />} />
 
-          <Route element={<Layout />}>
-            <Route path="/" element={<Inicio />} />
-            <Route path="/trabalhos" element={<MeusTrabalhos />} />
-            <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />
-            <Route path="/documentos" element={<Documentos />} />
-            <Route path="/configuracoes" element={<Configuracoes />} />
-            
+          {/* Proteção das rotas privadas */}
+          <Route element={<RotaProtegida />}>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Inicio />} />
+              <Route path="/trabalhos" element={<MeusTrabalhos />} />
+              <Route
+                path="/trabalhos/:id"
+                element={<DetalhesTrabalho />}
+              />
+              <Route path="/documentos" element={<Documentos />} />
+              <Route
+                path="/configuracoes"
+                element={<Configuracoes />}
+              />
+            </Route>
           </Route>
-          <Route path="*" element={<PaginaNaoEncontrada />} />
+
+          {/* Página para endereços inexistentes */}
+          <Route
+            path="*"
+            element={<PaginaNaoEncontrada />}
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
   );
 }
+
 
 export default App;
