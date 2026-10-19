@@ -1,0 +1,582 @@
+.badge-status-geral {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.775rem;
+  font-weight: 600;
+}
+
+.badge-andamento {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+.badge-atencao {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+.badge-atrasado {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+.badge-concluido {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.icone-etapa-status.atencao {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+.icone-etapa-status.atrasado {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.timeline-ponto.atencao {
+  background-color: #d97706;
+}
+.timeline-ponto.atraso {
+  background-color: #dc2626;
+}
+
+.detalhes-container {
+  padding: 2.5rem 2rem;
+  max-width: 1080px;
+  margin: 0 auto;
+  color: #261c35;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.btn-voltar {
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+  align-self: flex-start;
+}
+
+.btn-voltar:hover {
+  color: #111827;
+}
+
+/* Card Topo Principal */
+.trabalho-topo-card,
+.detalhe-etapa-card,
+.historico-card {
+  background-color: #ffffff;
+  border: 1px solid #e8e2f0;
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 16px rgba(38, 28, 53, 0.03);
+}
+
+.topo-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.topo-header-flex h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #261c35;
+  margin: 0 0 0.25rem 0;
+}
+
+.topo-header-flex p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.badge-andamento {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: #e0f2fe;
+  color: #0369a1;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.775rem;
+  font-weight: 600;
+}
+
+.progresso-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.barra-progresso-fundo {
+  flex: 1;
+  height: 8px;
+  background-color: #f3f0f7;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.barra-progresso-preenchimento {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #c084fc);
+  border-radius: 9999px;
+}
+
+.progresso-porcentagem {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.prazo-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.825rem;
+  color: #6b7280;
+}
+
+/* Seção de Etapas */
+.etapas-secao {
+  background-color: #fcfbfe;
+  border: 1px solid #f0ecf5;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.secao-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #261c35;
+  margin: 0 0 0.2rem 0;
+}
+
+.secao-subtitulo {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0 0 1.25rem 0;
+}
+
+.etapas-horizontal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.875rem;
+}
+
+.etapa-card-item {
+  background-color: #ffffff;
+  border: 1px solid #e8e2f0;
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.etapa-card-item:hover {
+  border-color: #c4b5fd;
+}
+
+.etapa-card-item.selecionada {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+  background-color: #faf5ff;
+}
+
+.etapa-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.icone-etapa-status {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.icone-etapa-status.concluido {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.icone-etapa-status.andamento {
+  background-color: #ede9fe;
+  color: #7c3aed;
+}
+
+.icone-etapa-status.inativo {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.etapa-card-titulo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #261c35;
+  line-height: 1.25;
+}
+
+.etapa-card-substatus {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.etapa-card-substatus.concluído {
+  color: #059669;
+}
+
+.etapa-card-substatus.em-andamento {
+  color: #7c3aed;
+}
+
+.etapa-card-substatus.não-iniciado {
+  color: #9ca3af;
+}
+
+/* Painel de Detalhes da Etapa */
+.etapa-detalhe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f3f0f7;
+  padding-bottom: 1rem;
+}
+
+.etapa-detalhe-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #261c35;
+  margin: 0 0 0.25rem 0;
+}
+
+.etapa-detalhe-header p {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.bloco-secao {
+  margin-bottom: 1.5rem;
+}
+
+.bloco-secao h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.75rem 0;
+}
+
+.documento-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9f8fb;
+  border: 1px solid #e8e2f0;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+}
+
+.doc-info-nome {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #261c35;
+}
+
+.doc-acoes {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-doc-acao {
+  background: transparent;
+  border: 1px solid #dcd5e8;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.775rem;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.btn-doc-acao:hover {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+  border-color: #c4b5fd;
+}
+
+.btn-adicionar-doc {
+  background: transparent;
+  border: 1px dashed #dcd5e8;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 10px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-adicionar-doc:hover {
+  border-color: #8b5cf6;
+  color: #7c3aed;
+  background-color: #faf5ff;
+}
+
+.textarea-observacao {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #dcd5e8;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #261c35;
+  background-color: #fcfbfe;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 0.625rem;
+}
+
+.textarea-observacao:focus {
+  border-color: #8b5cf6;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+.btn-salvar-obs {
+  background-color: #f1edeb;
+  color: #261c35;
+  border: 1px solid #e5e0ed;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-salvar-obs:hover {
+  background-color: #e8e2f0;
+}
+
+.acoes-etapa-footer {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f3f0f7;
+}
+
+.btn-marcar-concluida {
+  background-color: #8b5cf6;
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-marcar-concluida:hover {
+  background-color: #7c3aed;
+}
+
+.btn-editar-etapa {
+  background: transparent;
+  border: 1px solid #dcd5e8;
+  color: #4b5563;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-editar-etapa:hover {
+  background-color: #f9f8fb;
+  color: #111827;
+}
+
+/* Seção de Etapas */
+.etapas-secao {
+  background-color: #fcfbfe;
+  border: 1px solid #f0ecf5;
+  border-radius: 16px;
+  padding: 1.5rem;
+  overflow: hidden; /* Evita vazamentos */
+}
+
+.secao-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #261c35;
+  margin: 0 0 0.2rem 0;
+}
+
+.secao-subtitulo {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0 0 1.25rem 0;
+}
+
+/* Transformando em uma lista rolável horizontalmente e fluida */
+.etapas-horizontal-grid {
+  display: flex;
+  gap: 0.875rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ocultar barra de rolagem mantendo a funcionalidade limpa */
+.etapas-horizontal-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.etapas-horizontal-grid::-webkit-scrollbar-thumb {
+  background-color: #e5e0ed;
+  border-radius: 9999px;
+}
+
+.etapa-card-item {
+  background-color: #ffffff;
+  border: 1px solid #e8e2f0;
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 200px; /* Garante que os cards não esmaguem o texto */
+  flex-shrink: 0;
+}
+
+.etapa-card-item:hover {
+  border-color: #c4b5fd;
+}
+
+.etapa-card-item.selecionada {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+  background-color: #faf5ff;
+}
+
+/* Histórico / Timeline */
+.historico-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #261c35;
+  margin: 0 0 1.25rem 0;
+}
+
+.timeline-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  position: relative;
+}
+
+.timeline-ponto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 0.35rem;
+  flex-shrink: 0;
+}
+
+.timeline-ponto.sucesso {
+  background-color: #10b981;
+}
+
+.timeline-ponto.info {
+  background-color: #3b82f6;
+}
+
+.timeline-conteudo {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-texto {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #374151;
+  margin: 0 0 0.15rem 0;
+}
+
+.timeline-data {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .etapa-detalhe-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .acoes-etapa-footer {
+    flex-direction: column;
+  }
+  .btn-marcar-concluida,
+  .btn-editar-etapa {
+    width: 100%;
+    justify-content: center;
+  }
+}

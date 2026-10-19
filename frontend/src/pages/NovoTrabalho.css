@@ -1,0 +1,374 @@
+/* ==========================================================================
+   1. ESTRUTURA GERAL
+   ========================================================================== */
+.novo-trabalho-container {
+  padding: 2.5rem 2rem;
+  max-width: 1080px;
+  margin: 0 auto;
+  color: #261c35;
+  box-sizing: border-box;
+}
+
+.novo-trabalho-header {
+  margin-bottom: 2rem;
+}
+
+.novo-trabalho-header h1 {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: #261c35;
+  margin: 0 0 0.35rem 0;
+}
+
+.novo-trabalho-header p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.novo-trabalho-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.novo-trabalho-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.form-card {
+  background-color: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e8e2f0;
+  box-shadow: 0 4px 16px rgba(38, 28, 53, 0.04);
+  padding: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.7rem 0.875rem;
+  border: 1px solid #dcd5e8;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background-color: #ffffff;
+  color: #261c35;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+.etapas-header-title {
+  margin-bottom: 1rem;
+}
+
+.etapas-header-title h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #261c35;
+  margin: 0 0 0.2rem 0;
+}
+
+.etapas-header-title p {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.etapas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+}
+
+.etapa-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #f9f8fb;
+  border: 1px solid #f0ecf5;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+.etapa-numero {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.etapa-input-edit {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  color: #261c35;
+  outline: none;
+  min-width: 0;
+}
+
+.etapa-acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.btn-acao-etapa {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-acao-etapa:hover:not(:disabled) {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+}
+
+.btn-acao-etapa.btn-deletar:hover:not(:disabled) {
+  background-color: #fef2f2;
+  color: #ef4444;
+}
+
+.btn-acao-etapa:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.add-etapa-wrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-etapa-wrapper input {
+  flex: 1;
+  padding: 0.6rem 0.875rem;
+  border: 1px solid #dcd5e8;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  outline: none;
+  background-color: #ffffff;
+  min-width: 0;
+}
+
+.btn-add-etapa {
+  background-color: #f3f0f7;
+  color: #4b5563;
+  border: 1px solid #e8e2f0;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.btn-add-etapa:hover {
+  background-color: #e9d5ff;
+  color: #7c3aed;
+}
+
+/* ==========================================================================
+   2. COLUNA DIREITA / LIVE PREVIEW
+   ========================================================================== */
+.preview-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: sticky;
+  top: 2rem;
+}
+
+.preview-card {
+  background-color: #f9f0f5;
+  border: 1px solid #f0e0ea;
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.preview-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #261c35;
+}
+
+.preview-subtext {
+  font-size: 0.775rem;
+  color: #6b7280;
+  margin: 0.2rem 0 1.25rem 0;
+}
+
+.preview-trabalho-titulo {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #261c35;
+  margin: 0 0 1rem 0;
+  word-break: break-word;
+}
+
+.preview-etapas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.preview-etapa-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background-color: #ffffff;
+  padding: 0.65rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.825rem;
+  color: #374151;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  word-break: break-word;
+}
+
+.preview-numero {
+  font-size: 0.75rem;
+  color: #6b7280;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.text-concluido {
+  color: #10b981;
+}
+
+.preview-vazio {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  font-style: italic;
+  margin: 0;
+}
+
+.preview-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.btn-criar-trabalho {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #8b5cf6;
+  color: #ffffff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+.btn-criar-trabalho:hover {
+  background-color: #7c3aed;
+}
+
+.btn-cancelar {
+  background: transparent;
+  border: none;
+  color: #4b5563;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s ease;
+  text-align: center;
+}
+
+.btn-cancelar:hover {
+  color: #111827;
+}
+
+/* ==========================================================================
+   ESTILO DA MENSAGEM DE AVISO (IDÊNTICO À REFERÊNCIA)
+   ========================================================================== */
+.aviso-obrigatorio-criacao {
+  display: block;
+  width: 100%;
+  background-color: #fce8f0; /* Fundo rosado suave idêntico ao da imagem */
+  border: 1px solid #f2d0e0; /* Borda sutil alinhada ao tom */
+  color: #9b2c47; /* Tom de texto avermelhado/vinho elegante */
+  font-size: 0.825rem;
+  font-weight: 500;
+  text-align: center;
+  padding: 0.65rem 1rem; /* Espaçamento interno simulando uma pílula/card */
+  border-radius: 9999px; /* Formato totalmente arredondado (pílula) */
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   3. RESPONSIVIDADE PARA TELAS MENORES E DISPOSITIVOS MÓVEIS
+   ========================================================================== */
+@media (max-width: 868px) {
+  .novo-trabalho-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .novo-trabalho-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .preview-column {
+    position: static;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-etapa-wrapper {
+    flex-direction: column;
+  }
+
+  .btn-add-etapa {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -8,9 +8,11 @@ import {
   Clock3,
   Plus,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "./MeusTrabalhos.css";
 
 export default function MeusTrabalhos() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroAtivo, setFiltroAtivo] = useState("Todos");
 
@@ -73,8 +75,9 @@ export default function MeusTrabalhos() {
     return matchNome;
   });
 
+  // Função atualizada para navegar até a tela de detalhes passando o ID do trabalho
   const handleVerTrabalho = (id) => {
-    alert(`Acessando detalhes do trabalho ID: ${id}`);
+    navigate(`/trabalhos/${id}`);
   };
 
   const getBadgeStatus = (situacao) => {
@@ -110,10 +113,7 @@ export default function MeusTrabalhos() {
           <h1>Meus trabalhos</h1>
           <p>Acompanhe tudo o que você está organizando.</p>
         </div>
-        <button
-          className="btn-novo-trabalho"
-          onClick={() => alert("Criar novo trabalho (Fora de escopo)")}
-        >
+        <button className="btn-novo-trabalho" onClick={() => navigate("/novo")}>
           <Plus className="w-4 h-4" />
           <span>Novo trabalho</span>
         </button>
@@ -183,7 +183,7 @@ export default function MeusTrabalhos() {
                   </span>
                 </div>
 
-                {/* Barra de Progresso (Verde se concluído, Roxa se em andamento/atrasado) */}
+                {/* Barra de Progresso */}
                 <div className="progress-container">
                   <div className="progress-bar-bg">
                     <div
