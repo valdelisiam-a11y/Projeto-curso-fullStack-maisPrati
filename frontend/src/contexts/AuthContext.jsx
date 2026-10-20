@@ -2,6 +2,30 @@
 import { useState } from 'react';
 import { AuthContext } from './authContext';
 
+
+function tokenExpirado(token) {
+    if (!token) return true;
+
+    try {
+        const payload = token.split('.')[1];
+        const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const dados = JSON.parse(atob(base64));
+
+        if (typeof dados.exp !== 'number') return true;
+
+        return Date.now() >= dados.exp * 1000;
+    } catch {
+        return true;
+    }
+}
+
+
+function limparDadosSessao() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+}
+
+
 export function AuthProvider({ children }) { 
     const [usuario, setUsuario] = useState(() => {
         const usuarioSalvo = localStorage.getItem('usuario');
@@ -10,10 +34,17 @@ export function AuthProvider({ children }) {
     });
 
     const [token, setToken] = useState(() => {
-        return localStorage.getItem('token');
+        const tokenSalvo = localStorage.getItem('token');
+
+        if (tokenExpirado(tokenSalvo)) {
+            limparDadosSessao();
+            return null;
+        }
+
+        return tokenSalvo;
     });
 
-    const autenticado = Boolean(token);
+    const autenticado = Boolean(token) && !tokenExpirado(token);
 
     function login(dados) {
         localStorage.setItem('token', dados.token);
@@ -31,16 +62,15 @@ export function AuthProvider({ children }) {
     }
 
     function logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('usuario');
+    limparDadosSessao();
 
-        setToken(null);
-        setUsuario(null);
+    setToken(null);
+    setUsuario(null);
     }
 
     return (
         <AuthContext.Provider
-            value={{
+            value={{    
                 usuario,
                 token,
                 autenticado,
