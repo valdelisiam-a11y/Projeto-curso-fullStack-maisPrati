@@ -6,7 +6,7 @@
   max-width: 960px;
   margin: 0 auto;
   font-family: inherit;
-  color: #261c35;
+  color: var(--foreground);
 }
 
 .trabalhos-header-flex {
@@ -19,13 +19,13 @@
 .trabalhos-main-header h1 {
   font-size: 1.625rem;
   font-weight: 700;
-  color: #261c35;
+  color: var(--foreground);
   margin: 0 0 0.35rem 0;
 }
 
 .trabalhos-main-header p {
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--muted-foreground);
   margin: 0;
 }
 
@@ -33,30 +33,30 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #8b5cf6;
-  color: #ffffff;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   padding: 0.65rem 1.25rem;
-  border-radius: 10px;
+  border-radius: calc(var(--radius) - 0.1rem);
   border: none;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+  transition: opacity 0.2s ease;
+  box-shadow: var(--shadow-soft);
 }
 
 .btn-novo-trabalho:hover {
-  background-color: #7c3aed;
+  opacity: 0.9;
 }
 
 /* ==========================================================================
-   2. PESQUISA E FILTROS (PÍLULAS)
+   2. PESQUISA E FILTROS
    ========================================================================== */
 .search-filter-card {
-  background-color: #ffffff;
-  border-radius: 14px;
-  border: 1px solid #e8e2f0;
-  box-shadow: 0 4px 16px rgba(38, 28, 53, 0.04);
+  background-color: var(--sidebar);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
   padding: 1.5rem;
   margin-bottom: 1.75rem;
 }
@@ -65,7 +65,7 @@
   display: block;
   font-size: 0.85rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--foreground);
   margin-bottom: 0.625rem;
 }
 
@@ -82,25 +82,25 @@
   left: 0.875rem;
   width: 18px;
   height: 18px;
-  color: #8b5cf6;
+  color: var(--primary);
 }
 
 .search-input-wrapper input {
   width: 100%;
   padding: 0.7rem 0.875rem 0.7rem 2.6rem;
-  border: 1px solid #dcd5e8;
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 0.2rem);
   font-size: 0.9rem;
-  background-color: #ffffff;
-  color: #261c35;
+  background-color: var(--background);
+  color: var(--foreground);
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
 .search-input-wrapper input:focus {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
 .filter-pills {
@@ -110,9 +110,9 @@
 }
 
 .filter-pill {
-  background-color: #f8f7fa;
-  color: #4b5563;
-  border: 1px solid #e5e0ed;
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
   padding: 0.45rem 1.125rem;
   border-radius: 9999px;
   font-size: 0.825rem;
@@ -122,21 +122,19 @@
 }
 
 .filter-pill:hover {
-  background-color: #f3e8ff;
-  color: #7c3aed;
-  border-color: #d8b4fe;
+  background-color: var(--primary-soft);
+  color: var(--primary);
 }
 
 .filter-pill.active {
-  background-color: #f3e8ff !important;
-  color: #7c3aed !important;
-  border: 1px solid #c084fc !important;
+  background-color: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(139, 92, 246, 0.1);
 }
 
 /* ==========================================================================
-   3. CARDS DE TRABALHO, BADGES E BOTÕES
+   3. CARDS DE TRABALHO E BADGES
    ========================================================================== */
 .trabalhos-list {
   display: flex;
@@ -145,16 +143,12 @@
 }
 
 .trabalho-card {
-  background-color: #ffffff;
-  border-radius: 14px;
-  border: 1px solid #e8e2f0;
-  box-shadow: 0 4px 16px rgba(38, 28, 53, 0.04);
+  background-color: var(--sidebar);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
   padding: 1.5rem 2rem;
   transition: box-shadow 0.2s ease;
-}
-
-.trabalho-card:hover {
-  box-shadow: 0 6px 20px rgba(38, 28, 53, 0.08);
 }
 
 .trabalho-card-header {
@@ -168,24 +162,24 @@
 .trabalho-nome {
   font-size: 1.05rem;
   font-weight: 600;
-  color: #261c35;
+  color: var(--foreground);
   margin: 0;
 }
 
 .trabalho-descricao {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--muted-foreground);
   margin: 0 0 1rem 0;
 }
 
 .etapa-atual-box {
-  background-color: #f9f8fb;
-  border-radius: 8px;
+  background-color: var(--muted);
+  border-radius: calc(var(--radius) - 0.2rem);
   padding: 0.625rem 0.875rem;
   font-size: 0.825rem;
-  color: #4b5563;
+  color: var(--foreground);
   margin-bottom: 1.25rem;
-  border: 1px solid #f0ecf5;
+  border: 1px solid var(--border);
 }
 
 /* Badges de Situação */
@@ -206,30 +200,30 @@
 }
 
 .status-andamento {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  border: 1px solid #bae6fd;
+  background-color: var(--info-soft);
+  color: var(--info);
+  border: 1px solid var(--info-soft);
 }
 
 .status-concluido {
-  background-color: #f0fdf4;
-  color: #166534;
-  border: 1px solid #bbf7d0;
+  background-color: oklch(95% 0.04 150);
+  color: oklch(45% 0.15 150);
+  border: 1px solid oklch(88% 0.08 150);
 }
 
 .status-atencao {
-  background-color: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fde68a;
+  background-color: oklch(95% 0.05 80);
+  color: oklch(50% 0.18 80);
+  border: 1px solid oklch(88% 0.09 80);
 }
 
 .status-atrasado {
-  background-color: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
+  background-color: oklch(95% 0.04 25);
+  color: var(--destructive);
+  border: 1px solid oklch(88% 0.08 25);
 }
 
-/* Barra de Progresso com Gradiente */
+/* Barra de Progresso */
 .progress-container {
   display: flex;
   flex-direction: column;
@@ -240,49 +234,48 @@
 .progress-bar-bg {
   width: 100%;
   height: 8px;
-  background-color: #e5e0ed;
+  background-color: var(--muted);
   border-radius: 9999px;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 50%, #ec4899 100%);
+  background: var(--primary);
   border-radius: 9999px;
   transition: width 0.3s ease;
 }
 
 .progress-bar-fill.fill-concluido {
-  background: #10b981;
+  background: oklch(65% 0.17 150);
 }
 
 .progress-text {
   font-size: 0.775rem;
-  color: #6b7280;
+  color: var(--muted-foreground);
   font-weight: 500;
 }
 
-/* Rodapé do Card e Botão Ver Trabalho */
 .trabalho-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid #f3f0f7;
+  border-top: 1px solid var(--border);
   padding-top: 1rem;
 }
 
 .atualizado-texto {
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--muted-foreground);
 }
 
 .btn-ver-trabalho {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background-color: #f1edeb;
-  color: #261c35;
-  border: 1px solid #e5e0ed;
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
   font-size: 0.775rem;
   font-weight: 500;
   cursor: pointer;
@@ -292,10 +285,10 @@
 }
 
 .btn-ver-trabalho:hover {
-  background-color: #e8e2f0;
+  background-color: var(--primary-soft);
+  color: var(--primary);
 }
 
-/* Ajusta o tamanho da seta dentro do botão Ver trabalho */
 .btn-ver-trabalho svg {
   width: 14px;
   height: 14px;
@@ -305,9 +298,9 @@
    4. ESTADO VAZIO
    ========================================================================== */
 .empty-state {
-  background-color: #ffffff;
-  border-radius: 14px;
-  border: 1px solid #e8e2f0;
+  background-color: var(--sidebar);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
   padding: 3rem 2rem;
   text-align: center;
   display: flex;
@@ -319,164 +312,25 @@
 .empty-icon {
   width: 48px;
   height: 48px;
-  color: #8b5cf6;
+  color: var(--primary);
   margin-bottom: 1rem;
 }
 
 .empty-state h3 {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #261c35;
+  color: var(--foreground);
   margin: 0 0 0.35rem 0;
 }
 
 .empty-state p {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--muted-foreground);
   margin: 0;
 }
 
 /* ==========================================================================
-   5. MENU LATERAL (SIDEBAR ATIVO)
-   ========================================================================== */
-.sidebar a.active,
-.sidebar .active {
-  background-color: #f3e8ff !important;
-  color: #7c3aed !important;
-  border-radius: 10px !important;
-  font-weight: 600;
-}
-
-.sidebar a.active svg,
-.sidebar .active svg {
-  color: #7c3aed !important;
-}
-
-/* ==========================================================================
-   6. TEMA ESCURO GLOBAL (OVERRIDES)
-   ========================================================================== */
-body.dark-theme .trabalhos-container {
-  color: #f3f4f6 !important;
-}
-
-body.dark-theme .trabalhos-main-header h1 {
-  color: #ffffff !important;
-}
-
-body.dark-theme .trabalhos-main-header p {
-  color: #9ca3af !important;
-}
-
-body.dark-theme .search-filter-card,
-body.dark-theme .trabalho-card,
-body.dark-theme .empty-state {
-  background-color: #181522 !important;
-  border-color: #282238 !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-body.dark-theme .search-label {
-  color: #9ca3af !important;
-}
-
-body.dark-theme .search-icon {
-  color: #a78bfa !important;
-}
-
-body.dark-theme .search-input-wrapper input {
-  background-color: #1e1a2b !important;
-  border-color: #352f4a !important;
-  color: #ffffff !important;
-}
-
-body.dark-theme .search-input-wrapper input:focus {
-  border-color: #8b5cf6 !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
-}
-
-body.dark-theme .filter-pill {
-  background-color: #241f33 !important;
-  color: #d1d5db !important;
-  border-color: #352f4a !important;
-}
-
-body.dark-theme .filter-pill:hover,
-body.dark-theme .filter-pill.active {
-  background-color: #2d2640 !important;
-  color: #a78bfa !important;
-  border-color: #8b5cf6 !important;
-}
-
-body.dark-theme .trabalho-nome,
-body.dark-theme .empty-state h3 {
-  color: #ffffff !important;
-}
-
-body.dark-theme .trabalho-descricao,
-body.dark-theme .progress-text,
-body.dark-theme .empty-state p {
-  color: #9ca3af !important;
-}
-
-body.dark-theme .etapa-atual-box {
-  background-color: #1e1a2b !important;
-  border-color: #352f4a !important;
-  color: #e5e7eb !important;
-}
-
-body.dark-theme .progress-bar-bg {
-  background-color: #2e283d !important;
-}
-
-body.dark-theme .trabalho-card-footer {
-  border-top-color: #282238 !important;
-}
-
-body.dark-theme .atualizado-texto {
-  color: #6b7280 !important;
-}
-
-body.dark-theme .empty-icon {
-  color: #a78bfa !important;
-}
-
-/* Badges e Botões no Tema Escuro */
-body.dark-theme .status-andamento {
-  background-color: #0c203a !important;
-  color: #38bdf8 !important;
-  border-color: #0369a1 !important;
-}
-
-body.dark-theme .status-concluido {
-  background-color: #064e3b !important;
-  color: #d1fae5 !important;
-  border-color: #047857 !important;
-}
-
-body.dark-theme .status-atencao {
-  background-color: #451a03 !important;
-  color: #fde68a !important;
-  border-color: #78350f !important;
-}
-
-body.dark-theme .status-atrasado {
-  background-color: #450a0a !important;
-  color: #fca5a5 !important;
-  border-color: #7f1d1d !important;
-}
-
-body.dark-theme .btn-ver-trabalho {
-  background-color: #241f33 !important;
-  color: #a78bfa !important;
-  border-color: #352f4a !important;
-}
-
-body.dark-theme .btn-ver-trabalho:hover {
-  background-color: #2d2640 !important;
-}
-
-/* ==========================================================================
-   7. RESPONSIVIDADE MOBILE
+   5. RESPONSIVIDADE MOBILE
    ========================================================================== */
 @media (max-width: 768px) {
   .trabalhos-container {

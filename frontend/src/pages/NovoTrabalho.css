@@ -1,11 +1,11 @@
 /* ==========================================================================
-   1. ESTRUTURA GERAL
+   1. ESTRUTURA GERAL E FORMULÁRIO
    ========================================================================== */
 .novo-trabalho-container {
   padding: 2.5rem 2rem;
   max-width: 1080px;
   margin: 0 auto;
-  color: #261c35;
+  color: var(--foreground);
   box-sizing: border-box;
 }
 
@@ -16,13 +16,13 @@
 .novo-trabalho-header h1 {
   font-size: 1.625rem;
   font-weight: 700;
-  color: #261c35;
+  color: var(--foreground);
   margin: 0 0 0.35rem 0;
 }
 
 .novo-trabalho-header p {
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--muted-foreground);
   margin: 0;
 }
 
@@ -41,10 +41,10 @@
 }
 
 .form-card {
-  background-color: #ffffff;
-  border-radius: 14px;
-  border: 1px solid #e8e2f0;
-  box-shadow: 0 4px 16px rgba(38, 28, 53, 0.04);
+  background-color: var(--sidebar);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
   padding: 1.5rem;
 }
 
@@ -62,18 +62,18 @@
 .form-group label {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--foreground);
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
   padding: 0.7rem 0.875rem;
-  border: 1px solid #dcd5e8;
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 0.2rem);
   font-size: 0.9rem;
-  background-color: #ffffff;
-  color: #261c35;
+  background-color: var(--background);
+  color: var(--foreground);
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -81,8 +81,8 @@
 
 .form-group input:focus,
 .form-group textarea:focus {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
 .etapas-header-title {
@@ -92,13 +92,13 @@
 .etapas-header-title h3 {
   font-size: 1rem;
   font-weight: 600;
-  color: #261c35;
+  color: var(--foreground);
   margin: 0 0 0.2rem 0;
 }
 
 .etapas-header-title p {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--muted-foreground);
   margin: 0;
 }
 
@@ -113,16 +113,16 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: #f9f8fb;
-  border: 1px solid #f0ecf5;
+  background-color: var(--muted);
+  border: 1px solid var(--border);
   padding: 0.5rem 0.75rem;
-  border-radius: 8px;
+  border-radius: calc(var(--radius) - 0.2rem);
 }
 
 .etapa-numero {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--muted-foreground);
   width: 16px;
   text-align: center;
   flex-shrink: 0;
@@ -133,7 +133,7 @@
   border: none;
   background: transparent;
   font-size: 0.875rem;
-  color: #261c35;
+  color: var(--foreground);
   outline: none;
   min-width: 0;
 }
@@ -148,7 +148,7 @@
 .btn-acao-etapa {
   background: transparent;
   border: none;
-  color: #6b7280;
+  color: var(--muted-foreground);
   cursor: pointer;
   padding: 0.3rem;
   border-radius: 4px;
@@ -159,13 +159,13 @@
 }
 
 .btn-acao-etapa:hover:not(:disabled) {
-  background-color: #f3e8ff;
-  color: #7c3aed;
+  background-color: var(--primary-soft);
+  color: var(--primary);
 }
 
 .btn-acao-etapa.btn-deletar:hover:not(:disabled) {
-  background-color: #fef2f2;
-  color: #ef4444;
+  background-color: oklch(95% 0.04 25);
+  color: var(--destructive);
 }
 
 .btn-acao-etapa:disabled {
@@ -181,34 +181,35 @@
 .add-etapa-wrapper input {
   flex: 1;
   padding: 0.6rem 0.875rem;
-  border: 1px solid #dcd5e8;
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 0.2rem);
   font-size: 0.85rem;
   outline: none;
-  background-color: #ffffff;
+  background-color: var(--background);
+  color: var(--foreground);
   min-width: 0;
 }
 
 .btn-add-etapa {
-  background-color: #f3f0f7;
-  color: #4b5563;
-  border: 1px solid #e8e2f0;
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
   padding: 0.6rem 1rem;
-  border-radius: 8px;
+  border-radius: calc(var(--radius) - 0.2rem);
   font-size: 0.825rem;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-add-etapa:hover {
-  background-color: #e9d5ff;
-  color: #7c3aed;
+  background-color: var(--primary-soft);
+  color: var(--primary);
 }
 
 /* ==========================================================================
-   2. COLUNA DIREITA / LIVE PREVIEW
+   2. LIVE PREVIEW
    ========================================================================== */
 .preview-column {
   display: flex;
@@ -219,28 +220,28 @@
 }
 
 .preview-card {
-  background-color: #f9f0f5;
-  border: 1px solid #f0e0ea;
-  border-radius: 14px;
+  background-color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1.5rem;
 }
 
 .preview-badge {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #261c35;
+  color: var(--accent-foreground);
 }
 
 .preview-subtext {
   font-size: 0.775rem;
-  color: #6b7280;
+  color: var(--muted-foreground);
   margin: 0.2rem 0 1.25rem 0;
 }
 
 .preview-trabalho-titulo {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #261c35;
+  color: var(--foreground);
   margin: 0 0 1rem 0;
   word-break: break-word;
 }
@@ -255,31 +256,31 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  background-color: #ffffff;
+  background-color: var(--sidebar);
   padding: 0.65rem 0.875rem;
   border-radius: 20px;
   font-size: 0.825rem;
-  color: #374151;
+  color: var(--foreground);
   font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--shadow-soft);
   word-break: break-word;
 }
 
 .preview-numero {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--muted-foreground);
   width: 16px;
   text-align: center;
   flex-shrink: 0;
 }
 
 .text-concluido {
-  color: #10b981;
+  color: oklch(65% 0.17 150);
 }
 
 .preview-vazio {
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--muted-foreground);
   font-style: italic;
   margin: 0;
 }
@@ -295,26 +296,26 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: #8b5cf6;
-  color: #ffffff;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   padding: 0.75rem 1.25rem;
-  border-radius: 10px;
+  border-radius: calc(var(--radius) - 0.1rem);
   border: none;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+  transition: opacity 0.2s ease;
+  box-shadow: var(--shadow-soft);
 }
 
 .btn-criar-trabalho:hover {
-  background-color: #7c3aed;
+  opacity: 0.9;
 }
 
 .btn-cancelar {
   background: transparent;
   border: none;
-  color: #4b5563;
+  color: var(--muted-foreground);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -324,28 +325,25 @@
 }
 
 .btn-cancelar:hover {
-  color: #111827;
+  color: var(--foreground);
 }
 
-/* ==========================================================================
-   ESTILO DA MENSAGEM DE AVISO (IDÊNTICO À REFERÊNCIA)
-   ========================================================================== */
 .aviso-obrigatorio-criacao {
   display: block;
   width: 100%;
-  background-color: #fce8f0; /* Fundo rosado suave idêntico ao da imagem */
-  border: 1px solid #f2d0e0; /* Borda sutil alinhada ao tom */
-  color: #9b2c47; /* Tom de texto avermelhado/vinho elegante */
+  background-color: oklch(95% 0.04 25);
+  border: 1px solid oklch(88% 0.08 25);
+  color: var(--destructive);
   font-size: 0.825rem;
   font-weight: 500;
   text-align: center;
-  padding: 0.65rem 1rem; /* Espaçamento interno simulando uma pílula/card */
-  border-radius: 9999px; /* Formato totalmente arredondado (pílula) */
+  padding: 0.65rem 1rem;
+  border-radius: 9999px;
   box-sizing: border-box;
 }
 
 /* ==========================================================================
-   3. RESPONSIVIDADE PARA TELAS MENORES E DISPOSITIVOS MÓVEIS
+   3. RESPONSIVIDADE
    ========================================================================== */
 @media (max-width: 868px) {
   .novo-trabalho-container {

@@ -1,42 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 
 :root {
-  --background: oklch(99% .006 320);
-  --foreground: oklch(26% .045 300);
+  --background: oklch(99% 0.006 320);
+  --foreground: oklch(26% 0.045 300);
 
-  --sidebar: oklch(99.5% .006 320);
-  --sidebar-foreground: oklch(26% .045 300);
-  --sidebar-border: oklch(92% .015 315);
+  --sidebar: oklch(99.5% 0.006 320);
+  --sidebar-foreground: oklch(26% 0.045 300);
+  --sidebar-border: oklch(92% 0.015 315);
 
-  --primary: oklch(61% .19 305);
-  --primary-foreground: oklch(99% .005 320);
+  --primary: oklch(61% 0.19 305);
+  --primary-foreground: oklch(99% 0.005 320);
 
-  --primary-soft: oklch(95% .035 310);
+  --primary-soft: oklch(95% 0.035 310);
 
-  --destructive: oklch(58% .21 25);
+  --destructive: oklch(58% 0.21 25);
 
   --sidebar-accent: oklch(96.179% 0.01807 314.499);
 
---shadow-soft:
-  0 1px 2px oklch(26% .045 300 / .06),
-  0 8px 24px -12px oklch(26% .045 300 / .18);
+  --shadow-soft:
+    0 1px 2px oklch(26% 0.045 300 / 0.06),
+    0 8px 24px -12px oklch(26% 0.045 300 / 0.18);
 
+  --info: oklch(60% 0.14 255);
+  --info-soft: oklch(94% 0.04 255);
 
-  --info: oklch(60% .14 255);
-  --info-soft: oklch(94% .04 255);
+  --secondary: oklch(96% 0.02 320);
+  --secondary-foreground: oklch(34% 0.07 305);
 
-  --secondary: oklch(96% .02 320);
-  --secondary-foreground: oklch(34% .07 305);
+  --accent: oklch(95% 0.045 340);
+  --accent-foreground: oklch(36% 0.12 340);
 
-  --accent: oklch(95% .045 340);
---accent-foreground: oklch(36% .12 340);
+  --muted: oklch(96.5% 0.012 315);
+  --muted-foreground: oklch(53% 0.03 300);
 
-  --muted: oklch(96.5% .012 315);
-  --muted-foreground: oklch(53% .03 300);
+  --border: oklch(92% 0.015 315);
 
-  --border: oklch(92% .015 315);
-
-  --radius: .9rem;
+  --radius: 0.9rem;
 }
 
 * {
@@ -49,5 +48,30 @@ body {
   min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Ativação do Dark Mode baseada na classe .dark-theme no body */
+body.dark-theme {
+  --background: oklch(18% 0.015 300);
+  --foreground: oklch(95% 0.01 300);
+
+  --sidebar: oklch(22% 0.02 300);
+  --sidebar-foreground: oklch(95% 0.01 300);
+  --sidebar-border: oklch(30% 0.02 300);
+
+  --primary: oklch(65% 0.19 305);
+  --primary-foreground: oklch(99% 0.005 320);
+  --primary-soft: oklch(30% 0.04 305);
+
+  --secondary: oklch(25% 0.02 300);
+  --secondary-foreground: oklch(90% 0.01 300);
+
+  --accent: oklch(28% 0.03 310);
+  --accent-foreground: oklch(95% 0.01 300);
+
+  --muted: oklch(25% 0.02 300);
+  --muted-foreground: oklch(70% 0.02 300);
+
+  --border: oklch(30% 0.02 300);
 }

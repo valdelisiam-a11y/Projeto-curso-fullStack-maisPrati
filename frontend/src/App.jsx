@@ -9,7 +9,6 @@ import NovoTrabalho from "./pages/NovoTrabalho";
 import Documentos from "./pages/Documentos";
 import Configuracoes from "./pages/Configuracoes";
 import Sidebar from "./components/sidebar/Sidebar";
-import DetalhesTrabalho from "./pages/DetalhesTrabalho";
 import PaginaNaoEncontrada from "./pages/PaginaNaoEncontrada";
 
 function Layout() {
@@ -35,7 +34,6 @@ function App() {
           <Route path="/" element={<Inicio />} />
           <Route path="/trabalhos" element={<MeusTrabalhos />} />
           <Route path="/novo" element={<NovoTrabalho />} />
-          <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />
           <Route path="/documentos" element={<Documentos />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
         </Route>
