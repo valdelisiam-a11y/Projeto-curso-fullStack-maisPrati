@@ -5,7 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "documentos")
+@Table(name = "documento") // Conforme o banco definido
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,7 +25,11 @@ public class Documento {
     @Column(nullable = false)
     private LocalDateTime dataCriacao = LocalDateTime.now();
 
-    @ManyToOne
-    @JoinColumn(name = "etapa_id", nullable = false)
-    private Etapa etapa; // Conforme alinhado na modelagem do banco
+    @Column(name = "etapa_id", nullable = false)
+    private Long etapaId;
+
+    // OBS: Quando o Erick subir a branch dele, mudaremos este long para:
+    // @ManyToOne
+    // @JoinColumn(name = "etapa_id")
+    // private Etapa etapa;
 }

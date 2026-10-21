@@ -11,7 +11,15 @@ public record DocumentoRespostaDTO(
         Long etapaId,
         Long trabalhoId
 ) {
+    // Construtor mapeando diretamente da entidade e injetando o trabalhoId garantido pelo Service
     public DocumentoRespostaDTO(Documento doc, Long trabalhoId) {
-        this(doc.getId(), doc.getNomeArquivo(), doc.getUrlArquivo(), doc.getDataCriacao(), doc.getEtapa().getId(), trabalhoId);
+        this(
+                doc.getId(),
+                doc.getNomeArquivo(),
+                doc.getUrlArquivo(),
+                doc.getDataCriacao(),
+                doc.getEtapaId(), // Pegando o ID temporário enquanto a classe Etapa não chega
+                trabalhoId
+        );
     }
 }
