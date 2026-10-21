@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FolderKanban,
   Search,
@@ -11,10 +12,11 @@ import {
 import "./MeusTrabalhos.css";
 
 export default function MeusTrabalhos() {
+  const navigate = useNavigate(); // 2. Inicialização do hook de navegação
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroAtivo, setFiltroAtivo] = useState("Todos");
 
-  // Dados mockados exatos conforme as imagens de referência do Lovable
+  // Dados mockados
   const [trabalhos] = useState([
     {
       id: 1,
@@ -73,8 +75,9 @@ export default function MeusTrabalhos() {
     return matchNome;
   });
 
+  // 3. Função corrigida para redirecionar em vez de mostrar o alert
   const handleVerTrabalho = (id) => {
-    alert(`Acessando detalhes do trabalho ID: ${id}`);
+    navigate(`/trabalhos/${id}`);
   };
 
   const getBadgeStatus = (situacao) => {
@@ -112,7 +115,7 @@ export default function MeusTrabalhos() {
         </div>
         <button
           className="btn-novo-trabalho"
-          onClick={() => alert("Criar novo trabalho (Fora de escopo)")}
+          onClick={() => navigate("/trabalhos/novo")}
         >
           <Plus className="w-4 h-4" />
           <span>Novo trabalho</span>
@@ -183,7 +186,7 @@ export default function MeusTrabalhos() {
                   </span>
                 </div>
 
-                {/* Barra de Progresso (Verde se concluído, Roxa se em andamento/atrasado) */}
+                {/* Barra de Progresso */}
                 <div className="progress-container">
                   <div className="progress-bar-bg">
                     <div
