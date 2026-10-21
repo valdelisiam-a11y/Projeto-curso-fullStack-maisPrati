@@ -3,7 +3,7 @@ import './Login.css';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
-
+import { fazerLogin } from '../services/authService';
 
 function Login() {
     const [email, setEmail] = useState('')
@@ -20,16 +20,7 @@ const handleSubmit = async (e) => {
     setErro('');
 
     try {
-        const resposta = await fetch('http://localhost:8080/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: email,
-                senha: senha
-            })
-        });
+        const resposta = await fazerLogin(email, senha);
 
         if (!resposta.ok) {
             throw new Error('E-mail ou senha inválidos.');
