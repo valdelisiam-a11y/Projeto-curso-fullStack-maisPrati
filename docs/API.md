@@ -435,3 +435,179 @@ A documentação dos endpoints da API é mantida manualmente neste arquivo e dev
 O projeto ainda não utiliza Swagger/OpenAPI para geração automática da documentação.
 
 As informações sensíveis de acesso ao banco de dados não são armazenadas diretamente na documentação ou no código versionado. A senha do banco é fornecida por meio da variável de ambiente `DB_PASSWORD`.
+
+## 13. Etapas
+
+Um trabalho pode ser dividido em etapas. Cada etapa pertence a um único trabalho, pode ter um usuário responsável (da mesma empresa do trabalho), possui percentual de conclusão (0 a 100), ordem dentro do trabalho e status, com histórico de alterações.
+
+**Autenticação:** todos os endpoints exigem token JWT.
+
+### 13.1 Resumo dos endpoints
+
+| Método | Endpoint                        | Operação                      |
+| ------ | ------------------------------- | ----------------------------- |
+| POST   | `/trabalhos/{trabalhoId}/etapas`| Cadastrar etapa               |
+| GET    | `/trabalhos/{trabalhoId}/etapas`| Listar etapas (ordenadas)     |
+| GET    | `/etapas/{id}`                  | Buscar etapa por ID           |
+| PUT    | `/etapas/{id}`                  | Atualizar título e descrição  |
+| PATCH  | `/etapas/{id}/status`           | Alterar status                |
+| PATCH  | `/etapas/{id}/percentual`       | Atualizar percentual          |
+| PATCH  | `/etapas/{id}/ordem`            | Alterar ordem                 |
+| PATCH  | `/etapas/{id}/responsavel`      | Definir ou remover responsável|
+| GET    | `/etapas/{id}/historico`        | Consultar histórico de status |
+| DELETE | `/etapas/{id}`                  | Excluir etapa                 |
+
+### 13.2 Cadastrar etapa
+
+### POST `/trabalhos/{trabalhoId}/etapas`
+
+```json
+{
+  "titulo": "Revisão jurídica",
+  "descricao": "Revisar o contrato",
+  "ordem": 1,
+  "responsavelId": 2
+}
+```
+
+Somente `titulo` é obrigatório (máximo de 200 caracteres). Se `ordem` não for informada, a etapa vai para o final; se for informada, as demais são reposicionadas. A etapa nasce com status `PENDENTE` e percentual `0`.
+
+**Resposta:** `HTTP 201 Created`
+
+```json
+{
+  "id": 1,
+  "titulo": "Revisão jurídica",
+  "descricao": "Revisar o contrato",
+  "status": "PENDENTE",
+  "percentualConclusao": 0,
+  "ordem": 1,
+  "dataCriacao": "2026-10-21T16:00:00",
+  "dataAtualizacao": "2026-10-21T16:00:00",
+  "trabalhoId": 1,
+  "responsavelId": 2
+}
+```
+
+### 13.3 Listar etapas de um trabalho
+
+### GET `/trabalhos/{trabalhoId}/etapas`
+
+Retorna as etapas do trabalho ordenadas pelo campo `ordem`. **Resposta:** `HTTP 200 OK`.
+
+### 13.4 Buscar etapa por ID
+
+### GET `/etapas/{id}`
+
+**Resposta:** `HTTP 200 OK`.
+
+### 13.5 Atualizar etapa
+
+### PUT `/etapas/{id}`
+
+```json
+{
+  "titulo": "Revisão jurídica - ajustada",
+  "descricao": "Nova descrição"
+}
+```
+
+Altera apenas título (obrigatório) e descrição. Status, percentual, ordem e responsável têm endpoints próprios. **Resposta:** `HTTP 200 OK`.
+
+### 13.6 Alterar status
+
+### PATCH `/etapas/{id}/status`
+
+```json
+{
+  "status": "EM_ANDAMENTO",
+  "usuarioId": 1
+}
+```
+
+Status disponíveis: `PENDENTE`, `EM_ANDAMENTO`, `CONCLUIDO`, `CANCELADO` (os mesmos do trabalho). O `usuarioId` deve pertencer à empresa do trabalho e é registrado no histórico.
+
+Regras:
+
+* ao marcar como `CONCLUIDO`, o percentual passa para 100;
+* informar o status que a etapa já possui retorna `409 Conflict`.
+
+### 13.7 Atualizar percentual
+
+### PATCH `/etapas/{id}/percentual`
+
+```json
+{
+  "percentualConclusao": 60,
+  "usuarioId": 1
+}
+```
+
+O percentual deve estar entre 0 e 100.
+
+Regras:
+
+* ao chegar em 100, a etapa passa para `CONCLUIDO`;
+* se a etapa estava `CONCLUIDO` e o percentual diminui, ela volta para `EM_ANDAMENTO`;
+* o histórico só é registrado quando o percentual altera o status.
+
+### 13.8 Alterar ordem
+
+### PATCH `/etapas/{id}/ordem`
+
+```json
+{
+  "ordem": 2
+}
+```
+
+A etapa é movida para a posição informada e as demais descem ou sobem uma posição (comportamento de lista), mantendo a sequência 1, 2, 3... sem repetições. Se a ordem for maior que o total de etapas, a etapa vai para o final. Ao excluir uma etapa, a sequência é renumerada.
+
+### 13.9 Definir ou remover responsável
+
+### PATCH `/etapas/{id}/responsavel`
+
+```json
+{
+  "responsavelId": 2
+}
+```
+
+Enviar `"responsavelId": null` remove o responsável. O usuário deve pertencer à mesma empresa do trabalho; caso contrário, retorna `409 Conflict`.
+
+### 13.10 Histórico de status
+
+### GET `/etapas/{id}/historico`
+
+Retorna as alterações de status da etapa, da mais recente para a mais antiga.
+
+```json
+[
+  {
+    "id": 2,
+    "statusAnterior": "EM_ANDAMENTO",
+    "statusNovo": "CONCLUIDO",
+    "dataAlteracao": "2026-10-21T16:30:00",
+    "usuarioId": 1,
+    "usuarioNome": "Maria Silva"
+  }
+]
+```
+
+### 13.11 Excluir etapa
+
+### DELETE `/etapas/{id}`
+
+**Resposta:** `HTTP 204 No Content`. O histórico da etapa é excluído junto e as etapas restantes são renumeradas.
+
+Ao excluir um trabalho, suas etapas e os históricos delas também são excluídos (`ON DELETE CASCADE` no banco).
+
+### 13.12 Erros
+
+Os erros seguem o formato `timestamp`, `status`, `erro`, `mensagem`.
+
+| Status | Quando                                                                                  |
+| ------ | --------------------------------------------------------------------------------------- |
+| 400    | Dados inválidos (título vazio, percentual fora de 0 a 100, ordem menor que 1, status inexistente, campo obrigatório ausente) |
+| 404    | Trabalho, etapa ou usuário não encontrado                                               |
+| 409    | Usuário de empresa diferente da empresa do trabalho; status igual ao atual              |
