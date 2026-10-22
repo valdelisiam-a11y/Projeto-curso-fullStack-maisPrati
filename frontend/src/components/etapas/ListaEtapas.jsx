@@ -9,6 +9,7 @@ export default function ListaEtapas({
   return (
     <div className="etapas-secao">
       <h3 className="secao-titulo">Etapas</h3>
+
       <p className="secao-subtitulo">
         Toque em uma etapa para ver os detalhes.
       </p>
@@ -31,7 +32,9 @@ export default function ListaEtapas({
               type="button"
               role="tab"
               aria-selected={isSelecionada}
-              className={`etapa-card-item ${isSelecionada ? "selecionada" : ""}`}
+              className={`etapa-card-item ${
+                isSelecionada ? "selecionada" : ""
+              }`}
               onClick={() => onSelecionarEtapa(etapa.id)}
             >
               <div className="etapa-card-top">
@@ -54,13 +57,19 @@ export default function ListaEtapas({
                     {etapa.id}
                   </span>
                 )}
-                <span className="etapa-card-titulo">{etapa.titulo}</span>
+
+                <span className="etapa-card-conteudo">
+                  <span className="etapa-card-titulo">{etapa.titulo}</span>
+
+                  <span
+                    className={`etapa-card-substatus ${etapa.status
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                  >
+                    {etapa.status}
+                  </span>
+                </span>
               </div>
-              <span
-                className={`etapa-card-substatus ${etapa.status.toLowerCase().replace(/\s+/g, "-")}`}
-              >
-                {etapa.status}
-              </span>
             </button>
           );
         })}
