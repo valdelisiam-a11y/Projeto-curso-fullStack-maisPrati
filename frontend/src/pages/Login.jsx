@@ -1,7 +1,7 @@
 
 import './Login.css';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 import { fazerLogin } from '../services/authService';
 
@@ -12,6 +12,8 @@ function Login() {
 
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const mensagemSucesso = location.state?.mensagem || '';
 
 
     
@@ -87,6 +89,12 @@ const handleSubmit = async (e) => {
                 </div>
                 
                 <div className="login-error-container">
+                    {mensagemSucesso && (
+                        <p className="login-success" role="status">
+                            {mensagemSucesso}
+                        </p>
+                    )}
+
                     {erro && (
                         <p className="login-error" role="alert">
                             {erro}

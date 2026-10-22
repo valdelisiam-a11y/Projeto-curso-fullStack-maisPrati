@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import './Inicio.css';
 import ilustracaoOrganizacao from '../assets/ilustracao-organizacao-Inicial.png';
+import { useAuth } from '../contexts/useAuth.js';
 
 const trabalhosRecentes = [
   {
@@ -43,11 +44,12 @@ const trabalhosRecentes = [
 ];
 
 function Inicio() {
+  const { usuario } = useAuth();
   return (
     <main className="inicio">
       <header className="inicio__boas-vindas">
         <div className="inicio__apresentacao">
-          <h1>Olá, Maria!</h1>
+          <h1>Olá, {usuario?.nome || 'usuário'}!</h1>
           <p>O que você precisa organizar hoje?</p>
 
           <Link to="/trabalhos/novo" className="inicio__novo">

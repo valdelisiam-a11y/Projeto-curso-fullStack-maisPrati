@@ -1,6 +1,8 @@
+
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './cadastro.css';
-import { Link } from "react-router-dom";
+import { fazerCadastro } from '../services/authService';
 
 export default function Cadastro() {
   const [formData, setFormData] = useState({
@@ -10,24 +12,68 @@ export default function Cadastro() {
     confirmarSenha: ''
   });
 
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
+
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (erro) setErro('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErro('');
     if (formData.senha !== formData.confirmarSenha) {
-      alert('As senhas não coincidem!');
+      setErro('As senhas não coincidem.');
       return;
     }
-    
+
+    setCarregando(true);
+
+    try {
+      const resposta = await fazerCadastro(
+        formData.nome.trim(),
+        formData.email.trim(),
+        formData.senha
+      );
+
+      if (!resposta.ok) {
+        if (resposta.status === 409) {
+          throw new Error('Este e-mail já está cadastrado.');
+        }
+
+        const mensagem = await resposta.text();
+
+        throw new Error(
+          mensagem || 'Não foi possível realizar o cadastro.'
+        );
+      }
+
+      navigate('/login', {
+        state: { mensagem: 'Cadastro realizado com sucesso. Faça login.' }
+      });
+    } catch (error) {
+      console.error('Erro ao realizar cadastro:', error);
+
+      if (error instanceof TypeError) {
+        setErro('Não foi possível conectar ao servidor. Tente novamente.');
+      } else {
+        setErro(error.message || 'Ocorreu um erro inesperado.');
+      }
+    } finally {
+      setCarregando(false);
+    }
   };
 
   return (
     <div className="register-container">
       <div className="register-card">
-        
+
         <div className="logo-container">
           <div className="logo-icon">
             <svg
@@ -50,10 +96,8 @@ export default function Cadastro() {
           <span className="logo-text">DocFlow</span>
         </div>
 
-        
         <h1 className="title">Comece a organizar seus trabalhos.</h1>
 
-        
         <form onSubmit={handleSubmit} className="register-form">
           <div className="form-group">
             <label htmlFor="nome">Nome</label>
@@ -105,8 +149,17 @@ export default function Cadastro() {
             />
           </div>
 
-         
-          <button type="submit" className="submit-button">
+          {erro && (
+            <p className="cadastro-erro" role="alert">
+              {erro}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="submit-button"
+            disabled={carregando}
+          >
             <svg
               width="18"
               height="18"
@@ -122,11 +175,10 @@ export default function Cadastro() {
               <line x1="20" y1="8" x2="20" y2="14" />
               <line x1="23" y1="11" x2="17" y2="11" />
             </svg>
-            Criar minha conta
+            {carregando ? 'Criando conta...' : 'Criar minha conta'}
           </button>
         </form>
 
-        
         <div className="footer-text">
           Já tem conta? <Link to="/login">Entrar</Link>
         </div>
