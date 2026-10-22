@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FolderKanban,
   Search,
@@ -8,7 +9,6 @@ import {
   Clock3,
   Plus,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import "./MeusTrabalhos.css";
 
 export default function MeusTrabalhos() {
@@ -16,7 +16,7 @@ export default function MeusTrabalhos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroAtivo, setFiltroAtivo] = useState("Todos");
 
-  // Dados mockados exatos conforme as imagens de referência do Lovable
+  // Dados mockados
   const [trabalhos] = useState([
     {
       id: 1,
@@ -56,30 +56,39 @@ export default function MeusTrabalhos() {
     },
   ]);
 
-  // Filtros combinados por termo de pesquisa e pílula selecionada
+  // Filtra os trabalhos pelo nome e pela situação selecionada
   const trabalhosFiltrados = trabalhos.filter((trabalho) => {
     const matchNome = trabalho.nome
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
 
     if (filtroAtivo === "Todos") return matchNome;
-    if (filtroAtivo === "Em andamento")
+
+    if (filtroAtivo === "Em andamento") {
       return matchNome && trabalho.situacao === "Em andamento";
-    if (filtroAtivo === "Precisam de atenção")
+    }
+
+    if (filtroAtivo === "Precisam de atenção") {
       return matchNome && trabalho.situacao === "Precisa de atenção";
-    if (filtroAtivo === "Atrasados")
+    }
+
+    if (filtroAtivo === "Atrasados") {
       return matchNome && trabalho.situacao === "Atrasado";
-    if (filtroAtivo === "Concluídos")
+    }
+
+    if (filtroAtivo === "Concluídos") {
       return matchNome && trabalho.situacao === "Concluído";
+    }
 
     return matchNome;
   });
 
-  // Função atualizada para navegar até a tela de detalhes passando o ID do trabalho
+  // Abre a página de detalhes do trabalho
   const handleVerTrabalho = (id) => {
     navigate(`/trabalhos/${id}`);
   };
 
+  // Define o estilo e o ícone conforme a situação
   const getBadgeStatus = (situacao) => {
     switch (situacao) {
       case "Concluído":
@@ -87,16 +96,19 @@ export default function MeusTrabalhos() {
           className: "status-badge status-concluido",
           icon: <CheckCircle2 className="status-icon" />,
         };
+
       case "Precisa de atenção":
         return {
           className: "status-badge status-atencao",
           icon: <AlertCircle className="status-icon" />,
         };
+
       case "Atrasado":
         return {
           className: "status-badge status-atrasado",
           icon: <AlertCircle className="status-icon" />,
         };
+
       default:
         return {
           className: "status-badge status-andamento",
@@ -107,21 +119,26 @@ export default function MeusTrabalhos() {
 
   return (
     <div className="trabalhos-container">
-      {/* Cabeçalho Principal */}
+      {/* Cabeçalho principal */}
       <div className="trabalhos-header-flex">
         <div className="trabalhos-main-header">
           <h1>Meus trabalhos</h1>
           <p>Acompanhe tudo o que você está organizando.</p>
         </div>
-        <button className="btn-novo-trabalho" onClick={() => navigate("/novo")}>
+
+        <button
+          className="btn-novo-trabalho"
+          onClick={() => navigate("/trabalhos/novo")}
+        >
           <Plus className="w-4 h-4" />
           <span>Novo trabalho</span>
         </button>
       </div>
 
-      {/* Pesquisa e Filtros */}
+      {/* Pesquisa e filtros */}
       <div className="search-filter-card">
         <label className="search-label">O que você está procurando?</label>
+
         <div className="search-input-wrapper">
           <Search className="search-icon" />
           <input
@@ -132,7 +149,7 @@ export default function MeusTrabalhos() {
           />
         </div>
 
-        {/* Pílulas de Filtro */}
+        {/* Pílulas de filtro */}
         <div className="filter-pills">
           {[
             "Todos",
@@ -143,7 +160,9 @@ export default function MeusTrabalhos() {
           ].map((filtro) => (
             <button
               key={filtro}
-              className={`filter-pill ${filtroAtivo === filtro ? "active" : ""}`}
+              className={`filter-pill ${
+                filtroAtivo === filtro ? "active" : ""
+              }`}
               onClick={() => setFiltroAtivo(filtro)}
             >
               {filtro}
@@ -152,7 +171,7 @@ export default function MeusTrabalhos() {
         </div>
       </div>
 
-      {/* Lista de Cards ou Estado Vazio */}
+      {/* Lista de cards ou estado vazio */}
       {trabalhosFiltrados.length === 0 ? (
         <div className="empty-state">
           <FolderKanban className="empty-icon" />
@@ -169,6 +188,7 @@ export default function MeusTrabalhos() {
               <div key={trabalho.id} className="trabalho-card">
                 <div className="trabalho-card-header">
                   <h3 className="trabalho-nome">{trabalho.nome}</h3>
+
                   <span className={badge.className}>
                     {badge.icon}
                     <span>{trabalho.situacao}</span>
@@ -183,14 +203,17 @@ export default function MeusTrabalhos() {
                   </span>
                 </div>
 
-                {/* Barra de Progresso */}
+                {/* Barra de progresso */}
                 <div className="progress-container">
                   <div className="progress-bar-bg">
                     <div
-                      className={`progress-bar-fill ${isConcluido ? "fill-concluido" : ""}`}
+                      className={`progress-bar-fill ${
+                        isConcluido ? "fill-concluido" : ""
+                      }`}
                       style={{ width: `${trabalho.progresso}%` }}
-                    ></div>
+                    />
                   </div>
+
                   <span className="progress-text">
                     {trabalho.progresso}% concluído
                   </span>
@@ -200,6 +223,7 @@ export default function MeusTrabalhos() {
                   <span className="atualizado-texto">
                     Atualizado em {trabalho.atualizadoEm}
                   </span>
+
                   <button
                     className="btn-ver-trabalho"
                     onClick={() => handleVerTrabalho(trabalho.id)}

@@ -1,0 +1,857 @@
+/* ==========================================================================
+   1. ESTRUTURA PRINCIPAL
+   ========================================================================== */
+
+.detalhes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  color: var(--foreground);
+  background: var(--background);
+  box-sizing: border-box;
+}
+
+.btn-voltar {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.5rem;
+
+  padding: 0;
+  border: 0;
+  background: transparent;
+
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.btn-voltar:hover {
+  color: var(--foreground);
+}
+
+.btn-voltar:focus-visible,
+.etapa-card-item:focus-visible,
+.btn-doc-acao:focus-visible,
+.btn-adicionar-doc:focus-visible,
+.btn-salvar-obs:focus-visible,
+.btn-marcar-concluida:focus-visible,
+.btn-editar-etapa:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   2. CARDS PRINCIPAIS
+   ========================================================================== */
+
+.trabalho-topo-card,
+.detalhe-etapa-card,
+.historico-card {
+  width: 100%;
+  padding: 1.5rem;
+
+  color: var(--foreground);
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   3. CABEÇALHO DO TRABALHO
+   ========================================================================== */
+
+.topo-header-flex {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  margin-bottom: 1.25rem;
+}
+
+.topo-header-flex h2 {
+  margin: 0 0 0.25rem;
+
+  color: var(--foreground);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+
+  overflow-wrap: anywhere;
+}
+
+.topo-header-flex p {
+  margin: 0;
+
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+.prazo-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  color: var(--muted-foreground);
+  font-size: 0.825rem;
+}
+
+/* ==========================================================================
+   4. STATUS E BADGES
+   ========================================================================== */
+
+.badge-status-geral,
+.badge-andamento {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+
+  font-size: 0.775rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.badge-andamento {
+  color: var(--info);
+  background: var(--info-soft);
+}
+
+.badge-atencao {
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.badge-atrasado {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.badge-concluido {
+  color: #059669;
+  background: #d1fae5;
+}
+
+/* ==========================================================================
+   5. PROGRESSO DO TRABALHO
+   Percentual abaixo da barra, como na referência do Lovable.
+   ========================================================================== */
+
+.progresso-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.barra-progresso-fundo {
+  width: 100%;
+  max-width: 450px;
+  height: 8px;
+
+  background: var(--secondary);
+  border-radius: 9999px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.barra-progresso-preenchimento {
+  width: 0;
+  height: 100%;
+
+  background: linear-gradient(90deg, var(--primary), #e65bb8);
+  border-radius: inherit;
+
+  transition: width 0.3s ease;
+}
+
+.progresso-porcentagem {
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   6. SEÇÃO DE ETAPAS
+   ========================================================================== */
+
+.etapas-secao {
+  width: 100%;
+  padding: 0;
+
+  color: var(--foreground);
+  background: transparent;
+  border: 0;
+  box-sizing: border-box;
+}
+
+.secao-titulo {
+  margin: 0 0 0.2rem;
+
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.secao-subtitulo {
+  margin: 0 0 1.25rem;
+
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* Lista horizontal com rolagem */
+
+.etapas-horizontal-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+
+  width: 100%;
+  padding: 0.15rem 0.15rem 0.65rem;
+
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+.etapas-horizontal-grid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.etapas-horizontal-grid::-webkit-scrollbar-track {
+  background: var(--muted);
+  border-radius: 9999px;
+}
+
+.etapas-horizontal-grid::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+.etapas-horizontal-grid {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--muted);
+}
+
+/* ==========================================================================
+   7. CARDS INDIVIDUAIS DAS ETAPAS
+   ========================================================================== */
+
+.etapa-card-item {
+  display: flex;
+  flex: 0 0 208px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0.3rem;
+
+  min-width: 208px;
+  min-height: 92px;
+  padding: 1rem;
+
+  color: var(--foreground);
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.etapa-card-item:hover {
+  border-color: var(--primary);
+}
+
+.etapa-card-item.selecionada {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+/* Ícone ou número ao lado do título */
+
+.etapa-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+
+  width: 100%;
+  text-align: left;
+}
+
+.etapa-card-titulo {
+  display: block;
+  flex: 1;
+  min-width: 0;
+
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.35;
+
+  overflow-wrap: anywhere;
+}
+
+/* Status abaixo do título, alinhado com o texto */
+
+.etapa-card-substatus {
+  display: block;
+  align-self: flex-start;
+  margin-left: calc(24px + 0.65rem);
+
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left;
+}
+
+/* ==========================================================================
+   8. ÍCONES DE STATUS DAS ETAPAS
+   ========================================================================== */
+
+.icone-etapa-status {
+  display: inline-flex;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.icone-etapa-status.concluido {
+  color: #fff;
+  background: #059f65;
+}
+
+.icone-etapa-status.andamento {
+  color: var(--primary-foreground);
+  background: var(--info);
+}
+
+.icone-etapa-status.inativo,
+.icone-etapa-status.não-iniciado {
+  color: var(--muted-foreground);
+  background: var(--muted);
+}
+
+.icone-etapa-status.atencao {
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.icone-etapa-status.atrasado {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+/* Cores do texto do status */
+
+.etapa-card-substatus.concluído {
+  color: #059669;
+}
+
+.etapa-card-substatus.em-andamento {
+  color: var(--info);
+}
+
+.etapa-card-substatus.não-iniciado {
+  color: var(--muted-foreground);
+}
+
+.etapa-card-substatus.precisa-de-atenção {
+  color: #d97706;
+}
+
+.etapa-card-substatus.atrasado {
+  color: #dc2626;
+}
+
+/* ==========================================================================
+   9. CABEÇALHO DO PAINEL DE DETALHES
+   ========================================================================== */
+
+.etapa-detalhe-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.etapa-detalhe-header h3 {
+  margin: 0 0 0.25rem;
+
+  color: var(--foreground);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+}
+
+.etapa-detalhe-header p {
+  margin: 0;
+
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   10. DOCUMENTOS E OBSERVAÇÕES
+   ========================================================================== */
+
+.bloco-secao {
+  margin-bottom: 1.5rem;
+}
+
+.bloco-secao h4 {
+  margin: 0 0 0.75rem;
+
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.documento-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 1rem;
+
+  color: var(--foreground);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.doc-info-nome {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.doc-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-doc-acao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+
+  padding: 0.35rem 0.5rem;
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+
+  font: inherit;
+  font-size: 0.775rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.btn-doc-acao:hover {
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-color: var(--border);
+}
+
+.btn-adicionar-doc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  padding: 0.65rem 1rem;
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  border: 1px solid transparent;
+  border-radius: 10px;
+
+  font: inherit;
+  font-size: 0.825rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.btn-adicionar-doc:hover {
+  background: var(--primary-soft);
+  border-color: var(--border);
+}
+
+.textarea-observacao {
+  display: block;
+  width: 100%;
+  min-height: 96px;
+  margin-bottom: 0.625rem;
+  padding: 0.75rem;
+
+  color: var(--foreground);
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
+
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.textarea-observacao:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.btn-salvar-obs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  padding: 0.5rem 1rem;
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  transition: background-color 0.2s ease;
+}
+
+.btn-salvar-obs:hover {
+  background: var(--primary-soft);
+}
+
+/* ==========================================================================
+   11. AÇÕES DO PAINEL
+   ========================================================================== */
+
+.acoes-etapa-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.btn-marcar-concluida,
+.btn-editar-etapa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    filter 0.2s ease;
+}
+
+.btn-marcar-concluida {
+  flex: 1;
+  min-width: 160px;
+
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border: 1px solid transparent;
+  font-weight: 600;
+}
+
+.btn-marcar-concluida:hover {
+  filter: brightness(0.95);
+}
+
+.btn-editar-etapa {
+  flex: 1;
+  min-width: 140px;
+
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.btn-editar-etapa:hover {
+  background: var(--secondary);
+}
+
+/* ==========================================================================
+   12. HISTÓRICO / LINHA DO TEMPO
+   ========================================================================== */
+
+.historico-card h3 {
+  margin: 0 0 1.25rem;
+
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.timeline-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.timeline-item {
+  position: relative;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+
+.timeline-ponto {
+  flex: 0 0 10px;
+
+  width: 10px;
+  height: 10px;
+  margin-top: 0.35rem;
+
+  border-radius: 50%;
+}
+
+.timeline-ponto.sucesso {
+  background: #10b981;
+}
+
+.timeline-ponto.info {
+  background: var(--info);
+}
+
+.timeline-ponto.atencao {
+  background: #d97706;
+}
+
+.timeline-ponto.atraso,
+.timeline-ponto.atrasado {
+  background: #dc2626;
+}
+
+.timeline-conteudo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.timeline-texto {
+  margin: 0 0 0.15rem;
+
+  color: var(--foreground);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.timeline-data {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   13. ESTADO VAZIO / TRABALHO NÃO ENCONTRADO
+   ========================================================================== */
+
+.trabalho-nao-encontrado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+
+  padding: 2rem;
+  color: var(--foreground);
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.trabalho-nao-encontrado h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.trabalho-nao-encontrado p {
+  margin: 0;
+  color: var(--muted-foreground);
+}
+
+/* ==========================================================================
+   14. RESPONSIVIDADE
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .detalhes-container {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .trabalho-topo-card,
+  .detalhe-etapa-card,
+  .historico-card {
+    padding: 1.25rem 1rem;
+  }
+
+  .topo-header-flex,
+  .etapa-detalhe-header {
+    align-items: flex-start;
+  }
+
+  .documento-item {
+    align-items: flex-start;
+  }
+
+  .doc-acoes {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .barra-progresso-fundo {
+    max-width: 100%;
+  }
+
+  .etapa-card-item {
+    flex-basis: 208px;
+  }
+}
+
+@media (max-width: 480px) {
+  .detalhes-container {
+    gap: 1rem;
+    padding: 1rem 0.75rem 2.5rem;
+  }
+
+  .topo-header-flex h2 {
+    font-size: 1.2rem;
+  }
+
+  .etapa-card-item {
+    flex-basis: 190px;
+    min-width: 190px;
+  }
+
+  .acoes-etapa-footer {
+    flex-direction: column;
+  }
+
+  .btn-marcar-concluida,
+  .btn-editar-etapa {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .trabalho-nao-encontrado {
+    padding: 1.25rem 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-voltar,
+  .etapa-card-item,
+  .barra-progresso-preenchimento,
+  .btn-doc-acao,
+  .btn-adicionar-doc,
+  .textarea-observacao,
+  .btn-salvar-obs,
+  .btn-marcar-concluida,
+  .btn-editar-etapa {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
