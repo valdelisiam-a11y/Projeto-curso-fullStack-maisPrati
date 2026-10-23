@@ -377,6 +377,43 @@
   background: var(--primary-soft);
 }
 
+
+/* Identificador do contexto pessoal ou empresarial */
+.inicio__contexto-label {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background-color: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Título de boas-vindas */
+.inicio__apresentacao h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Mensagem abaixo do título */
+.inicio__apresentacao > p {
+  margin-top: 8px;
+  color: var(--muted-foreground);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Botão Novo trabalho */
+.inicio__apresentacao .inicio__novo {
+  margin-top: 20px;
+}
+
+
 /* Ajustes para telas médias */
 @media (min-width: 640px) {
   .inicio {

@@ -12,6 +12,8 @@ import {
 import './Inicio.css';
 import ilustracaoOrganizacao from '../assets/ilustracao-organizacao-Inicial.png';
 import { useAuth } from '../contexts/useAuth.js';
+import { useContextoTrabalho } from '../contexts/ContextoTrabalho';
+
 
 const trabalhosRecentes = [
   {
@@ -22,6 +24,8 @@ const trabalhosRecentes = [
     etapaAtual: 'Enviar proposta',
     progresso: 40,
     atualizadoEm: '17/08/2026',
+    contexto: 'empresa',
+    empresaId: 1,
   },
   {
     id: 't2',
@@ -31,6 +35,8 @@ const trabalhosRecentes = [
     etapaAtual: 'Aprovação',
     progresso: 40,
     atualizadoEm: '16/08/2026',
+    contexto: 'empresa',
+    empresaId: 1,
   },
   {
     id: 't3',
@@ -40,17 +46,75 @@ const trabalhosRecentes = [
     etapaAtual: 'Executar serviço',
     progresso: 50,
     atualizadoEm: '13/08/2026',
+    contexto: 'empresa',
+    empresaId: 2,
+  },
+  {
+    id: 't4',
+    nome: 'Pagamento de contas do mês',
+    descricao: 'Boletos de água, luz e internet de agosto.',
+    status: 'Concluído',
+    etapaAtual: 'Todas as etapas concluídas',
+    progresso: 100,
+    atualizadoEm: '10/08/2026',
+    contexto: 'pessoal',
+    empresaId: null,
   },
 ];
 
+
+
 function Inicio() {
   const { usuario } = useAuth();
+  const { contexto, empresaSelecionada } = useContextoTrabalho();
+
+  const trabalhosDoContexto = trabalhosRecentes.filter((trabalho) => {
+        if (trabalho.contexto !== contexto) {
+          return false;
+        }
+
+        if (contexto === 'empresa') {
+          return trabalho.empresaId === empresaSelecionada?.id;
+        }
+
+        return true;
+      });
+
+      const totalEmAndamento = trabalhosDoContexto.filter(
+        (trabalho) => trabalho.status === 'Em andamento'
+      ).length;
+
+      const totalAtencao = trabalhosDoContexto.filter(
+        (trabalho) =>
+          trabalho.status === 'Precisa de atenção' ||
+          trabalho.status === 'Atrasado'
+      ).length;
+
+      const totalConcluidos = trabalhosDoContexto.filter(
+        (trabalho) => trabalho.status === 'Concluído'
+      ).length;
+
   return (
     <main className="inicio">
       <header className="inicio__boas-vindas">
         <div className="inicio__apresentacao">
+          {contexto === 'pessoal' ? (
+            <span className="inicio__contexto-label">
+              Seus trabalhos pessoais
+            </span>
+          ) : (
+            <span className="inicio__contexto-label">
+              Empresa: {empresaSelecionada?.nome ?? 'Sua empresa'}
+            </span>
+          )}
+
           <h1>Olá, {usuario?.nome || 'usuário'}!</h1>
-          <p>O que você precisa organizar hoje?</p>
+
+          <p>
+            {contexto === 'pessoal'
+              ? 'O que você precisa organizar hoje?'
+              : 'Veja como andam os trabalhos da empresa.'}
+          </p>
 
           <Link to="/trabalhos/novo" className="inicio__novo">
             <Plus size={18} />
@@ -74,7 +138,7 @@ function Inicio() {
             <span className="indicador__icone">
               <CirclePlay size={20} />
             </span>
-            <strong>1</strong>
+            <strong>{totalEmAndamento}</strong>
             <span>Em andamento</span>
           </article>
 
@@ -82,7 +146,7 @@ function Inicio() {
             <span className="indicador__icone">
              <TriangleAlert size={20} />
             </span>
-            <strong>2</strong>
+            <strong>{totalAtencao}</strong>
             <span>Precisam de atenção</span>
           </article>
 
@@ -90,7 +154,7 @@ function Inicio() {
             <span className="indicador__icone">
               <CircleCheck size={20} />
             </span>
-            <strong>1</strong>
+            <strong>{totalConcluidos}</strong>
             <span>Concluídos</span>
           </article>
         </div>
@@ -109,7 +173,7 @@ function Inicio() {
         </div>
 
         <div className="trabalhos-lista">
-          {trabalhosRecentes.map((trabalho) => {
+          {trabalhosDoContexto.map((trabalho) => {  
             const statusConfig = {
               'Em andamento': {
                 classe: 'andamento',
@@ -123,10 +187,39 @@ function Inicio() {
                 classe: 'atrasado',
                 Icone: TriangleAlert,
               },
+              'Concluído': {
+                classe: 'concluido',
+                Icone: CircleCheck,
+              },
             };
 
             const status = statusConfig[trabalho.status];
             const IconeStatus = status.Icone;
+            const trabalhosDoContexto = trabalhosRecentes.filter((trabalho) => {
+              if (trabalho.contexto !== contexto) {
+                return false;
+              }
+
+              if (contexto === 'empresa') {
+                return trabalho.empresaId === empresaSelecionada?.id;
+              }
+
+              return true;
+            });
+
+            const totalEmAndamento = trabalhosDoContexto.filter(
+              (trabalho) => trabalho.status === 'Em andamento'
+            ).length;
+
+            const totalAtencao = trabalhosDoContexto.filter(
+              (trabalho) =>
+                trabalho.status === 'Precisa de atenção' ||
+                trabalho.status === 'Atrasado'
+            ).length;
+
+            const totalConcluidos = trabalhosDoContexto.filter(
+              (trabalho) => trabalho.status === 'Concluído'
+            ).length;
 
             return (
               <article className="trabalho-card" key={trabalho.id}>

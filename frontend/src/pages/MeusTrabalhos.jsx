@@ -10,16 +10,19 @@ import {
   Plus,
 } from "lucide-react";
 import "./MeusTrabalhos.css";
+import { useContextoTrabalho } from "../contexts/ContextoTrabalho";
 
 export default function MeusTrabalhos() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroAtivo, setFiltroAtivo] = useState("Todos");
+  const { contexto, empresaSelecionada } = useContextoTrabalho();
 
   // Dados mockados
   const [trabalhos] = useState([
-    {
+   {
       id: 1,
+      contexto: "empresa",
       nome: "Cadastro de novo cliente",
       descricao: "Documentação e contrato do cliente Marina Souza.",
       situacao: "Em andamento",
@@ -29,6 +32,7 @@ export default function MeusTrabalhos() {
     },
     {
       id: 2,
+      contexto: "empresa",
       nome: "Compra de materiais",
       descricao: "Cimento, areia e ferragem para a obra da Rua das Acácias.",
       situacao: "Precisa de atenção",
@@ -38,6 +42,7 @@ export default function MeusTrabalhos() {
     },
     {
       id: 3,
+      contexto: "empresa",
       nome: "Prestação de serviço — Manutenção elétrica",
       descricao: "Visita técnica e reparo no comércio do Sr. Antônio.",
       situacao: "Atrasado",
@@ -47,6 +52,7 @@ export default function MeusTrabalhos() {
     },
     {
       id: 4,
+      contexto: "pessoal",
       nome: "Pagamento de contas do mês",
       descricao: "Boletos de água, luz e internet de agosto.",
       situacao: "Concluído",
@@ -57,32 +63,35 @@ export default function MeusTrabalhos() {
   ]);
 
   // Filtra os trabalhos pelo nome e pela situação selecionada
-  const trabalhosFiltrados = trabalhos.filter((trabalho) => {
-    const matchNome = trabalho.nome
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+ const trabalhosFiltrados = trabalhos.filter((trabalho) => {
+  const pertenceAoContexto = trabalho.contexto === contexto;
 
-    if (filtroAtivo === "Todos") return matchNome;
+  const matchNome = trabalho.nome
+    .toLowerCase()
+    .includes(searchTerm.toLowerCase());
 
-    if (filtroAtivo === "Em andamento") {
-      return matchNome && trabalho.situacao === "Em andamento";
-    }
+  if (!pertenceAoContexto) return false;
 
-    if (filtroAtivo === "Precisam de atenção") {
-      return matchNome && trabalho.situacao === "Precisa de atenção";
-    }
+  if (filtroAtivo === "Todos") return matchNome;
 
-    if (filtroAtivo === "Atrasados") {
-      return matchNome && trabalho.situacao === "Atrasado";
-    }
+  if (filtroAtivo === "Em andamento") {
+    return matchNome && trabalho.situacao === "Em andamento";
+  }
 
-    if (filtroAtivo === "Concluídos") {
-      return matchNome && trabalho.situacao === "Concluído";
-    }
+  if (filtroAtivo === "Precisam de atenção") {
+    return matchNome && trabalho.situacao === "Precisa de atenção";
+  }
 
-    return matchNome;
-  });
+  if (filtroAtivo === "Atrasados") {
+    return matchNome && trabalho.situacao === "Atrasado";
+  }
 
+  if (filtroAtivo === "Concluídos") {
+    return matchNome && trabalho.situacao === "Concluído";
+  }
+
+  return matchNome;
+});
   // Abre a página de detalhes do trabalho
   const handleVerTrabalho = (id) => {
     navigate(`/trabalhos/${id}`);
@@ -123,7 +132,11 @@ export default function MeusTrabalhos() {
       <div className="trabalhos-header-flex">
         <div className="trabalhos-main-header">
           <h1>Meus trabalhos</h1>
-          <p>Acompanhe tudo o que você está organizando.</p>
+          <p>
+            {contexto === "pessoal"
+              ? "Seus trabalhos pessoais — só você vê."
+              : `Trabalhos da empresa ${empresaSelecionada?.nome ?? ""}.`}
+          </p>
         </div>
 
         <button

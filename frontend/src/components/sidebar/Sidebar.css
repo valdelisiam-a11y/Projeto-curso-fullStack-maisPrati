@@ -41,6 +41,53 @@
   color: var(--primary);
 }
 
+
+/* Seletor de contexto: Pessoal / Empresa */
+.sidebar__contexto {
+  display: flex;
+  gap: 4px;
+  margin: -16px 12px 24px;
+  padding: 4px;
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius);
+  background: var(--muted);
+}
+
+.sidebar__contexto button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar__contexto button:hover {
+  color: var(--foreground);
+}
+
+.sidebar__contexto button.ativo {
+  background: var(--sidebar);
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+}
+
+.sidebar__contexto button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
 .sidebar__nav ul {
   list-style: none;
   padding: 0;
@@ -140,6 +187,103 @@
   display: none;
 }
 
+.sidebar__empresa {
+  position: relative;
+  margin: -12px 12px 24px;
+}
+
+.sidebar__empresa-seletor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow:
+    0 2px 5px rgb(0 0 0 / 10%),
+    0 1px 2px rgb(0 0 0 / 6%);
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar__empresa-seletor span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__empresa-seletor svg {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+
+.sidebar__empresa-seletor:focus-visible,
+.sidebar__empresa-opcao:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.sidebar__empresa-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 100;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+
+  /* Fundo opaco */
+  background: var(--background);
+  opacity: 1;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  box-shadow: 0 5px 14px rgb(0 0 0 / 14%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar__empresa-opcao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 10px;
+  border: none;
+  border-radius: calc(var(--radius) - 4px);
+  background-color: var(--card);
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar__empresa-opcao:hover,
+.sidebar__empresa-opcao.ativo {
+  background-color: var(--primary-soft);
+  color: var(--primary);
+}
+
+.sidebar__empresa-opcao span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
 /* Navegação em telas pequenas */
 @media (max-width: 767px) {
   .sidebar {
@@ -214,6 +358,7 @@
     display: none;
   }
 
+ 
 }
 
 
