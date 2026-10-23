@@ -3,6 +3,8 @@ package br.com.docflow.backend.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity
 @Table(
@@ -27,6 +29,10 @@ public class UsuarioEmpresa {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "papel", nullable = false, length = 20)
+    private PapelUsuarioEmpresa papel;
 
     @Column(nullable = false)
     private LocalDateTime dataVinculo;
@@ -64,5 +70,13 @@ public class UsuarioEmpresa {
 
     public void setDataVinculo(LocalDateTime dataVinculo) {
         this.dataVinculo = dataVinculo;
+    }
+
+    public PapelUsuarioEmpresa getPapel() {
+        return papel;
+    }
+
+    public void setPapel(PapelUsuarioEmpresa papel) {
+        this.papel = papel;
     }
 }

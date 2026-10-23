@@ -10,6 +10,7 @@ import br.com.docflow.backend.repository.EmpresaRepository;
 import org.springframework.transaction.annotation.Transactional;
 import br.com.docflow.backend.entity.UsuarioEmpresa;
 import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+import br.com.docflow.backend.entity.PapelUsuarioEmpresa;
 
 import java.time.LocalDateTime;
 
@@ -63,6 +64,7 @@ public class UsuarioService {
         UsuarioEmpresa vinculo = new UsuarioEmpresa();
         vinculo.setUsuario(usuarioSalvo);
         vinculo.setEmpresa(empresa);
+        vinculo.setPapel(PapelUsuarioEmpresa.CRIADOR);
 
         usuarioEmpresaRepository.save(vinculo);
 
