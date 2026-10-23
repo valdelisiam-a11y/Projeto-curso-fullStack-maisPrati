@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import java.time.LocalDateTime;
 import br.com.docflow.backend.dto.TrabalhoCadastroDTO;
 import br.com.docflow.backend.dto.TrabalhoStatusDTO;
+import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -46,6 +47,9 @@ class TrabalhoServiceTest {
 
     @Mock
     private UsuarioTrabalhoRepository usuarioTrabalhoRepository;
+
+    @Mock
+    private UsuarioEmpresaRepository usuarioEmpresaRepository;
 
     @Mock
     private UsuarioAutenticadoService usuarioAutenticadoService;
@@ -177,6 +181,10 @@ class TrabalhoServiceTest {
 
         when(empresaRepository.findById(1L))
                 .thenReturn(Optional.of(empresa));
+
+        when(usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
+                usuarioAutenticado, empresa))
+                .thenReturn(true);
 
         usuarioAutenticado.setEmpresa(empresa);
 
