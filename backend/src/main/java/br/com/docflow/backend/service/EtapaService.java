@@ -31,24 +31,26 @@ public class EtapaService {
     private final HistoricoEtapaRepository historicoEtapaRepository;
     private final TrabalhoRepository trabalhoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     public EtapaService(
             EtapaRepository etapaRepository,
             HistoricoEtapaRepository historicoEtapaRepository,
             TrabalhoRepository trabalhoRepository,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            UsuarioAutenticadoService usuarioAutenticadoService) {
 
         this.etapaRepository = etapaRepository;
         this.historicoEtapaRepository = historicoEtapaRepository;
         this.trabalhoRepository = trabalhoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.usuarioAutenticadoService = usuarioAutenticadoService;
     }
 
     @Transactional
     public EtapaRespostaDTO cadastrar(Long trabalhoId, EtapaCadastroDTO dto) {
 
-        Trabalho trabalho = trabalhoRepository.findById(trabalhoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Trabalho não encontrado"));
+        Trabalho trabalho = validarAcessoTrabalho(trabalhoId);
 
         Etapa etapa = new Etapa();
 
@@ -78,9 +80,7 @@ public class EtapaService {
     @Transactional(readOnly = true)
     public List<EtapaRespostaDTO> listarPorTrabalho(Long trabalhoId) {
 
-        if (!trabalhoRepository.existsById(trabalhoId)) {
-            throw new RecursoNaoEncontradoException("Trabalho não encontrado");
-        }
+        validarAcessoTrabalho(trabalhoId);
 
         return etapaRepository.findByTrabalhoIdOrderByOrdemAsc(trabalhoId)
                 .stream()
@@ -113,7 +113,7 @@ public class EtapaService {
 
         Etapa etapa = buscarEntidade(id);
 
-        Usuario usuario = buscarUsuarioDaEmpresa(dto.getUsuarioId(), etapa.getTrabalho());
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
         StatusTrabalho statusAnterior = etapa.getStatus();
 
@@ -140,7 +140,7 @@ public class EtapaService {
 
         Etapa etapa = buscarEntidade(id);
 
-        Usuario usuario = buscarUsuarioDaEmpresa(dto.getUsuarioId(), etapa.getTrabalho());
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
         StatusTrabalho statusAnterior = etapa.getStatus();
         int percentual = dto.getPercentualConclusao();
@@ -273,20 +273,6 @@ public class EtapaService {
         return usuario;
     }
 
-    // Busca o usuário que está alterando a etapa e garante que ele é da empresa do trabalho
-    private Usuario buscarUsuarioDaEmpresa(Long usuarioId, Trabalho trabalho) {
-
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
-
-        if (!mesmaEmpresa(usuario, trabalho)) {
-            throw new UsuarioEmpresaDiferenteException(
-                    "O usuário não pertence à empresa do trabalho");
-        }
-
-        return usuario;
-    }
-
     private boolean mesmaEmpresa(Usuario usuario, Trabalho trabalho) {
 
         return usuario.getEmpresa() != null
@@ -294,11 +280,54 @@ public class EtapaService {
                 && usuario.getEmpresa().getId().equals(trabalho.getEmpresa().getId());
     }
 
-    // Busca a entidade ou lança erro; evita repetir o mesmo trecho em vários métodos
+    private Trabalho validarAcessoTrabalho(Long trabalhoId) {
+
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        Trabalho trabalho = trabalhoRepository.findById(trabalhoId)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Trabalho não encontrado"));
+
+        boolean criador = trabalho.getCriadoPor().getId()
+                .equals(usuario.getId());
+
+        boolean participante = trabalhoRepository
+                .findAcessiveisPorUsuario(usuario)
+                .stream()
+                .anyMatch(t -> t.getId().equals(trabalhoId));
+
+        if (!criador && !participante) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Você não tem permissão para acessar este trabalho.");
+        }
+
+        return trabalho;
+    }
+
+    // verifica se o usuário é o criador ou tem acesso ao trabalho por meio das associações existentes
     private Etapa buscarEntidade(Long id) {
 
-        return etapaRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Etapa não encontrada"));
+        Etapa etapa = etapaRepository.findById(id)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Etapa não encontrada"));
+
+        Trabalho trabalho = etapa.getTrabalho();
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        boolean criador = trabalho.getCriadoPor().getId()
+                .equals(usuario.getId());
+
+        boolean participante = trabalhoRepository
+                .findAcessiveisPorUsuario(usuario)
+                .stream()
+                .anyMatch(t -> t.getId().equals(trabalho.getId()));
+
+        if (!criador && !participante) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Você não tem permissão para acessar esta etapa.");
+        }
+
+        return etapa;
     }
 
     private EtapaRespostaDTO converterParaResposta(Etapa etapa) {

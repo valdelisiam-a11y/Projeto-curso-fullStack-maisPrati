@@ -16,6 +16,9 @@ import br.com.docflow.backend.dto.TrabalhoStatusDTO;
 import br.com.docflow.backend.entity.HistoricoTrabalho;
 import br.com.docflow.backend.repository.HistoricoTrabalhoRepository;
 import org.springframework.transaction.annotation.Transactional;
+import br.com.docflow.backend.entity.UsuarioTrabalho;
+import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,17 +32,23 @@ public class TrabalhoService {
     private final EmpresaRepository empresaRepository;
     private final UsuarioRepository usuarioRepository;
     private final HistoricoTrabalhoRepository historicoTrabalhoRepository;
+    private final UsuarioTrabalhoRepository usuarioTrabalhoRepository;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
 
     public TrabalhoService(
             TrabalhoRepository trabalhoRepository,
             EmpresaRepository empresaRepository,
             UsuarioRepository usuarioRepository,
-            HistoricoTrabalhoRepository historicoTrabalhoRepository) {
+            HistoricoTrabalhoRepository historicoTrabalhoRepository,
+            UsuarioTrabalhoRepository usuarioTrabalhoRepository,
+            UsuarioAutenticadoService usuarioAutenticadoService) {
 
         this.trabalhoRepository = trabalhoRepository;
         this.empresaRepository = empresaRepository;
         this.usuarioRepository = usuarioRepository;
         this.historicoTrabalhoRepository = historicoTrabalhoRepository;
+        this.usuarioTrabalhoRepository = usuarioTrabalhoRepository;
+        this.usuarioAutenticadoService = usuarioAutenticadoService;
     }
 
     public TrabalhoRespostaDTO cadastrar(TrabalhoCadastroDTO dto) {
@@ -47,8 +56,7 @@ public class TrabalhoService {
         Empresa empresa = empresaRepository.findById(dto.getEmpresaId())
                 .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
 
-        Usuario usuario = usuarioRepository.findById(dto.getCriadoPorId())
-        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
         if (usuario.getEmpresa() == null ||
         !usuario.getEmpresa().getId().equals(empresa.getId())) {
@@ -73,34 +81,34 @@ Trabalho trabalho = new Trabalho();
     }
 
     public List<TrabalhoRespostaDTO> listarTodos() {
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
-        return trabalhoRepository.findAll()
+        return trabalhoRepository.findAcessiveisPorUsuario(usuario)
                 .stream()
                 .map(this::converterParaResposta)
                 .toList();
     }
 
     public TrabalhoRespostaDTO buscarPorId(Long id) {
-
-        Trabalho trabalho = trabalhoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trabalho não encontrado"));
-
+        Trabalho trabalho = validarAcesso(id);
         return converterParaResposta(trabalho);
     }
 
     public List<TrabalhoRespostaDTO> buscarPorTitulo(String titulo) {
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
-        return trabalhoRepository.findByTituloContainingIgnoreCase(titulo)
+        return trabalhoRepository.findAcessiveisPorUsuario(usuario)
                 .stream()
+                .filter(trabalho -> trabalho.getTitulo() != null
+                        && trabalho.getTitulo().toLowerCase()
+                        .contains(titulo.toLowerCase()))
                 .map(this::converterParaResposta)
                 .toList();
     }
 
     public TrabalhoRespostaDTO atualizar(Long id, TrabalhoAtualizacaoDTO dto) {
 
-        Trabalho trabalho = trabalhoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trabalho não encontrado"));
-
+        Trabalho trabalho = validarAcesso(id);
         trabalho.setTitulo(dto.getTitulo());
         trabalho.setDescricao(dto.getDescricao());
         trabalho.setDataAtualizacao(LocalDateTime.now());
@@ -113,8 +121,7 @@ Trabalho trabalho = new Trabalho();
     @Transactional
     public void excluir(Long id) {
 
-        Trabalho trabalho = trabalhoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trabalho não encontrado"));
+        Trabalho trabalho = validarAcesso(id);
 
         historicoTrabalhoRepository.deleteByTrabalhoId(id);
 
@@ -124,15 +131,8 @@ Trabalho trabalho = new Trabalho();
     @Transactional
     public TrabalhoRespostaDTO alterarStatus(Long id, TrabalhoStatusDTO dto) {
 
-        Trabalho trabalho = trabalhoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trabalho não encontrado"));
-
-        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        if (!trabalho.getEmpresa().getId().equals(usuario.getEmpresa().getId())) {
-            throw new RuntimeException("Usuário não pertence à empresa do Trabalho");
-        }
+        Trabalho trabalho = validarAcesso(id);
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
         StatusTrabalho statusAnterior = trabalho.getStatus();
 
@@ -164,14 +164,34 @@ Trabalho trabalho = new Trabalho();
 
     public List<HistoricoTrabalhoRespostaDTO> listarHistorico(Long trabalhoId) {
 
-        Trabalho trabalho = trabalhoRepository.findById(trabalhoId)
-                .orElseThrow(() -> new RuntimeException("Trabalho não encontrado"));
+        Trabalho trabalho = validarAcesso(trabalhoId);
 
         return historicoTrabalhoRepository
                 .findByTrabalhoIdOrderByDataAlteracaoDesc(trabalho.getId())
                 .stream()
                 .map(this::converterHistoricoParaResposta)
                 .toList();
+    }
+
+    private Trabalho validarAcesso(Long trabalhoId) {
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        Trabalho trabalho = trabalhoRepository.findById(trabalhoId)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Trabalho não encontrado"));
+
+        boolean criador = trabalho.getCriadoPor().getId().equals(usuario.getId());
+
+        boolean participante = usuarioTrabalhoRepository
+                .findByTrabalhoAndUsuario(trabalho, usuario)
+                .isPresent();
+
+        if (!criador && !participante) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para acessar este trabalho.");
+        }
+
+        return trabalho;
     }
 
     private TrabalhoRespostaDTO converterParaResposta(Trabalho trabalho) {

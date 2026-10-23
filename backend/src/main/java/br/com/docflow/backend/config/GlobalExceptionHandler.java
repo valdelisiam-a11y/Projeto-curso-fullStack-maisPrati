@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.access.AccessDeniedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -46,4 +47,18 @@ public class GlobalExceptionHandler {
             .status(HttpStatus.NOT_FOUND)
             .body(erro);
 }
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErroRespostaDTO> handleAcessoNegado(
+            AccessDeniedException ex) {
+
+        ErroRespostaDTO erro = new ErroRespostaDTO(
+                HttpStatus.FORBIDDEN.value(),
+                "Acesso negado",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(erro);
+    }
 }

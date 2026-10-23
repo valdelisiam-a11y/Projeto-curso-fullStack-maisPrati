@@ -21,4 +21,6 @@ public interface UsuarioTrabalhoRepository extends JpaRepository<UsuarioTrabalho
     List<UsuarioTrabalho> findByTrabalho(@Param("trabalho") Trabalho trabalho);
 
     void deleteByTrabalhoAndUsuario(Trabalho trabalho, Usuario usuario);
+
+    List<UsuarioTrabalho> findByUsuario(Usuario usuario);
 }
