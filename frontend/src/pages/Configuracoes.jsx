@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { User, Palette, Bell, Lock, Check } from "lucide-react";
 import "./Configuracoes.css";
+import {
+  User,
+  Palette,
+  Bell,
+  Lock,
+  Check,
+  Building2,
+  ArrowRight,
+} from "lucide-react";
 
 export default function Configuracoes() {
   const [profileData, setProfileData] = useState({
@@ -145,6 +153,33 @@ export default function Configuracoes() {
               <span className="slider"></span>
             </label>
           </div>
+        </div>
+      </div>
+
+      {/* CARD 3: EMPRESA */}
+      <div className="config-card">
+        <div className="config-card-title">
+          <Building2 className="icon-title" />
+          <span>Empresa</span>
+        </div>
+
+        <div className="empresa-resumo">
+          <div>
+            <h3>DocFlow Tecnologia</h3>
+            <p>Perfil: Criador</p>
+            <p>3 de 5 usuários</p>
+          </div>
+
+          <button
+            type="button"
+            className="btn-purple"
+            onClick={() => {
+              window.location.href = "/empresas";
+            }}
+          >
+            <span>Gerenciar empresas</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
