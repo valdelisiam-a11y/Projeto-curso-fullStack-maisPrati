@@ -15,6 +15,7 @@ import Sidebar from "./components/sidebar/Sidebar";
 import PaginaNaoEncontrada from "./pages/PaginaNaoEncontrada";
 import { ContextoTrabalhoProvider } from "./contexts/ContextoTrabalho";
 import GerenciarEmpresas from "./pages/GerenciarEmpresas";
+import DetalhesTrabalho from "./pages/DetalhesTrabalho";
 
 function Layout() {
   return (
@@ -43,7 +44,8 @@ function App() {
                 <Route element={<Layout />}>
                   <Route path="/" element={<Inicio />} />
                   <Route path="/trabalhos" element={<MeusTrabalhos />} />
-                  <Route path="/novo" element={<NovoTrabalho />} />
+                  <Route path="/trabalhos/novo" element={<NovoTrabalho />} />
+                  <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />
                   <Route path="/documentos" element={<Documentos />} />
                   <Route path="/configuracoes" element={<Configuracoes />} />
                   <Route path="/empresas" element={<GerenciarEmpresas />} />

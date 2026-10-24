@@ -17,7 +17,7 @@ import { useContextoTrabalho } from '../contexts/ContextoTrabalho';
 
 const trabalhosRecentes = [
   {
-    id: 't1',
+    id: '1',
     nome: 'Cadastro de novo cliente',
     descricao: 'Documentação e contrato do cliente Marina Souza.',
     status: 'Em andamento',
@@ -28,7 +28,7 @@ const trabalhosRecentes = [
     empresaId: 1,
   },
   {
-    id: 't2',
+    id: '2',
     nome: 'Compra de materiais',
     descricao: 'Cimento, areia e ferragem para a obra da Rua das Acácias.',
     status: 'Precisa de atenção',
@@ -39,7 +39,7 @@ const trabalhosRecentes = [
     empresaId: 1,
   },
   {
-    id: 't3',
+    id: '3',
     nome: 'Prestação de serviço — Manutenção elétrica',
     descricao: 'Visita técnica e reparo no comércio do Sr. Antônio.',
     status: 'Atrasado',
@@ -50,7 +50,7 @@ const trabalhosRecentes = [
     empresaId: 2,
   },
   {
-    id: 't4',
+    id: '4',
     nome: 'Pagamento de contas do mês',
     descricao: 'Boletos de água, luz e internet de agosto.',
     status: 'Concluído',
