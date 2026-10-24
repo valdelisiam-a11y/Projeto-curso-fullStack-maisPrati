@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import br.com.docflow.backend.repository.EmpresaRepository;
 import org.springframework.transaction.annotation.Transactional;
+import br.com.docflow.backend.entity.UsuarioEmpresa;
+import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+import br.com.docflow.backend.entity.PapelUsuarioEmpresa;
 
 import java.time.LocalDateTime;
 
@@ -18,15 +21,18 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmpresaRepository empresaRepository;
+    private final UsuarioEmpresaRepository usuarioEmpresaRepository;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
             EmpresaRepository empresaRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            UsuarioEmpresaRepository usuarioEmpresaRepository) {
 
         this.usuarioRepository = usuarioRepository;
         this.empresaRepository = empresaRepository;
         this.passwordEncoder = passwordEncoder;
+        this.usuarioEmpresaRepository = usuarioEmpresaRepository;
     }
 
     @Transactional
@@ -53,6 +59,15 @@ public class UsuarioService {
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
         usuario.setEmpresa(empresa);
 
-        return usuarioRepository.save(usuario);
+        Usuario usuarioSalvo = usuarioRepository.save(usuario);
+
+        UsuarioEmpresa vinculo = new UsuarioEmpresa();
+        vinculo.setUsuario(usuarioSalvo);
+        vinculo.setEmpresa(empresa);
+        vinculo.setPapel(PapelUsuarioEmpresa.CRIADOR);
+
+        usuarioEmpresaRepository.save(vinculo);
+
+        return usuarioSalvo;
     }
 }

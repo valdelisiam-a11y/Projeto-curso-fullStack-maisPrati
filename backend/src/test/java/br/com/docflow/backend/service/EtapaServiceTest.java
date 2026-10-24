@@ -34,6 +34,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+
+import br.com.docflow.backend.dto.EtapaResponsavelDTO;
+import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class EtapaServiceTest {
@@ -49,6 +54,9 @@ class EtapaServiceTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private UsuarioEmpresaRepository usuarioEmpresaRepository;
 
     @Mock
     private UsuarioAutenticadoService usuarioAutenticadoService;
@@ -185,6 +193,61 @@ class EtapaServiceTest {
         assertNotEquals(999L, historicoSalvo.getUsuario().getId());
         assertEquals(StatusTrabalho.PENDENTE, historicoSalvo.getStatusAnterior());
         assertEquals(StatusTrabalho.EM_ANDAMENTO, historicoSalvo.getStatusNovo());
+    }
+
+    @Test
+    void deveDefinirResponsavelComVinculoNaEmpresaDoTrabalho() {
+        Usuario criador = new Usuario();
+        criador.setId(1L);
+
+        Usuario usuarioAutenticado = new Usuario();
+        usuarioAutenticado.setId(1L);
+
+        Usuario responsavel = new Usuario();
+        responsavel.setId(3L);
+        // Não define usuario.setEmpresa(): o vínculo será verificado pelo repositório.
+
+        Empresa empresa = new Empresa();
+        empresa.setId(1L);
+
+        Trabalho trabalho = new Trabalho();
+        trabalho.setId(10L);
+        trabalho.setCriadoPor(criador);
+        trabalho.setEmpresa(empresa);
+
+        Etapa etapa = new Etapa();
+        etapa.setId(20L);
+        etapa.setTitulo("Etapa de teste");
+        etapa.setStatus(StatusTrabalho.PENDENTE);
+        etapa.setPercentualConclusao(0);
+        etapa.setOrdem(1);
+        etapa.setTrabalho(trabalho);
+
+        EtapaResponsavelDTO dto = new EtapaResponsavelDTO();
+        dto.setResponsavelId(3L);
+
+        when(etapaRepository.findById(20L))
+                .thenReturn(Optional.of(etapa));
+
+        when(usuarioAutenticadoService.obterUsuario())
+                .thenReturn(usuarioAutenticado);
+
+        when(usuarioRepository.findById(3L))
+                .thenReturn(Optional.of(responsavel));
+
+        when(usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
+                responsavel, empresa))
+                .thenReturn(true);
+
+        when(etapaRepository.save(any(Etapa.class)))
+                .thenAnswer(invocacao -> invocacao.getArgument(0));
+
+        etapaService.definirResponsavel(20L, dto);
+
+        verify(usuarioEmpresaRepository)
+                .existsByUsuarioAndEmpresa(responsavel, empresa);
+
+        assertEquals(3L, etapa.getResponsavel().getId());
     }
 
 }

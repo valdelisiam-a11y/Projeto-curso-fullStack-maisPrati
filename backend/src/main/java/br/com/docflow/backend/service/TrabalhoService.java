@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.docflow.backend.entity.UsuarioTrabalho;
 import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
 import org.springframework.security.access.AccessDeniedException;
+import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,6 +35,7 @@ public class TrabalhoService {
     private final HistoricoTrabalhoRepository historicoTrabalhoRepository;
     private final UsuarioTrabalhoRepository usuarioTrabalhoRepository;
     private final UsuarioAutenticadoService usuarioAutenticadoService;
+    private final UsuarioEmpresaRepository usuarioEmpresaRepository;
 
     public TrabalhoService(
             TrabalhoRepository trabalhoRepository,
@@ -41,7 +43,8 @@ public class TrabalhoService {
             UsuarioRepository usuarioRepository,
             HistoricoTrabalhoRepository historicoTrabalhoRepository,
             UsuarioTrabalhoRepository usuarioTrabalhoRepository,
-            UsuarioAutenticadoService usuarioAutenticadoService) {
+            UsuarioAutenticadoService usuarioAutenticadoService,
+            UsuarioEmpresaRepository usuarioEmpresaRepository) {
 
         this.trabalhoRepository = trabalhoRepository;
         this.empresaRepository = empresaRepository;
@@ -49,6 +52,7 @@ public class TrabalhoService {
         this.historicoTrabalhoRepository = historicoTrabalhoRepository;
         this.usuarioTrabalhoRepository = usuarioTrabalhoRepository;
         this.usuarioAutenticadoService = usuarioAutenticadoService;
+        this.usuarioEmpresaRepository = usuarioEmpresaRepository;
     }
 
     public TrabalhoRespostaDTO cadastrar(TrabalhoCadastroDTO dto) {
@@ -57,13 +61,12 @@ public class TrabalhoService {
                 .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
 
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
+        if (!usuarioEmpresaRepository.existsByUsuarioAndEmpresa(usuario, empresa)) {
+            throw new UsuarioEmpresaDiferenteException(
+                    "Usuário não pertence à empresa informada para o trabalho."
+            );
 
-        if (usuario.getEmpresa() == null ||
-        !usuario.getEmpresa().getId().equals(empresa.getId())) {
-        throw new UsuarioEmpresaDiferenteException(
-            "Usuário não pertence à empresa informada para o trabalho."
-    );
-}
+        }
 
 Trabalho trabalho = new Trabalho();
 

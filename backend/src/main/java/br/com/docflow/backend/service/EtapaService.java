@@ -19,6 +19,7 @@ import br.com.docflow.backend.repository.TrabalhoRepository;
 import br.com.docflow.backend.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,19 +33,22 @@ public class EtapaService {
     private final TrabalhoRepository trabalhoRepository;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAutenticadoService usuarioAutenticadoService;
+    private final UsuarioEmpresaRepository usuarioEmpresaRepository;
 
     public EtapaService(
             EtapaRepository etapaRepository,
             HistoricoEtapaRepository historicoEtapaRepository,
             TrabalhoRepository trabalhoRepository,
             UsuarioRepository usuarioRepository,
-            UsuarioAutenticadoService usuarioAutenticadoService) {
+            UsuarioAutenticadoService usuarioAutenticadoService,
+            UsuarioEmpresaRepository usuarioEmpresaRepository) {
 
         this.etapaRepository = etapaRepository;
         this.historicoEtapaRepository = historicoEtapaRepository;
         this.trabalhoRepository = trabalhoRepository;
         this.usuarioRepository = usuarioRepository;
         this.usuarioAutenticadoService = usuarioAutenticadoService;
+        this.usuarioEmpresaRepository = usuarioEmpresaRepository;
     }
 
     @Transactional
@@ -274,10 +278,9 @@ public class EtapaService {
     }
 
     private boolean mesmaEmpresa(Usuario usuario, Trabalho trabalho) {
-
-        return usuario.getEmpresa() != null
-                && trabalho.getEmpresa() != null
-                && usuario.getEmpresa().getId().equals(trabalho.getEmpresa().getId());
+        return trabalho.getEmpresa() != null
+                && usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
+                usuario, trabalho.getEmpresa());
     }
 
     private Trabalho validarAcessoTrabalho(Long trabalhoId) {
