@@ -11,6 +11,8 @@ import br.com.docflow.backend.repository.UsuarioRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.com.docflow.backend.dto.EmpresaResumoDTO;
+import br.com.docflow.backend.dto.MembroEmpresaDTO;
 
 @Service
 public class UsuarioEmpresaService {
@@ -123,6 +125,73 @@ public class UsuarioEmpresaService {
                         ));
 
         usuarioEmpresaRepository.delete(vinculoMembro);
+    }
+
+    @Transactional
+    public Empresa cadastrarEmpresa(String nome, String cnpj) {
+        Usuario criador = usuarioAutenticadoService.obterUsuario();
+
+        Empresa empresa = new Empresa();
+        empresa.setNome(nome.trim());
+        empresa.setCnpj(
+                cnpj == null || cnpj.isBlank() ? null : cnpj.trim()
+        );
+        empresa.setDataCadastro(java.time.LocalDateTime.now());
+        empresa.setAtivo(true);
+
+        Empresa empresaSalva = empresaRepository.save(empresa);
+
+        UsuarioEmpresa vinculo = new UsuarioEmpresa();
+        vinculo.setUsuario(criador);
+        vinculo.setEmpresa(empresaSalva);
+        vinculo.setPapel(PapelUsuarioEmpresa.CRIADOR);
+
+        usuarioEmpresaRepository.save(vinculo);
+
+        return empresaSalva;
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<EmpresaResumoDTO> listarMinhasEmpresas() {
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        return usuarioEmpresaRepository.findByUsuario(usuario)
+                .stream()
+                .map(vinculo -> {
+                    EmpresaResumoDTO dto = new EmpresaResumoDTO();
+                    dto.setId(vinculo.getEmpresa().getId());
+                    dto.setNome(vinculo.getEmpresa().getNome());
+                    dto.setPapel(vinculo.getPapel().name());
+                    return dto;
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<MembroEmpresaDTO> listarMembros(Long empresaId) {
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        Empresa empresa = empresaRepository.findById(empresaId)
+                .orElseThrow(() -> new ParticipanteNaoEncontradoException(
+                        "Empresa não encontrada"
+                ));
+
+        usuarioEmpresaRepository.findByUsuarioAndEmpresa(usuario, empresa)
+                .orElseThrow(() -> new AccessDeniedException(
+                        "Você não pertence a esta empresa"
+                ));
+
+        return usuarioEmpresaRepository.findByEmpresa(empresa)
+                .stream()
+                .map(vinculo -> {
+                    MembroEmpresaDTO dto = new MembroEmpresaDTO();
+                    dto.setUsuarioId(vinculo.getUsuario().getId());
+                    dto.setNome(vinculo.getUsuario().getNome());
+                    dto.setEmail(vinculo.getUsuario().getEmail());
+                    dto.setPapel(vinculo.getPapel().name());
+                    return dto;
+                })
+                .toList();
     }
 
 }
