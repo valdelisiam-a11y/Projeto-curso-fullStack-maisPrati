@@ -15,5 +15,9 @@ export async function apiFetch(endpoint, options = {}) {
         headers,
     });
 
+    if (resposta.status === 401 && token && endpoint !== '/auth/login') {
+        window.dispatchEvent(new Event('sessao-expirada'));
+    }
+
     return resposta;
 }

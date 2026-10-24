@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AuthContext } from './authContext';
 
 
@@ -67,6 +67,20 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUsuario(null);
     }
+
+    useEffect(() => {
+        function encerrarSessao() {
+            limparDadosSessao();
+            setToken(null);
+            setUsuario(null);
+        }
+
+        window.addEventListener('sessao-expirada', encerrarSessao);
+
+        return () => {
+            window.removeEventListener('sessao-expirada', encerrarSessao);
+        };
+    }, []);
 
     return (
         <AuthContext.Provider
