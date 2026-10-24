@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 import { fazerLogin } from '../services/authService';
+import ilustracaoLogin from '../assets/ilustracao-organizacao-Inicial.png';
+import { FolderKanban } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 
 function Login() {
     const [email, setEmail] = useState('')
@@ -16,7 +19,7 @@ function Login() {
     const mensagemSucesso = location.state?.mensagem || '';
 
 
-    
+
 const handleSubmit = async (e) => {
     e.preventDefault();
     setErro('');
@@ -38,7 +41,7 @@ const handleSubmit = async (e) => {
 
         navigate('/');
 
-    
+
     } catch (error) {
         console.error('Erro ao realizar login:', error);
 
@@ -57,37 +60,47 @@ const handleSubmit = async (e) => {
         <main className="login">
 
         <section className="login-image"> {/* Lado esquerdo da tela */}
-            <div className="image-placeholder">Imagem</div> {/* Espaço reservado para a imagem */}
+            <img
+                src={ilustracaoLogin}
+                alt="Ilustração de uma pessoa organizando documentos"
+                className="login-illustration"
+            />
+
             <p className="login-message">Organize seus trabalhos. Saiba o que falta.
                                         <br />Encontre seus documentos. Conclua.
             </p>
         </section>
 
         <section className="login-form"> {/* Lado direito da tela */}
-            <div className="logo">DocFlow</div>
+            <div className="login-logo">
+                <span className="login-logo-icon">
+                    <FolderKanban size={20} />
+                </span>
+                <span>DocFlow</span>
+            </div>
 
             <h1>Organize seus trabalhos de forma simples.</h1>
 
             <form onSubmit={handleSubmit}> {/* Formulário de login */}
                 <div className="form-group">
                     <label htmlFor="email">E-mail</label>
-                    <input 
-                        type="email" 
-                        id="email" placeholder="voce@exemplo.com.br" 
-                        onChange={(e) => setEmail(e.target.value)}                      
+                    <input
+                        type="email"
+                        id="email" placeholder="voce@exemplo.com.br"
+                        onChange={(e) => setEmail(e.target.value)}
                     />
                 </div>
 
                 <div className="form-group">
                     <label htmlFor="password">Senha</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        placeholder="Sua senha" 
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Sua senha"
                         onChange={(e) => setSenha(e.target.value)}
                     />
                 </div>
-                
+
                 <div className="login-error-container">
                     {mensagemSucesso && (
                         <p className="login-success" role="status">
@@ -103,12 +116,11 @@ const handleSubmit = async (e) => {
                 </div>
 
 
-                <button className="login-button" type="submit"> Entrar</button> {/* Botão de envio */}
+                <button className="login-button" type="submit">
+                    <LogIn size={18} aria-hidden="true" />
+                    <span>Entrar</span>
+                </button>
 
-                {/* Links de navegação */}
-                {/*
-                Para posterior implementação de outras páginas, rotas ou outra solução
-               */}
                 <a href="#">Esqueci minha senha</a>
 
                 <Link to="/cadastro">Criar minha conta</Link>

@@ -1,6 +1,7 @@
 .login {
-    width: 960px;
-    height: 560px;
+    width: min(960px, calc(100% - 32px));
+    min-height: 560px;
+    height: auto;
 
     display: flex;
 
@@ -16,7 +17,6 @@
 
 .login-image {
     width: 50%;
-    height: 100%;
 
     display: flex;
     flex-direction: column;
@@ -27,57 +27,75 @@
     background-color: #F2E0FC;
 }
 
-.image-placeholder {
-    width: 360px;
-    height: 360px;
+.login-illustration {
+    width: 300px;
+    max-width: 85%;
+    height: auto;
+    object-fit: contain;
+}
+
+.login-message {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #9E52DB;
+}
+
+.login-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1A1F38;
+}
+
+.login-logo-icon {
+    width: 32px;
+    height: 32px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 20px;
+    background: linear-gradient(135deg, #9E52DB, #D45AB5);
+    color: #FFFFFF;
 
-    border: 2px dashed #754ef9;
-
-    color: #754ef9;
-}
-
-.login-message {
-    margin-top: 24px;
-
-    text-align: center;
-
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 1.5;
-
-    color: #9E52DB;
+    border-radius: 50%;
 }
 
 .login-form {
     width: 50%;
-    height: 100%;
-
     padding: 50px;
 
     box-sizing: border-box;
-
     background-color: #ffffff;
 }
 
 .login-form h1 {
-    margin-top: 40px;
-    font-family: 'Inter', sans-serif;
-    font-size: 24px;
+    margin-top: 24px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 22px;
     font-weight: 700;
+    line-height: 1.3;
 }
 
 .login-form a {
     display: block;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
     font-weight: 400;
     color: #9E52DB;
+    text-decoration: none;
+}
+
+.login-form a:hover {
+    color: #7540B8;
+    text-decoration: underline;
 }
 
 .login-button + a {
@@ -100,52 +118,72 @@
 }
 
 .form-group label {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
     font-weight: 400;
     color: #1A1F38;
 }
 
 .form-group input {
-    width: 400px;
-    height: 46px;
+    width: 100%;
+    height: 48px;
 
     background-color: #FFFFFF;
 
-    border: 1px solid #DBC9F0;
+    border: 1px solid #E0D7E8;
     border-radius: 11px;
 
-    padding-left: 14px;
-    padding-right: 26px;
+    padding: 0 14px;
 
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
     font-weight: 400;
+    color: #1A1F38;
 
-    color: #666175;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #9E52DB;
+    box-shadow: 0 0 0 3px rgba(158, 82, 219, 0.12);
 }
 
 .form-group input::placeholder {
     color: #666175;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 14px;
     font-weight: 400;
 }
 
 .login-button {
     width: 400px;
+    max-width: 100%;
     height: 46px;
     margin-top: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
     background-color: #9E52DB;
+    color: #FFFFFF;
 
     border: none;
     border-radius: 11px;
+
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
 }
 
-
-
 .login-error-container {
-    min-height: 42px;
+    min-height: 12px;
     display: flex;
     align-items: center;
 }
@@ -163,3 +201,39 @@
     text-align: center;
 }
 
+@media (max-width: 768px) {
+    .login {
+        width: calc(100% - 24px);
+        flex-direction: column;
+        margin: 16px auto;
+        min-height: 0;
+        border-radius: 20px;
+    }
+
+    .login-image {
+        width: 100%;
+        padding: 32px 20px;
+    }
+
+    .login-illustration {
+        width: 200px;
+    }
+
+    .login-message {
+        margin-top: 16px;
+    }
+
+    .login-form {
+        width: 100%;
+        height: auto;
+        padding: 32px 24px;
+    }
+
+    .login-button {
+        width: 100%;
+    }
+}
+
+body:has(.login) {
+    background: var(--primary-soft);
+}
