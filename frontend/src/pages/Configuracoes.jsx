@@ -9,6 +9,7 @@ import {
   Building2,
   ArrowRight,
 } from "lucide-react";
+import { alterarSenha } from "../services/authService";
 
 export default function Configuracoes() {
   const [profileData, setProfileData] = useState({
@@ -47,11 +48,35 @@ export default function Configuracoes() {
     setTimeout(() => setFeedback(""), 3000);
   };
 
-  const handleChangePassword = (e) => {
-    e.preventDefault();
+  
+const handleChangePassword = async (e) => {
+  e.preventDefault();
+  setFeedback("");
+
+  try {
+    const resposta = await alterarSenha(
+      securityData.senhaAtual,
+      securityData.novaSenha
+    );
+
+    if (!resposta.ok) {
+      const erro = await resposta.json().catch(() => null);
+
+      setFeedback(
+        erro?.message ||
+        erro?.mensagem ||
+        "Não foi possível alterar a senha. Verifique a senha atual."
+      );
+      return;
+    }
+
     setFeedback("Senha alterada com sucesso!");
-    setTimeout(() => setFeedback(""), 3000);
-  };
+    setSecurityData({ senhaAtual: "", novaSenha: "" });
+  } catch {
+    setFeedback("Não foi possível conectar ao servidor.");
+  }
+};
+
 
   return (
     <div className="configuracoes-container">
@@ -197,6 +222,7 @@ export default function Configuracoes() {
               <input
                 id="senhaAtual"
                 type="password"
+                required
                 value={securityData.senhaAtual}
                 onChange={(e) =>
                   setSecurityData({
@@ -212,6 +238,8 @@ export default function Configuracoes() {
               <input
                 id="novaSenha"
                 type="password"
+                required
+                minLength={8}
                 value={securityData.novaSenha}
                 onChange={(e) =>
                   setSecurityData({
@@ -230,6 +258,7 @@ export default function Configuracoes() {
           </div>
         </form>
       </div>
+
     </div>
   );
 }
