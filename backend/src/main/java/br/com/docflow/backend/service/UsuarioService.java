@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.docflow.backend.entity.UsuarioEmpresa;
 import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 import br.com.docflow.backend.entity.PapelUsuarioEmpresa;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 
@@ -69,5 +70,16 @@ public class UsuarioService {
         usuarioEmpresaRepository.save(vinculo);
 
         return usuarioSalvo;
+    }
+
+    @Transactional
+    public void alterarSenha(Usuario usuario, String senhaAtual, String novaSenha) {
+
+        if (!passwordEncoder.matches(senhaAtual, usuario.getSenha())) {
+            throw new AccessDeniedException("A senha atual está incorreta.");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuarioRepository.save(usuario);
     }
 }
