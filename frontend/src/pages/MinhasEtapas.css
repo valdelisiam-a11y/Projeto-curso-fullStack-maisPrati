@@ -1,0 +1,170 @@
+/* Layout Geral da Página Minhas Etapas */
+.minhas-etapas-container {
+  padding: 32px;
+  background-color: #f8f6fc;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Cabeçalho */
+.header-secao {
+  margin-bottom: 24px;
+}
+
+.header-secao h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.header-secao p {
+  font-size: 14px;
+  color: #4b5563;
+  margin: 0 0 16px 0;
+}
+
+/* Banner de Aviso / Demonstração */
+.banner-demo {
+  background-color: #f1ecf8;
+  color: #6e687b;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  border: 1px solid #e2d9f3;
+}
+
+/* Lista de Cards */
+.lista-etapas-compartilhadas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Estilo do Card Individual */
+.card-etapa {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 20px 24px; /* Ajustado para bater com o espaçamento exato */
+  border: 1px solid #f3eff8;
+  display: flex;
+  flex-direction: column;
+  gap: 18px; /* Espaçamento interno proporcional */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
+}
+
+/* Topo do Card (Título e Status) */
+.card-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.card-info-principal h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+}
+
+.subtitulo-trabalho {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Badges de Status */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-status.em-andamento {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-status.precisa-atencao {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+/* Rodapé do Card (Permissão e Botão de Ação) */
+.card-rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px; /* Mantém o fluxo limpo */
+}
+
+.permissao-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.btn-abrir-etapa {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f3eefc;
+  color: #271f3d;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-abrir-etapa:hover {
+  background-color: #ebdffc;
+}
+
+/* Estados opcionais */
+.estado-carregamento,
+.estado-erro,
+.estado-vazio {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+  font-size: 15px;
+}
+
+/* --- RESPONSIVIDADE PARA TELAS MENORES (Tablets e Celulares) --- */
+@media (max-width: 768px) {
+  .minhas-etapas-container {
+    padding: 16px;
+  }
+
+  .card-topo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .badge-status {
+    align-self: flex-start;
+  }
+
+  .card-rodape {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .btn-abrir-etapa {
+    width: 100%;
+    justify-content: center;
+  }
+}

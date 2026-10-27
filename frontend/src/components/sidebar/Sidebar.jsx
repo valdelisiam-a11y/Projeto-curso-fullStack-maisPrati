@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home,
   FolderKanban,
+  ListChecks,
   FileText,
   Settings,
   User,
@@ -12,7 +12,7 @@ import {
   Menu,
   X,
   ChevronDown,
-  Check
+  Check,
 } from "lucide-react";
 import "./Sidebar.css";
 import { useAuth } from "../../contexts/useAuth";
@@ -20,15 +20,15 @@ import { useContextoTrabalho } from "../../contexts/ContextoTrabalho";
 
 function Sidebar() {
   const [menuAberto, setMenuAberto] = useState(false);
-    const { usuario, logout } = useAuth();
-    const {
-      contexto,
-      selecionarContexto,
-      empresas,
-      empresaSelecionada,
-      selecionarEmpresa,
-    } = useContextoTrabalho();
-    const [menuEmpresasAberto, setMenuEmpresasAberto] = useState(false);
+  const { usuario, logout } = useAuth();
+  const {
+    contexto,
+    selecionarContexto,
+    empresas,
+    empresaSelecionada,
+    selecionarEmpresa,
+  } = useContextoTrabalho();
+  const [menuEmpresasAberto, setMenuEmpresasAberto] = useState(false);
 
   function fecharMenu() {
     setMenuAberto(false);
@@ -77,7 +77,7 @@ function Sidebar() {
             <h1>DocFlow</h1>
           </div>
 
-         <div className="sidebar__contexto">
+          <div className="sidebar__contexto">
             <button
               type="button"
               className={contexto === "pessoal" ? "ativo" : ""}
@@ -127,7 +127,9 @@ function Sidebar() {
                       }}
                     >
                       <span>{empresa.nome}</span>
-                      {empresaSelecionada?.id === empresa.id && <Check size={16} />}
+                      {empresaSelecionada?.id === empresa.id && (
+                        <Check size={16} />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -148,6 +150,13 @@ function Sidebar() {
                 <NavLink to="/trabalhos" onClick={fecharMenu}>
                   <FolderKanban size={20} />
                   <span>Meus trabalhos</span>
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink to="/minhas-etapas" onClick={fecharMenu}>
+                  <ListChecks size={20} />
+                  <span>Minhas etapas</span>
                 </NavLink>
               </li>
 

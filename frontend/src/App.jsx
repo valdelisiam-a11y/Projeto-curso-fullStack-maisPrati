@@ -1,4 +1,3 @@
-
 import "./App.css";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
@@ -8,6 +7,7 @@ import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
 import Inicio from "./pages/Inicio";
 import MeusTrabalhos from "./pages/MeusTrabalhos";
+import MinhasEtapas from "./pages/MinhasEtapas";
 import NovoTrabalho from "./pages/NovoTrabalho";
 import Documentos from "./pages/Documentos";
 import Configuracoes from "./pages/Configuracoes";
@@ -33,29 +33,30 @@ function App() {
   return (
     <AuthProvider>
       <ContextoTrabalhoProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Rotas públicas */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/cadastro" element={<Cadastro />} />
+        <BrowserRouter>
+          <Routes>
+            {/* Rotas públicas */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/cadastro" element={<Cadastro />} />
 
-              {/* Rotas protegidas */}
-              <Route element={<RotaProtegida />}>
-                <Route element={<Layout />}>
-                  <Route path="/" element={<Inicio />} />
-                  <Route path="/trabalhos" element={<MeusTrabalhos />} />
-                  <Route path="/trabalhos/novo" element={<NovoTrabalho />} />
-                  <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />
-                  <Route path="/documentos" element={<Documentos />} />
-                  <Route path="/configuracoes" element={<Configuracoes />} />
-                  <Route path="/empresas" element={<GerenciarEmpresas />} />
-                </Route>
+            {/* Rotas protegidas */}
+            <Route element={<RotaProtegida />}>
+              <Route element={<Layout />}>
+                <Route path="/" element={<Inicio />} />
+                <Route path="/trabalhos" element={<MeusTrabalhos />} />
+                <Route path="/minhas-etapas" element={<MinhasEtapas />} />
+                <Route path="/trabalhos/novo" element={<NovoTrabalho />} />
+                <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />
+                <Route path="/documentos" element={<Documentos />} />
+                <Route path="/configuracoes" element={<Configuracoes />} />
+                <Route path="/empresas" element={<GerenciarEmpresas />} />
               </Route>
+            </Route>
 
-              {/* Página não encontrada */}
-              <Route path="*" element={<PaginaNaoEncontrada />} />
-            </Routes>
-          </BrowserRouter>
+            {/* Página não encontrada */}
+            <Route path="*" element={<PaginaNaoEncontrada />} />
+          </Routes>
+        </BrowserRouter>
       </ContextoTrabalhoProvider>
     </AuthProvider>
   );
