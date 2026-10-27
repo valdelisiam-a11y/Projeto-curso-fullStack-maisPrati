@@ -8,21 +8,24 @@ import {
   CheckCircle2,
   Clock3,
   Plus,
+  CalendarClock,
 } from "lucide-react";
+
 import "./MeusTrabalhos.css";
 import { useContextoTrabalho } from "../contexts/ContextoTrabalho";
 
 export default function MeusTrabalhos() {
   const navigate = useNavigate();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroAtivo, setFiltroAtivo] = useState("Todos");
+
   const { contexto, empresaSelecionada } = useContextoTrabalho();
 
-  // Dados mockados
+  // Dados de demonstração completos atualizados com os exemplos de referência
   const [trabalhos] = useState([
-   {
+    {
       id: 1,
-      contexto: "empresa",
       nome: "Cadastro de novo cliente",
       descricao: "Documentação e contrato do cliente Marina Souza.",
       situacao: "Em andamento",
@@ -32,7 +35,6 @@ export default function MeusTrabalhos() {
     },
     {
       id: 2,
-      contexto: "empresa",
       nome: "Compra de materiais",
       descricao: "Cimento, areia e ferragem para a obra da Rua das Acácias.",
       situacao: "Precisa de atenção",
@@ -42,7 +44,6 @@ export default function MeusTrabalhos() {
     },
     {
       id: 3,
-      contexto: "empresa",
       nome: "Prestação de serviço — Manutenção elétrica",
       descricao: "Visita técnica e reparo no comércio do Sr. Antônio.",
       situacao: "Atrasado",
@@ -52,7 +53,6 @@ export default function MeusTrabalhos() {
     },
     {
       id: 4,
-      contexto: "pessoal",
       nome: "Pagamento de contas do mês",
       descricao: "Boletos de água, luz e internet de agosto.",
       situacao: "Concluído",
@@ -62,42 +62,50 @@ export default function MeusTrabalhos() {
     },
   ]);
 
-  // Filtra os trabalhos pelo nome e pela situação selecionada
- const trabalhosFiltrados = trabalhos.filter((trabalho) => {
-  const pertenceAoContexto = trabalho.contexto === contexto;
+  // Opções de filtro exibidas na referência visual
+  const filtros = [
+    "Todos",
+    "Em andamento",
+    "Precisam de atenção",
+    "Atrasado",
+    "Concluídos",
+  ];
 
-  const matchNome = trabalho.nome
-    .toLowerCase()
-    .includes(searchTerm.toLowerCase());
+  // Pesquisa pelo nome e filtra pela situação de forma flexível
+  const trabalhosFiltrados = trabalhos.filter((trabalho) => {
+    const correspondeAoNome = trabalho.nome
+      .toLowerCase()
+      .includes(searchTerm.trim().toLowerCase());
 
-  if (!pertenceAoContexto) return false;
+    if (!correspondeAoNome) {
+      return false;
+    }
 
-  if (filtroAtivo === "Todos") return matchNome;
+    switch (filtroAtivo) {
+      case "Em andamento":
+        return trabalho.situacao === "Em andamento";
 
-  if (filtroAtivo === "Em andamento") {
-    return matchNome && trabalho.situacao === "Em andamento";
-  }
+      case "Precisam de atenção":
+        return trabalho.situacao === "Precisa de atenção";
 
-  if (filtroAtivo === "Precisam de atenção") {
-    return matchNome && trabalho.situacao === "Precisa de atenção";
-  }
+      case "Atrasado":
+        return trabalho.situacao === "Atrasado";
 
-  if (filtroAtivo === "Atrasados") {
-    return matchNome && trabalho.situacao === "Atrasado";
-  }
+      case "Concluídos":
+        return trabalho.situacao === "Concluído";
 
-  if (filtroAtivo === "Concluídos") {
-    return matchNome && trabalho.situacao === "Concluído";
-  }
+      case "Todos":
+      default:
+        return true;
+    }
+  });
 
-  return matchNome;
-});
-  // Abre a página de detalhes do trabalho
+  // Navega para os detalhes do trabalho
   const handleVerTrabalho = (id) => {
     navigate(`/trabalhos/${id}`);
   };
 
-  // Define o estilo e o ícone conforme a situação
+  // Define o ícone e a classe visual de cada situação
   const getBadgeStatus = (situacao) => {
     switch (situacao) {
       case "Concluído":
@@ -115,9 +123,10 @@ export default function MeusTrabalhos() {
       case "Atrasado":
         return {
           className: "status-badge status-atrasado",
-          icon: <AlertCircle className="status-icon" />,
+          icon: <Clock3 className="status-icon" />,
         };
 
+      case "Em andamento":
       default:
         return {
           className: "status-badge status-andamento",
@@ -127,11 +136,12 @@ export default function MeusTrabalhos() {
   };
 
   return (
-    <div className="trabalhos-container">
-      {/* Cabeçalho principal */}
-      <div className="trabalhos-header-flex">
+    <main className="trabalhos-container">
+      {/* Cabeçalho */}
+      <header className="trabalhos-header-flex">
         <div className="trabalhos-main-header">
           <h1>Meus trabalhos</h1>
+
           <p>
             {contexto === "pessoal"
               ? "Seus trabalhos pessoais — só você vê."
@@ -140,65 +150,72 @@ export default function MeusTrabalhos() {
         </div>
 
         <button
+          type="button"
           className="btn-novo-trabalho"
           onClick={() => navigate("/trabalhos/novo")}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="novo-trabalho-icon" />
           <span>Novo trabalho</span>
         </button>
-      </div>
+      </header>
 
       {/* Pesquisa e filtros */}
-      <div className="search-filter-card">
-        <label className="search-label">O que você está procurando?</label>
+      <section className="search-filter-card">
+        <label className="search-label" htmlFor="pesquisa-trabalhos">
+          O que você está procurando?
+        </label>
 
         <div className="search-input-wrapper">
           <Search className="search-icon" />
+
           <input
-            type="text"
+            id="pesquisa-trabalhos"
+            type="search"
             placeholder="Procure pelo nome do trabalho"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(event) => setSearchTerm(event.target.value)}
           />
         </div>
 
-        {/* Pílulas de filtro */}
-        <div className="filter-pills">
-          {[
-            "Todos",
-            "Em andamento",
-            "Precisam de atenção",
-            "Atrasados",
-            "Concluídos",
-          ].map((filtro) => (
+        <div
+          className="filter-pills"
+          role="group"
+          aria-label="Filtrar trabalhos por situação"
+        >
+          {filtros.map((filtro) => (
             <button
               key={filtro}
+              type="button"
               className={`filter-pill ${
                 filtroAtivo === filtro ? "active" : ""
               }`}
+              aria-pressed={filtroAtivo === filtro}
               onClick={() => setFiltroAtivo(filtro)}
             >
               {filtro}
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Lista de cards ou estado vazio */}
+      {/* Lista de trabalhos */}
       {trabalhosFiltrados.length === 0 ? (
-        <div className="empty-state">
+        <section className="empty-state">
           <FolderKanban className="empty-icon" />
+
           <h3>Nenhum trabalho encontrado</h3>
+
           <p>Tente buscar por outro termo ou categoria.</p>
-        </div>
+        </section>
       ) : (
-        <div className="trabalhos-list">
+        <section className="trabalhos-list">
           {trabalhosFiltrados.map((trabalho) => {
             const badge = getBadgeStatus(trabalho.situacao);
             const isConcluido = trabalho.situacao === "Concluído";
 
             return (
-              <div key={trabalho.id} className="trabalho-card">
+              <article key={trabalho.id} className="trabalho-card">
+                {/* Nome e situação */}
                 <div className="trabalho-card-header">
                   <h3 className="trabalho-nome">{trabalho.nome}</h3>
 
@@ -208,22 +225,33 @@ export default function MeusTrabalhos() {
                   </span>
                 </div>
 
+                {/* Descrição */}
                 <p className="trabalho-descricao">{trabalho.descricao}</p>
 
+                {/* Etapa atual */}
                 <div className="etapa-atual-box">
                   <span>
                     Etapa atual: <strong>{trabalho.etapaAtual}</strong>
                   </span>
                 </div>
 
-                {/* Barra de progresso */}
+                {/* Progresso */}
                 <div className="progress-container">
-                  <div className="progress-bar-bg">
+                  <div
+                    className="progress-bar-bg"
+                    role="progressbar"
+                    aria-label={`Progresso de ${trabalho.nome}`}
+                    aria-valuenow={trabalho.progresso}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
                     <div
                       className={`progress-bar-fill ${
                         isConcluido ? "fill-concluido" : ""
                       }`}
-                      style={{ width: `${trabalho.progresso}%` }}
+                      style={{
+                        width: `${trabalho.progresso}%`,
+                      }}
                     />
                   </div>
 
@@ -232,24 +260,27 @@ export default function MeusTrabalhos() {
                   </span>
                 </div>
 
-                <div className="trabalho-card-footer">
+                {/* Data e botão */}
+                <footer className="trabalho-card-footer">
                   <span className="atualizado-texto">
-                    Atualizado em {trabalho.atualizadoEm}
+                    <CalendarClock className="atualizado-icon" />
+                    <span>Atualizado em {trabalho.atualizadoEm}</span>
                   </span>
 
                   <button
+                    type="button"
                     className="btn-ver-trabalho"
                     onClick={() => handleVerTrabalho(trabalho.id)}
                   >
                     <span>Ver trabalho</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="ver-trabalho-icon" />
                   </button>
-                </div>
-              </div>
+                </footer>
+              </article>
             );
           })}
-        </div>
+        </section>
       )}
-    </div>
+    </main>
   );
 }
