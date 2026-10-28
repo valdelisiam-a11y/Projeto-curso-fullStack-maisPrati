@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   PlayCircle,
   AlertTriangle,
@@ -9,6 +10,7 @@ import {
 import "./MinhasEtapas.css";
 
 export default function MinhasEtapas() {
+  const navigate = useNavigate();
   const [etapas, setEtapas] = useState([
     {
       id: 1,
@@ -96,7 +98,11 @@ export default function MinhasEtapas() {
                 )}
               </div>
 
-              <button className="btn-abrir-etapa">
+              {/* Botão com o redirecionamento corrigido */}
+              <button
+                className="btn-abrir-etapa"
+                onClick={() => navigate(`/etapas/${etapa.id}`)}
+              >
                 Abrir etapa <ArrowRight size={14} />
               </button>
             </div>

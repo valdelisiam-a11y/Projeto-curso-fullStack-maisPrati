@@ -1,0 +1,235 @@
+.detalhes-etapa-container {
+  padding: 32px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.btn-voltar {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #271f3d;
+  cursor: pointer;
+  margin-bottom: 20px;
+  padding: 0;
+}
+
+.detalhes-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #f3eff8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.topo-permissao {
+  display: flex;
+}
+
+.badge-permissao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-permissao.pode-editar {
+  background-color: #f3eefc;
+  color: #9e5ddd;
+}
+
+.badge-permissao.pode-visualizar {
+  background-color: #f3eefc;
+  color: #271f3d;
+}
+
+.detalhes-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  border-bottom: 1px solid #f3eff8;
+  padding-bottom: 20px;
+}
+
+.detalhes-header-content h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 4px 0 6px 0;
+}
+
+.detalhes-subtitulo {
+  font-size: 14px;
+  color: #4b5563;
+  margin: 0 0 4px 0;
+}
+
+.detalhes-meta {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.form-edicao-etapa,
+.visualizacao-etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.input-group textarea {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  color: #1f2937;
+  background-color: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-group textarea:focus {
+  border-color: #a855f7;
+}
+
+.texto-observacao-estatico {
+  font-size: 14px;
+  color: #374151;
+  margin: 0;
+}
+
+.btn-salvar-obs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #f3eefc;
+  color: #271f3d;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background-color 0.2s;
+}
+
+.btn-salvar-obs:hover {
+  background-color: #ebdffc;
+}
+
+.aviso-visualizacao-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f8f6fc;
+  color: #6b7280;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  border: 1px solid #f1ecf8;
+}
+
+/* ==========================================
+   ESTILOS DO SELECT CUSTOMIZADO (Dropdown)
+   ========================================== */
+
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.custom-select-trigger {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  color: #1f2937;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  width: 40%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.custom-select-wrapper.open .custom-select-trigger,
+.custom-select-trigger:hover {
+  border-color: #a855f7;
+}
+
+.custom-options-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 40%;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  list-style: none;
+  padding: 6px;
+  margin: 0;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.custom-option {
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #1f2937;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.15s;
+}
+
+.custom-option:hover {
+  background-color: #f8f6fc;
+}
+
+/* Item selecionado com o fundo rosa/lilás exato e texto escuro */
+.custom-option.selected {
+  background-color: #ffe3f8;
+  color: #271f3d;
+  font-weight: 500;
+}
+
+/* Efeito ao passar o rato por cima das opções */
+.custom-option:hover {
+  background-color: #ffe3f8;
+}

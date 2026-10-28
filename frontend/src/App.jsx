@@ -8,6 +8,7 @@ import Cadastro from "./pages/Cadastro";
 import Inicio from "./pages/Inicio";
 import MeusTrabalhos from "./pages/MeusTrabalhos";
 import MinhasEtapas from "./pages/MinhasEtapas";
+import DetalhesEtapa from "./pages/DetalhesEtapa";
 import NovoTrabalho from "./pages/NovoTrabalho";
 import Documentos from "./pages/Documentos";
 import Configuracoes from "./pages/Configuracoes";
@@ -45,6 +46,7 @@ function App() {
                 <Route path="/" element={<Inicio />} />
                 <Route path="/trabalhos" element={<MeusTrabalhos />} />
                 <Route path="/minhas-etapas" element={<MinhasEtapas />} />
+                <Route path="/etapas/:id" element={<DetalhesEtapa />} />
                 <Route path="/trabalhos/novo" element={<NovoTrabalho />} />
                 <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />
                 <Route path="/documentos" element={<Documentos />} />
