@@ -1,5 +1,5 @@
 .detalhes-etapa-container {
-  padding: 32px;
+  padding: 16px;
   min-height: 100vh;
   box-sizing: border-box;
   max-width: 1000px;
@@ -23,7 +23,7 @@
 .detalhes-card {
   background-color: #ffffff;
   border-radius: 16px;
-  padding: 32px;
+  padding: 20px;
   border: 1px solid #f3eff8;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   display: flex;
@@ -62,6 +62,7 @@
   gap: 16px;
   border-bottom: 1px solid #f3eff8;
   padding-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .detalhes-header-content h1 {
@@ -115,6 +116,15 @@
 
 .input-group textarea:focus {
   border-color: #a855f7;
+}
+
+/* Garante que imagens, inputs e caixas respeitem o limite da tela */
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .texto-observacao-estatico {
@@ -232,4 +242,36 @@
 /* Efeito ao passar o rato por cima das opções */
 .custom-option:hover {
   background-color: #ffe3f8;
+}
+
+/* ==========================================
+   RESPONSIVIDADE PARA TABLETS E TELEMÓVEIS
+   ========================================== */
+
+@media (max-width: 768px) {
+  .detalhes-etapa-container {
+    padding: 12px; /* Margens laterais mais estreitas em telemóveis */
+  }
+
+  .detalhes-card {
+    padding: 16px; /* Reduz o espaçamento interno do card */
+    border-radius: 12px;
+  }
+
+  .detalhes-header-content h1 {
+    font-size: 18px; /* Título ligeiramente menor em ecrãs compactos */
+  }
+
+  /* Faz com que o cabeçalho empilhe (título em cima, status embaixo) */
+  .detalhes-header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  /* Botão de salvar ocupa toda a largura em ecrãs pequenos para facilitar o toque */
+  .btn-salvar-obs {
+    width: 100%;
+    justify-content: center;
+  }
 }
