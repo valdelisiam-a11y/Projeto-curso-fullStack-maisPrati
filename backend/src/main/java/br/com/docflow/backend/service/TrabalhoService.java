@@ -20,6 +20,7 @@ import br.com.docflow.backend.entity.UsuarioTrabalho;
 import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
 import org.springframework.security.access.AccessDeniedException;
 import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+import br.com.docflow.backend.entity.TipoTrabalho;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -57,21 +58,47 @@ public class TrabalhoService {
 
     public TrabalhoRespostaDTO cadastrar(TrabalhoCadastroDTO dto) {
 
-        Empresa empresa = empresaRepository.findById(dto.getEmpresaId())
-                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
-
-        Usuario usuario = usuarioAutenticadoService.obterUsuario();
-        if (!usuarioEmpresaRepository.existsByUsuarioAndEmpresa(usuario, empresa)) {
-            throw new UsuarioEmpresaDiferenteException(
-                    "Usuário não pertence à empresa informada para o trabalho."
+        if (dto.getTipo() == null) {
+            throw new IllegalArgumentException(
+                    "O tipo do trabalho deve ser informado."
             );
-
         }
 
-Trabalho trabalho = new Trabalho();
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+        Empresa empresa = null;
+
+        if (dto.getTipo() == TipoTrabalho.EMPRESA) {
+
+            if (dto.getEmpresaId() == null) {
+                throw new IllegalArgumentException(
+                        "O ID da empresa é obrigatório para trabalhos empresariais."
+                );
+            }
+
+            empresa = empresaRepository.findById(dto.getEmpresaId())
+                    .orElseThrow(() ->
+                            new RecursoNaoEncontradoException("Empresa não encontrada"));
+
+            if (!usuarioEmpresaRepository.existsByUsuarioAndEmpresa(usuario, empresa)) {
+                throw new UsuarioEmpresaDiferenteException(
+                        "Usuário não pertence à empresa informada para o trabalho."
+                );
+            }
+
+        } else if (dto.getTipo() == TipoTrabalho.PESSOAL) {
+
+            if (dto.getEmpresaId() != null) {
+                throw new IllegalArgumentException(
+                        "Um trabalho pessoal não pode estar vinculado a uma empresa."
+                );
+            }
+        }
+
+        Trabalho trabalho = new Trabalho();
 
         trabalho.setTitulo(dto.getTitulo());
         trabalho.setDescricao(dto.getDescricao());
+        trabalho.setTipo(dto.getTipo());
         trabalho.setStatus(StatusTrabalho.PENDENTE);
         trabalho.setDataCriacao(LocalDateTime.now());
         trabalho.setDataAtualizacao(LocalDateTime.now());
@@ -86,7 +113,7 @@ Trabalho trabalho = new Trabalho();
     public List<TrabalhoRespostaDTO> listarTodos() {
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
-        return trabalhoRepository.findAcessiveisPorUsuario(usuario)
+        return trabalhoRepository.findAcessiveisPorUsuario(usuario, TipoTrabalho.EMPRESA)
                 .stream()
                 .map(this::converterParaResposta)
                 .toList();
@@ -100,7 +127,7 @@ Trabalho trabalho = new Trabalho();
     public List<TrabalhoRespostaDTO> buscarPorTitulo(String titulo) {
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
-        return trabalhoRepository.findAcessiveisPorUsuario(usuario)
+        return trabalhoRepository.findAcessiveisPorUsuario(usuario, TipoTrabalho.EMPRESA)
                 .stream()
                 .filter(trabalho -> trabalho.getTitulo() != null
                         && trabalho.getTitulo().toLowerCase()
@@ -183,15 +210,29 @@ Trabalho trabalho = new Trabalho();
                 .orElseThrow(() ->
                         new RecursoNaoEncontradoException("Trabalho não encontrado"));
 
-        boolean criador = trabalho.getCriadoPor().getId().equals(usuario.getId());
+        boolean criador = trabalho.getCriadoPor().getId()
+                .equals(usuario.getId());
 
+        // Trabalhos pessoais são exclusivos do criador.
+        if (trabalho.getTipo() == TipoTrabalho.PESSOAL) {
+            if (!criador) {
+                throw new AccessDeniedException(
+                        "Você não tem permissão para acessar este trabalho pessoal."
+                );
+            }
+
+            return trabalho;
+        }
+
+        // Trabalhos empresariais permitem acesso ao criador ou participante.
         boolean participante = usuarioTrabalhoRepository
                 .findByTrabalhoAndUsuario(trabalho, usuario)
                 .isPresent();
 
         if (!criador && !participante) {
             throw new AccessDeniedException(
-                    "Você não tem permissão para acessar este trabalho.");
+                    "Você não tem permissão para acessar este trabalho."
+            );
         }
 
         return trabalho;
@@ -204,11 +245,18 @@ Trabalho trabalho = new Trabalho();
         resposta.setId(trabalho.getId());
         resposta.setTitulo(trabalho.getTitulo());
         resposta.setDescricao(trabalho.getDescricao());
+        resposta.setTipo(trabalho.getTipo());
         resposta.setStatus(trabalho.getStatus());
         resposta.setDataCriacao(trabalho.getDataCriacao());
         resposta.setDataAtualizacao(trabalho.getDataAtualizacao());
         resposta.setDataConclusao(trabalho.getDataConclusao());
-        resposta.setEmpresaId(trabalho.getEmpresa().getId());
+
+        resposta.setEmpresaId(
+                trabalho.getEmpresa() != null
+                        ? trabalho.getEmpresa().getId()
+                        : null
+        );
+
         resposta.setCriadoPorId(trabalho.getCriadoPor().getId());
 
         return resposta;

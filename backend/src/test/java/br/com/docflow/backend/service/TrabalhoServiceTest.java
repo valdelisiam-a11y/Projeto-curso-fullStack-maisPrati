@@ -1,9 +1,7 @@
 
 package br.com.docflow.backend.service;
 
-import br.com.docflow.backend.entity.Empresa;
-import br.com.docflow.backend.entity.Trabalho;
-import br.com.docflow.backend.entity.Usuario;
+import br.com.docflow.backend.entity.*;
 import br.com.docflow.backend.repository.EmpresaRepository;
 import br.com.docflow.backend.repository.HistoricoTrabalhoRepository;
 import br.com.docflow.backend.repository.TrabalhoRepository;
@@ -22,7 +20,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import br.com.docflow.backend.entity.StatusTrabalho;
 import org.junit.jupiter.api.Assertions;
 import java.time.LocalDateTime;
 import br.com.docflow.backend.dto.TrabalhoCadastroDTO;
@@ -174,7 +171,8 @@ class TrabalhoServiceTest {
         dto.setTitulo("Trabalho de teste");
         dto.setDescricao("Teste de segurança");
         dto.setEmpresaId(1L);
-        dto.setCriadoPorId(999L); // ID diferente do usuário autenticado
+        dto.setCriadoPorId(999L);
+        dto.setTipo(TipoTrabalho.EMPRESA);// ID diferente do usuário autenticado
 
         when(usuarioAutenticadoService.obterUsuario())
                 .thenReturn(usuarioAutenticado);

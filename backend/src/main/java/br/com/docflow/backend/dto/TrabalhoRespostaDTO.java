@@ -1,6 +1,7 @@
 package br.com.docflow.backend.dto;
 
 import br.com.docflow.backend.entity.StatusTrabalho;
+import br.com.docflow.backend.entity.TipoTrabalho;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +16,7 @@ public class TrabalhoRespostaDTO {
     private LocalDateTime dataConclusao;
     private Long empresaId;
     private Long criadoPorId;
+    private TipoTrabalho tipo;
 
     public Long getId() {
         return id;
@@ -86,5 +88,13 @@ public class TrabalhoRespostaDTO {
 
     public void setCriadoPorId(Long criadoPorId) {
         this.criadoPorId = criadoPorId;
+    }
+
+    public TipoTrabalho getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoTrabalho tipo) {
+        this.tipo = tipo;
     }
 }

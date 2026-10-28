@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+import br.com.docflow.backend.entity.TipoTrabalho;
 
 import java.util.List;
 
@@ -38,12 +39,20 @@ public class UsuarioTrabalhoService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // Validação da empresa do Usuário x Trabalho (Retorna mensagem padronizada no 409 Conflict)
+        // Trabalhos pessoais não permitem adicionar participantes.
+        if (trabalho.getTipo() == TipoTrabalho.PESSOAL) {
+            throw new IllegalArgumentException(
+                    "Trabalhos pessoais não permitem adicionar participantes."
+            );
+        }
+
+        // O participante deve pertencer à empresa do trabalho.
         if (trabalho.getEmpresa() == null ||
                 !usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
                         usuario, trabalho.getEmpresa())) {
             throw new UsuarioEmpresaDiferenteException(
-                    "O usuário e o trabalho pertencem a empresas diferentes");
+                    "O usuário e o trabalho pertencem a empresas diferentes."
+            );
         }
 
         // Validação de duplicidade (Retorna mensagem padronizada no 409 Conflict)

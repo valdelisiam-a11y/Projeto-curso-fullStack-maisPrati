@@ -1,14 +1,8 @@
 
 package br.com.docflow.backend.service;
 
-import br.com.docflow.backend.entity.Empresa;
-import br.com.docflow.backend.entity.Etapa;
-import br.com.docflow.backend.entity.Trabalho;
-import br.com.docflow.backend.entity.Usuario;
-import br.com.docflow.backend.repository.EtapaRepository;
-import br.com.docflow.backend.repository.HistoricoEtapaRepository;
-import br.com.docflow.backend.repository.TrabalhoRepository;
-import br.com.docflow.backend.repository.UsuarioRepository;
+import br.com.docflow.backend.entity.*;
+import br.com.docflow.backend.repository.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,8 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import br.com.docflow.backend.dto.EtapaStatusDTO;
-import br.com.docflow.backend.entity.HistoricoEtapa;
-import br.com.docflow.backend.entity.StatusTrabalho;
 import org.mockito.ArgumentCaptor;
 
 import java.time.LocalDateTime;
@@ -34,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 
 import br.com.docflow.backend.dto.EtapaResponsavelDTO;
 import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
@@ -61,6 +52,9 @@ class EtapaServiceTest {
     @Mock
     private UsuarioAutenticadoService usuarioAutenticadoService;
 
+    @Mock
+    private UsuarioTrabalhoRepository usuarioTrabalhoRepository;
+
     @InjectMocks
     private EtapaService etapaService;
 
@@ -81,6 +75,7 @@ class EtapaServiceTest {
         trabalho.setId(10L);
         trabalho.setCriadoPor(criador);
         trabalho.setEmpresa(empresa);
+        trabalho.setTipo(TipoTrabalho.EMPRESA);
 
         Etapa etapa = new Etapa();
         etapa.setId(20L);
@@ -92,8 +87,10 @@ class EtapaServiceTest {
         when(usuarioAutenticadoService.obterUsuario())
                 .thenReturn(usuarioAutenticado);
 
-        when(trabalhoRepository.findAcessiveisPorUsuario(usuarioAutenticado))
-                .thenReturn(List.of());
+        when(usuarioTrabalhoRepository.findByTrabalhoAndUsuario(
+                trabalho,
+                usuarioAutenticado
+        )).thenReturn(Optional.empty());
 
         // O usuário não deve conseguir consultar a etapa.
         assertThrows(
@@ -117,6 +114,7 @@ class EtapaServiceTest {
         trabalho.setId(10L);
         trabalho.setCriadoPor(criador);
         trabalho.setEmpresa(empresa);
+        trabalho.setTipo(TipoTrabalho.EMPRESA);
 
         Etapa etapa = new Etapa();
         etapa.setId(20L);
@@ -128,8 +126,10 @@ class EtapaServiceTest {
         when(usuarioAutenticadoService.obterUsuario())
                 .thenReturn(usuarioAutenticado);
 
-        when(trabalhoRepository.findAcessiveisPorUsuario(usuarioAutenticado))
-                .thenReturn(List.of());
+        when(usuarioTrabalhoRepository.findByTrabalhoAndUsuario(
+                trabalho,
+                usuarioAutenticado
+        )).thenReturn(Optional.empty());
 
         assertThrows(
                 AccessDeniedException.class,
@@ -153,6 +153,7 @@ class EtapaServiceTest {
         trabalho.setId(10L);
         trabalho.setCriadoPor(criador);
         trabalho.setEmpresa(empresa);
+        trabalho.setTipo(TipoTrabalho.EMPRESA);
 
         Etapa etapa = new Etapa();
         etapa.setId(20L);
@@ -174,8 +175,10 @@ class EtapaServiceTest {
         when(usuarioAutenticadoService.obterUsuario())
                 .thenReturn(usuarioAutenticado);
 
-        when(trabalhoRepository.findAcessiveisPorUsuario(usuarioAutenticado))
-                .thenReturn(List.of(trabalho));
+        when(usuarioTrabalhoRepository.findByTrabalhoAndUsuario(
+                trabalho,
+                usuarioAutenticado
+        )).thenReturn(Optional.of(new UsuarioTrabalho()));
 
         when(etapaRepository.save(any(Etapa.class)))
                 .thenAnswer(invocacao -> invocacao.getArgument(0));

@@ -1,10 +1,13 @@
 package br.com.docflow.backend.dto;
 
+import br.com.docflow.backend.entity.TipoTrabalho;
+
 public class TrabalhoCadastroDTO {
     private String titulo;
     private String descricao;
     private Long empresaId;
     private Long criadoPorId;
+    private TipoTrabalho tipo;
 
     public String getTitulo() {
         return titulo;
@@ -36,5 +39,13 @@ public class TrabalhoCadastroDTO {
 
     public void setCriadoPorId(Long criadoPorId) {
         this.criadoPorId = criadoPorId;
+    }
+
+    public TipoTrabalho getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoTrabalho tipo) {
+        this.tipo = tipo;
     }
 }

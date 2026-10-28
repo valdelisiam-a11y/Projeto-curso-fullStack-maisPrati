@@ -20,6 +20,8 @@ import br.com.docflow.backend.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+import br.com.docflow.backend.entity.TipoTrabalho;
+import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +36,7 @@ public class EtapaService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAutenticadoService usuarioAutenticadoService;
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
+    private final UsuarioTrabalhoRepository usuarioTrabalhoRepository;
 
     public EtapaService(
             EtapaRepository etapaRepository,
@@ -41,7 +44,8 @@ public class EtapaService {
             TrabalhoRepository trabalhoRepository,
             UsuarioRepository usuarioRepository,
             UsuarioAutenticadoService usuarioAutenticadoService,
-            UsuarioEmpresaRepository usuarioEmpresaRepository) {
+            UsuarioEmpresaRepository usuarioEmpresaRepository,
+            UsuarioTrabalhoRepository usuarioTrabalhoRepository) {
 
         this.etapaRepository = etapaRepository;
         this.historicoEtapaRepository = historicoEtapaRepository;
@@ -49,6 +53,7 @@ public class EtapaService {
         this.usuarioRepository = usuarioRepository;
         this.usuarioAutenticadoService = usuarioAutenticadoService;
         this.usuarioEmpresaRepository = usuarioEmpresaRepository;
+        this.usuarioTrabalhoRepository = usuarioTrabalhoRepository;
     }
 
     @Transactional
@@ -294,10 +299,10 @@ public class EtapaService {
         boolean criador = trabalho.getCriadoPor().getId()
                 .equals(usuario.getId());
 
-        boolean participante = trabalhoRepository
-                .findAcessiveisPorUsuario(usuario)
-                .stream()
-                .anyMatch(t -> t.getId().equals(trabalhoId));
+        boolean participante = trabalho.getTipo() == TipoTrabalho.EMPRESA
+                && usuarioTrabalhoRepository
+                .findByTrabalhoAndUsuario(trabalho, usuario)
+                .isPresent();
 
         if (!criador && !participante) {
             throw new org.springframework.security.access.AccessDeniedException(
@@ -320,10 +325,10 @@ public class EtapaService {
         boolean criador = trabalho.getCriadoPor().getId()
                 .equals(usuario.getId());
 
-        boolean participante = trabalhoRepository
-                .findAcessiveisPorUsuario(usuario)
-                .stream()
-                .anyMatch(t -> t.getId().equals(trabalho.getId()));
+        boolean participante = trabalho.getTipo() == TipoTrabalho.EMPRESA
+                && usuarioTrabalhoRepository
+                .findByTrabalhoAndUsuario(trabalho, usuario)
+                .isPresent();
 
         if (!criador && !participante) {
             throw new org.springframework.security.access.AccessDeniedException(
