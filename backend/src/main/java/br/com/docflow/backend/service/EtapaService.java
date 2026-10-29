@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 import br.com.docflow.backend.entity.TipoTrabalho;
 import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
+import br.com.docflow.backend.service.TrabalhoService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class EtapaService {
     private final UsuarioAutenticadoService usuarioAutenticadoService;
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
     private final UsuarioTrabalhoRepository usuarioTrabalhoRepository;
+    private final TrabalhoService trabalhoService;
 
     public EtapaService(
             EtapaRepository etapaRepository,
@@ -45,7 +47,8 @@ public class EtapaService {
             UsuarioRepository usuarioRepository,
             UsuarioAutenticadoService usuarioAutenticadoService,
             UsuarioEmpresaRepository usuarioEmpresaRepository,
-            UsuarioTrabalhoRepository usuarioTrabalhoRepository) {
+            UsuarioTrabalhoRepository usuarioTrabalhoRepository,
+            TrabalhoService trabalhoService) {
 
         this.etapaRepository = etapaRepository;
         this.historicoEtapaRepository = historicoEtapaRepository;
@@ -54,6 +57,7 @@ public class EtapaService {
         this.usuarioAutenticadoService = usuarioAutenticadoService;
         this.usuarioEmpresaRepository = usuarioEmpresaRepository;
         this.usuarioTrabalhoRepository = usuarioTrabalhoRepository;
+        this.trabalhoService = trabalhoService;
     }
 
     @Transactional
@@ -82,6 +86,7 @@ public class EtapaService {
         if (dto.getOrdem() != null) {
             posicionar(etapaSalva, dto.getOrdem());
         }
+        trabalhoService.sincronizarStatusComEtapas(trabalho.getId());
 
         return converterParaResposta(etapaSalva);
     }
@@ -141,6 +146,10 @@ public class EtapaService {
 
         registrarHistorico(etapaAtualizada, statusAnterior, dto.getStatus(), usuario);
 
+        trabalhoService.sincronizarStatusComEtapas(
+                etapaAtualizada.getTrabalho().getId()
+        );
+
         return converterParaResposta(etapaAtualizada);
     }
 
@@ -170,6 +179,10 @@ public class EtapaService {
         if (etapaAtualizada.getStatus() != statusAnterior) {
             registrarHistorico(etapaAtualizada, statusAnterior, etapaAtualizada.getStatus(), usuario);
         }
+
+        trabalhoService.sincronizarStatusComEtapas(
+                etapaAtualizada.getTrabalho().getId()
+        );
 
         return converterParaResposta(etapaAtualizada);
     }
@@ -212,6 +225,8 @@ public class EtapaService {
 
         // Fecha o "buraco" deixado na sequência (1, 3, 4 vira 1, 2, 3)
         renumerar(new ArrayList<>(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(trabalhoId)));
+
+        trabalhoService.sincronizarStatusComEtapas(trabalhoId);
     }
 
     @Transactional(readOnly = true)

@@ -2,11 +2,7 @@
 package br.com.docflow.backend.service;
 
 import br.com.docflow.backend.entity.*;
-import br.com.docflow.backend.repository.EmpresaRepository;
-import br.com.docflow.backend.repository.HistoricoTrabalhoRepository;
-import br.com.docflow.backend.repository.TrabalhoRepository;
-import br.com.docflow.backend.repository.UsuarioRepository;
-import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
+import br.com.docflow.backend.repository.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +20,8 @@ import org.junit.jupiter.api.Assertions;
 import java.time.LocalDateTime;
 import br.com.docflow.backend.dto.TrabalhoCadastroDTO;
 import br.com.docflow.backend.dto.TrabalhoStatusDTO;
-import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+
+import java.util.List;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +47,9 @@ class TrabalhoServiceTest {
 
     @Mock
     private UsuarioAutenticadoService usuarioAutenticadoService;
+
+    @Mock
+    private EtapaRepository etapaRepository;
 
     @InjectMocks
     private TrabalhoService trabalhoService;
@@ -112,6 +112,9 @@ class TrabalhoServiceTest {
 
         when(trabalhoRepository.findById(10L))
                 .thenReturn(Optional.of(trabalho));
+
+        when(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(10L))
+                .thenReturn(List.of());
 
         var resposta = trabalhoService.buscarPorId(10L);
 
@@ -184,7 +187,6 @@ class TrabalhoServiceTest {
                 usuarioAutenticado, empresa))
                 .thenReturn(true);
 
-        usuarioAutenticado.setEmpresa(empresa);
 
         when(trabalhoRepository.save(
                 org.mockito.ArgumentMatchers.any(Trabalho.class)))
@@ -193,6 +195,9 @@ class TrabalhoServiceTest {
                     trabalhoSalvo.setId(10L);
                     return trabalhoSalvo;
                 });
+
+        when(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(10L))
+                .thenReturn(List.of());
 
         var resposta = trabalhoService.cadastrar(dto);
 
@@ -238,6 +243,9 @@ class TrabalhoServiceTest {
 
         when(usuarioAutenticadoService.obterUsuario())
                 .thenReturn(usuarioAutenticado);
+
+        when(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(10L))
+                .thenReturn(List.of());
 
         when(trabalhoRepository.findById(10L))
                 .thenReturn(Optional.of(trabalho));

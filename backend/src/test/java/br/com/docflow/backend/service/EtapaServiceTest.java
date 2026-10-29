@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 
 import br.com.docflow.backend.dto.EtapaResponsavelDTO;
 import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+import br.com.docflow.backend.service.TrabalhoService;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,6 +55,9 @@ class EtapaServiceTest {
 
     @Mock
     private UsuarioTrabalhoRepository usuarioTrabalhoRepository;
+
+    @Mock
+    private TrabalhoService trabalhoService;
 
     @InjectMocks
     private EtapaService etapaService;

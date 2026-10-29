@@ -4,8 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Column;
 
 import java.time.LocalDateTime;
@@ -30,10 +28,6 @@ public class Usuario {
 
     @Column(nullable = false)
     private Boolean ativo;
-
-    @ManyToOne
-    @JoinColumn(name = "empresa_id", nullable = false)
-    private Empresa empresa;
 
     public Long getId() {
         return id;
@@ -81,14 +75,6 @@ public class Usuario {
 
     public void setAtivo(Boolean ativo) {
         this.ativo = ativo;
-    }
-
-    public Empresa getEmpresa() {
-        return empresa;
-    }
-
-    public void setEmpresa(Empresa empresa) {
-        this.empresa = empresa;
     }
 
 }

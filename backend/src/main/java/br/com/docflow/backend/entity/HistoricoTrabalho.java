@@ -12,7 +12,7 @@ public class HistoricoTrabalho {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(nullable = true, length = 30)
     private StatusTrabalho statusAnterior;
 
     @Enumerated(EnumType.STRING)

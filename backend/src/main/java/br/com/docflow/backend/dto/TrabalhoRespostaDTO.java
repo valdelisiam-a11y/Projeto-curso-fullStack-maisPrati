@@ -17,6 +17,7 @@ public class TrabalhoRespostaDTO {
     private Long empresaId;
     private Long criadoPorId;
     private TipoTrabalho tipo;
+    private Integer progresso;
 
     public Long getId() {
         return id;
@@ -96,5 +97,13 @@ public class TrabalhoRespostaDTO {
 
     public void setTipo(TipoTrabalho tipo) {
         this.tipo = tipo;
+    }
+
+    public Integer getProgresso() {
+        return progresso;
+    }
+
+    public void setProgresso(Integer progresso) {
+        this.progresso = progresso;
     }
 }
