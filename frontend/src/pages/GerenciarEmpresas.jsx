@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Building2,
@@ -8,70 +8,28 @@ import {
   UserPlus,
   Trash2,
   Crown,
-  ChevronDown,
-  Check,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  listarMinhasEmpresas,
+  cadastrarEmpresa,
+  listarMembrosEmpresa,
+  adicionarMembroEmpresa,
+  removerMembroEmpresa,
+} from "../services/empresaService";
 import "./GerenciarEmpresas.css";
-
-const empresasIniciais = [
-  {
-    id: 1,
-    nome: "DocFlow Tecnologia",
-    papel: "Criador",
-    membros: [
-      {
-        id: 1,
-        nome: "Maria",
-        email: "maria@exemplo.com.br",
-        papel: "Criador",
-      },
-      {
-        id: 2,
-        nome: "João",
-        email: "joao@exemplo.com.br",
-        papel: "Colaborador",
-      },
-      {
-        id: 3,
-        nome: "Ana",
-        email: "ana@exemplo.com.br",
-        papel: "Colaborador",
-      },
-    ],
-  },
-  {
-    id: 2,
-    nome: "Empresa de Consultoria",
-    papel: "Colaborador",
-    membros: [
-      {
-        id: 4,
-        nome: "Carlos",
-        email: "carlos@exemplo.com.br",
-        papel: "Criador",
-      },
-      {
-        id: 5,
-        nome: "Maria",
-        email: "maria@exemplo.com.br",
-        papel: "Colaborador",
-      },
-    ],
-  },
-];
 
 export default function GerenciarEmpresas() {
   const navigate = useNavigate();
 
-  const [empresas, setEmpresas] = useState(empresasIniciais);
-  const [empresaSelecionadaId, setEmpresaSelecionadaId] = useState(1);
+  const [empresas, setEmpresas] = useState([]);
+  const [empresaSelecionadaId, setEmpresaSelecionadaId] = useState("");
+  const [carregando, setCarregando] = useState(true);
+  const [carregandoMembros, setCarregandoMembros] = useState(false);
+  const [salvando, setSalvando] = useState(false);
 
   const [novoNomeEmpresa, setNovoNomeEmpresa] = useState("");
-  const [novoNomeMembro, setNovoNomeMembro] = useState("");
   const [novoEmailMembro, setNovoEmailMembro] = useState("");
-  const [colaboradorSelecionadoEmail, setColaboradorSelecionadoEmail] =
-    useState("");
 
   const [mostrarFormularioEmpresa, setMostrarFormularioEmpresa] =
     useState(false);
@@ -81,155 +39,209 @@ export default function GerenciarEmpresas() {
   const [feedback, setFeedback] = useState("");
 
   const empresaSelecionada = empresas.find(
-    (empresa) => empresa.id === empresaSelecionadaId
+    (empresa) => String(empresa.id) === String(empresaSelecionadaId)
   );
 
-  const ehCriador = empresaSelecionada?.papel === "Criador";
+  const membros = empresaSelecionada?.membros ?? [];
+  const ehCriador = empresaSelecionada?.papel === "CRIADOR";
+  const limiteAtingido = membros.length >= 5;
 
-  const limiteAtingido =
-    (empresaSelecionada?.membros.length ?? 0) >= 5;
+  async function carregarEmpresas() {
+    const dados = await listarMinhasEmpresas();
 
-  const [menuColaboradoresAberto, setMenuColaboradoresAberto] = useState(false);
+    setEmpresas((atuais) =>
+      dados.map((empresa) => {
+        const existente = atuais.find(
+          (item) => String(item.id) === String(empresa.id)
+        );
 
-  // Reúne os usuários conhecidos, sem duplicar e-mails.
-  const usuariosCadastrados = [
-    ...new Map(
-      empresas
-        .flatMap((empresa) => empresa.membros)
-        .map((usuario) => [
-          usuario.email.toLowerCase(),
-          {
-            nome: usuario.nome,
-            email: usuario.email,
-          },
-        ])
-    ).values(),
-  ];
-
-  // Sugere somente usuários que ainda não participam da empresa selecionada.
-  const colaboradoresDisponiveis = usuariosCadastrados.filter(
-    (usuario) =>
-      !empresaSelecionada?.membros.some(
-        (membro) =>
-          membro.email.toLowerCase() === usuario.email.toLowerCase()
-      )
-  );
-
-  function atualizarEmpresaSelecionada(atualizacao) {
-    setEmpresas((empresasAtuais) =>
-      empresasAtuais.map((empresa) =>
-        empresa.id === empresaSelecionadaId
-          ? { ...empresa, ...atualizacao }
-          : empresa
-      )
+        return {
+          ...empresa,
+          membros: existente?.membros ?? [],
+        };
+      })
     );
+
+    return dados;
   }
 
-  function limparFormularioMembro() {
-    setNovoNomeMembro("");
-    setNovoEmailMembro("");
-    setColaboradorSelecionadoEmail("");
+  async function carregarMembros(empresaId) {
+    setCarregandoMembros(true);
+
+    try {
+      const dados = await listarMembrosEmpresa(empresaId);
+
+      setEmpresas((atuais) =>
+        atuais.map((empresa) =>
+          String(empresa.id) === String(empresaId)
+            ? { ...empresa, membros: dados }
+            : empresa
+        )
+      );
+    } finally {
+      setCarregandoMembros(false);
+    }
   }
 
-  function criarEmpresa(event) {
+  useEffect(() => {
+    async function inicializar() {
+      try {
+        const dados = await listarMinhasEmpresas();
+
+        setEmpresas(
+          dados.map((empresa) => ({
+            ...empresa,
+            membros: [],
+          }))
+        );
+
+        if (dados.length > 0) {
+          setEmpresaSelecionadaId(String(dados[0].id));
+        }
+      } catch (erro) {
+        setFeedback(
+          erro.message || "Não foi possível carregar as empresas."
+        );
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    inicializar();
+  }, []);
+
+  useEffect(() => {
+    if (!empresaSelecionadaId) return;
+
+    let ativo = true;
+
+    async function atualizarMembros() {
+      setCarregandoMembros(true);
+
+      try {
+        const dados = await listarMembrosEmpresa(empresaSelecionadaId);
+
+        if (ativo) {
+          setEmpresas((atuais) =>
+            atuais.map((empresa) =>
+              String(empresa.id) === String(empresaSelecionadaId)
+                ? { ...empresa, membros: dados }
+                : empresa
+            )
+          );
+        }
+      } catch (erro) {
+        if (ativo) {
+          setFeedback(
+            erro.message || "Não foi possível carregar os membros."
+          );
+        }
+      } finally {
+        if (ativo) {
+          setCarregandoMembros(false);
+        }
+      }
+    }
+
+    atualizarMembros();
+
+    return () => {
+      ativo = false;
+    };
+  }, [empresaSelecionadaId]);
+
+  async function criarEmpresa(event) {
     event.preventDefault();
 
     const nome = novoNomeEmpresa.trim();
 
-    if (!nome) return;
+    if (!nome || salvando) return;
 
-    const id = Date.now();
+    setSalvando(true);
+    setFeedback("");
 
-    const novaEmpresa = {
-      id,
-      nome,
-      papel: "Criador",
-      membros: [
-        {
-          id: id + 1,
-          nome: "Maria",
-          email: "maria@exemplo.com.br",
-          papel: "Criador",
-        },
-      ],
-    };
+    try {
+      const novaEmpresa = await cadastrarEmpresa({ nome });
 
-    setEmpresas((atuais) => [...atuais, novaEmpresa]);
-    setEmpresaSelecionadaId(id);
-    setNovoNomeEmpresa("");
-    setMostrarFormularioEmpresa(false);
-    setMostrarFormularioMembro(false);
-    setFeedback("Empresa criada na demonstração.");
-  }
+      const empresaComMembros = {
+        ...novaEmpresa,
+        membros: [],
+      };
 
-  function selecionarColaborador(email) {
-    setColaboradorSelecionadoEmail(email);
+      setEmpresas((atuais) => [
+        ...atuais,
+        empresaComMembros,
+      ]);
 
-    const colaborador = colaboradoresDisponiveis.find(
-      (usuario) => usuario.email === email
-    );
-
-    if (colaborador) {
-      setNovoNomeMembro(colaborador.nome);
-      setNovoEmailMembro(colaborador.email);
-    } else {
-      setNovoNomeMembro("");
-      setNovoEmailMembro("");
+      setEmpresaSelecionadaId(String(novaEmpresa.id));
+      setNovoNomeEmpresa("");
+      setMostrarFormularioEmpresa(false);
+      setMostrarFormularioMembro(false);
+      setFeedback("Empresa criada com sucesso.");
+    } catch (erro) {
+      setFeedback(
+        erro.message || "Não foi possível criar a empresa."
+      );
+    } finally {
+      setSalvando(false);
     }
   }
 
-  function adicionarMembro(event) {
+  async function adicionarMembro(event) {
     event.preventDefault();
 
-    if (!empresaSelecionada || !ehCriador || limiteAtingido) return;
-
-    const nome = novoNomeMembro.trim();
-    const email = novoEmailMembro.trim();
-
-    if (!nome || !email) return;
-
-    const emailJaExiste = empresaSelecionada.membros.some(
-      (membro) => membro.email.toLowerCase() === email.toLowerCase()
-    );
-
-    if (emailJaExiste) {
-      setFeedback("Este e-mail já está cadastrado nesta empresa.");
+    if (
+      !empresaSelecionada ||
+      !ehCriador ||
+      limiteAtingido ||
+      salvando
+    ) {
       return;
     }
 
-    atualizarEmpresaSelecionada({
-      membros: [
-        ...empresaSelecionada.membros,
-        {
-          id: Date.now(),
-          nome,
-          email,
-          papel: "Colaborador",
-        },
-      ],
-    });
+    const email = novoEmailMembro.trim();
 
-    limparFormularioMembro();
-    setMostrarFormularioMembro(false);
-    setFeedback("Colaborador adicionado na demonstração.");
+    if (!email) return;
+
+    setSalvando(true);
+    setFeedback("");
+
+    try {
+      await adicionarMembroEmpresa(empresaSelecionada.id, email);
+
+      await carregarMembros(empresaSelecionada.id);
+
+      setNovoEmailMembro("");
+      setMostrarFormularioMembro(false);
+      setFeedback("Colaborador adicionado com sucesso.");
+    } catch (erro) {
+      setFeedback(
+        erro.message || "Não foi possível adicionar o colaborador."
+      );
+    } finally {
+      setSalvando(false);
+    }
   }
 
-  function removerMembro(membroId) {
-    if (!empresaSelecionada || !ehCriador) return;
+  async function removerMembro(usuarioId) {
+    if (!empresaSelecionada || !ehCriador || salvando) return;
 
-    const membro = empresaSelecionada.membros.find(
-      (item) => item.id === membroId
-    );
+    setSalvando(true);
+    setFeedback("");
 
-    if (!membro || membro.papel === "Criador") return;
+    try {
+      await removerMembroEmpresa(empresaSelecionada.id, usuarioId);
 
-    atualizarEmpresaSelecionada({
-      membros: empresaSelecionada.membros.filter(
-        (item) => item.id !== membroId
-      ),
-    });
+      await carregarMembros(empresaSelecionada.id);
 
-    setFeedback("Colaborador removido na demonstração.");
+      setFeedback("Colaborador removido com sucesso.");
+    } catch (erro) {
+      setFeedback(
+        erro.message || "Não foi possível remover o colaborador."
+      );
+    } finally {
+      setSalvando(false);
+    }
   }
 
   return (
@@ -279,15 +291,24 @@ export default function GerenciarEmpresas() {
             <select
               id="empresaSelecionada"
               value={empresaSelecionadaId}
+              disabled={carregando || empresas.length === 0}
               onChange={(event) => {
-                setEmpresaSelecionadaId(Number(event.target.value));
+                setEmpresaSelecionadaId(event.target.value);
                 setFeedback("");
                 setMostrarFormularioMembro(false);
-                limparFormularioMembro();
+                setNovoEmailMembro("");
               }}
             >
+              {empresas.length === 0 && (
+                <option value="">
+                  {carregando
+                    ? "Carregando empresas..."
+                    : "Nenhuma empresa cadastrada"}
+                </option>
+              )}
+
               {empresas.map((empresa) => (
-                <option key={empresa.id} value={empresa.id}>
+                <option key={empresa.id} value={String(empresa.id)}>
                   {empresa.nome}
                 </option>
               ))}
@@ -320,7 +341,7 @@ export default function GerenciarEmpresas() {
                   setNovoNomeEmpresa(event.target.value)
                 }
                 placeholder="Digite o nome da empresa"
-                maxLength={100}
+                maxLength={150}
                 required
               />
             </div>
@@ -329,18 +350,41 @@ export default function GerenciarEmpresas() {
               <button
                 type="button"
                 className="btn-cancelar"
-                onClick={() => setMostrarFormularioEmpresa(false)}
+                disabled={salvando}
+                onClick={() => {
+                  setMostrarFormularioEmpresa(false);
+                  setNovoNomeEmpresa("");
+                }}
               >
                 Cancelar
               </button>
 
-              <button type="submit" className="btn-purple">
-                Criar empresa
+              <button
+                type="submit"
+                className="btn-purple"
+                disabled={salvando}
+              >
+                {salvando ? "Criando..." : "Criar empresa"}
               </button>
             </div>
           </form>
         )}
       </section>
+
+      {!carregando && empresas.length === 0 && (
+        <section className="config-card empresas-detalhes">
+          <h2>Nenhuma empresa cadastrada</h2>
+          <p>
+            Crie uma empresa para começar a gerenciar seus colaboradores.
+          </p>
+        </section>
+      )}
+
+      {carregando && (
+        <section className="config-card">
+          <p>Carregando empresas...</p>
+        </section>
+      )}
 
       {empresaSelecionada && (
         <>
@@ -356,13 +400,18 @@ export default function GerenciarEmpresas() {
                     <Users size={15} />
                   )}
 
-                  Você é {empresaSelecionada.papel.toLowerCase()}
+                  Você é{" "}
+                  {ehCriador
+                    ? "criador"
+                    : empresaSelecionada.papel === "MEMBRO"
+                      ? "membro"
+                      : String(empresaSelecionada.papel).toLowerCase()}
                 </span>
               </div>
 
               <div className="empresa-contagem">
                 <strong>
-                  {empresaSelecionada.membros.length} de 5
+                  {membros.length} de 5
                 </strong>
                 <span>usuários</span>
               </div>
@@ -372,15 +421,13 @@ export default function GerenciarEmpresas() {
               className="empresa-progresso"
               role="progressbar"
               aria-label="Ocupação de usuários"
-              aria-valuenow={empresaSelecionada.membros.length}
+              aria-valuenow={membros.length}
               aria-valuemin={0}
               aria-valuemax={5}
             >
               <span
                 style={{
-                  width: `${
-                    (empresaSelecionada.membros.length / 5) * 100
-                  }%`,
+                  width: `${(membros.length / 5) * 100}%`,
                 }}
               />
             </div>
@@ -388,9 +435,7 @@ export default function GerenciarEmpresas() {
             <p className="empresa-limite-info">
               {limiteAtingido
                 ? "O limite de usuários foi atingido."
-                : `Você pode adicionar mais ${
-                    5 - empresaSelecionada.membros.length
-                  } usuário(s).`}
+                : `Você pode adicionar mais ${5 - membros.length} usuário(s).`}
             </p>
           </section>
 
@@ -405,10 +450,10 @@ export default function GerenciarEmpresas() {
                 <button
                   type="button"
                   className="btn-purple"
-                  disabled={limiteAtingido}
+                  disabled={limiteAtingido || carregandoMembros}
                   onClick={() => {
                     setMostrarFormularioMembro((visivel) => !visivel);
-                    limparFormularioMembro();
+                    setNovoEmailMembro("");
                     setFeedback("");
                   }}
                 >
@@ -428,160 +473,98 @@ export default function GerenciarEmpresas() {
               <form
                 className="empresa-formulario"
                 onSubmit={adicionarMembro}
-              >                                       
+              >
                 <div className="form-group">
-                    <label>Selecionar colaborador cadastrado</label>
-                    <div className="colaborador-seletor">
-                        <button
-                        type="button"
-                        className="colaborador-seletor-botao"
-                        aria-expanded={menuColaboradoresAberto}
-                        onClick={() =>
-                            setMenuColaboradoresAberto((aberto) => !aberto)
-                        }
-                        >
-                        <span>
-                            {colaboradorSelecionadoEmail
-                            ? colaboradoresDisponiveis.find(
-                                (colaborador) =>
-                                    colaborador.email === colaboradorSelecionadoEmail
-                                )?.nome ?? "Selecionar colaborador"
-                            : "Selecionar colaborador"}
-                        </span>
+                  <label htmlFor="novoEmailMembro">
+                    E-mail do usuário cadastrado
+                  </label>
 
-                        <ChevronDown size={16} />
-                        </button>
+                  <input
+                    id="novoEmailMembro"
+                    type="email"
+                    value={novoEmailMembro}
+                    onChange={(event) =>
+                      setNovoEmailMembro(event.target.value)
+                    }
+                    placeholder="email@exemplo.com"
+                    maxLength={150}
+                    required
+                  />
 
-                        {menuColaboradoresAberto && (
-                        <div className="colaborador-seletor-menu">
-                            {colaboradoresDisponiveis.length > 0 ? (
-                            colaboradoresDisponiveis.map((colaborador) => {
-                                const selecionado =
-                                colaboradorSelecionadoEmail === colaborador.email;
-
-                                return (
-                                <button
-                                    key={colaborador.email}
-                                    type="button"
-                                    className={`colaborador-seletor-opcao ${
-                                    selecionado ? "ativo" : ""
-                                    }`}
-                                    onClick={() => {
-                                    selecionarColaborador(colaborador.email);
-                                    setMenuColaboradoresAberto(false);
-                                    }}
-                                >
-                                    <span>
-                                    <strong>{colaborador.nome}</strong>
-                                    <small>{colaborador.email}</small>
-                                    </span>
-
-                                    {selecionado && <Check size={16} />}
-                                </button>
-                                );
-                            })
-                            ) : (
-                            <p className="colaborador-seletor-vazio">
-                                Não há colaboradores disponíveis.
-                            </p>
-                            )}
-                        </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="novoNomeMembro">Nome</label>
-
-                    <input
-                      id="novoNomeMembro"
-                      type="text"
-                      value={novoNomeMembro}
-                      onChange={(event) => {
-                        setNovoNomeMembro(event.target.value);
-                        setColaboradorSelecionadoEmail("");
-                      }}
-                      placeholder="Nome do colaborador"
-                      maxLength={100}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="novoEmailMembro">E-mail</label>
-
-                    <input
-                      id="novoEmailMembro"
-                      type="email"
-                      value={novoEmailMembro}
-                      onChange={(event) => {
-                        setNovoEmailMembro(event.target.value);
-                        setColaboradorSelecionadoEmail("");
-                      }}
-                      placeholder="email@exemplo.com"
-                      maxLength={150}
-                      required
-                    />
-                  </div>
+                  <small>
+                    O usuário precisa ter uma conta no DocFlow.
+                  </small>
                 </div>
 
                 <div className="empresa-formulario-acoes">
-                 <button
+                  <button
                     type="button"
                     className="btn-cancelar"
+                    disabled={salvando}
                     onClick={() => {
-                        setMostrarFormularioMembro(false);
-                        setMenuColaboradoresAberto(false);
-                        limparFormularioMembro();
+                      setMostrarFormularioMembro(false);
+                      setNovoEmailMembro("");
                     }}
-                    >
+                  >
                     Cancelar
                   </button>
 
-                  <button type="submit" className="btn-purple">
-                    Adicionar colaborador
+                  <button
+                    type="submit"
+                    className="btn-purple"
+                    disabled={salvando}
+                  >
+                    {salvando ? "Adicionando..." : "Adicionar colaborador"}
                   </button>
                 </div>
               </form>
             )}
 
-            <div className="membros-lista">
-              {empresaSelecionada.membros.map((membro) => (
-                <div className="membro-item" key={membro.id}>
-                  <div className="membro-avatar" aria-hidden="true">
-                    {membro.nome.charAt(0).toUpperCase()}
-                  </div>
+            {carregandoMembros ? (
+              <p>Carregando colaboradores...</p>
+            ) : membros.length === 0 ? (
+              <p>Nenhum colaborador encontrado nesta empresa.</p>
+            ) : (
+              <div className="membros-lista">
+                {membros.map((membro) => {
+                  const membroEhCriador = membro.papel === "CRIADOR";
 
-                  <div className="membro-dados">
-                    <strong>{membro.nome}</strong>
-                    <span>{membro.email}</span>
-                  </div>
+                  return (
+                    <div className="membro-item" key={membro.usuarioId}>
+                      <div className="membro-avatar" aria-hidden="true">
+                        {(membro.nome || "?").charAt(0).toUpperCase()}
+                      </div>
 
-                  <span
-                    className={`membro-papel ${
-                      membro.papel === "Criador"
-                        ? "membro-papel-criador"
-                        : ""
-                    }`}
-                  >
-                    {membro.papel}
-                  </span>
+                      <div className="membro-dados">
+                        <strong>{membro.nome}</strong>
+                        <span>{membro.email}</span>
+                      </div>
 
-                  {ehCriador && membro.papel !== "Criador" && (
-                    <button
-                      type="button"
-                      className="btn-remover-membro"
-                      title={`Remover ${membro.nome}`}
-                      aria-label={`Remover ${membro.nome}`}
-                      onClick={() => removerMembro(membro.id)}
-                    >
-                      <Trash2 size={17} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+                      <span
+                        className={`membro-papel ${
+                          membroEhCriador ? "membro-papel-criador" : ""
+                        }`}
+                      >
+                        {membroEhCriador ? "Criador" : "Colaborador"}
+                      </span>
+
+                      {ehCriador && !membroEhCriador && (
+                        <button
+                          type="button"
+                          className="btn-remover-membro"
+                          title={`Remover ${membro.nome}`}
+                          aria-label={`Remover ${membro.nome}`}
+                          disabled={salvando}
+                          onClick={() => removerMembro(membro.usuarioId)}
+                        >
+                          <Trash2 size={17} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
         </>
       )}

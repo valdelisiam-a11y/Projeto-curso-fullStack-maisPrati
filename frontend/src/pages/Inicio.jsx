@@ -1,4 +1,4 @@
-
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -13,86 +13,100 @@ import './Inicio.css';
 import ilustracaoOrganizacao from '../assets/ilustracao-organizacao-Inicial.png';
 import { useAuth } from '../contexts/useAuth.js';
 import { useContextoTrabalho } from '../contexts/ContextoTrabalho';
+import { listarTrabalhos } from '../services/trabalhoService';
 
+const statusConfig = {
+  EM_ANDAMENTO: {
+    texto: 'Em andamento',
+    classe: 'andamento',
+    Icone: CirclePlay,
+  },
+  PENDENTE: {
+    texto: 'Pendente',
+    classe: 'atencao',
+    Icone: Clock3,
+  },
+  CONCLUIDO: {
+    texto: 'Concluído',
+    classe: 'concluido',
+    Icone: CircleCheck,
+  },
+  CANCELADO: {
+    texto: 'Cancelado',
+    classe: 'atrasado',
+    Icone: TriangleAlert,
+  },
+};
 
-const trabalhosRecentes = [
-  {
-    id: '1',
-    nome: 'Cadastro de novo cliente',
-    descricao: 'Documentação e contrato do cliente Marina Souza.',
-    status: 'Em andamento',
-    etapaAtual: 'Enviar proposta',
-    progresso: 40,
-    atualizadoEm: '17/08/2026',
-    contexto: 'empresa',
-    empresaId: 1,
-  },
-  {
-    id: '2',
-    nome: 'Compra de materiais',
-    descricao: 'Cimento, areia e ferragem para a obra da Rua das Acácias.',
-    status: 'Precisa de atenção',
-    etapaAtual: 'Aprovação',
-    progresso: 40,
-    atualizadoEm: '16/08/2026',
-    contexto: 'empresa',
-    empresaId: 1,
-  },
-  {
-    id: '3',
-    nome: 'Prestação de serviço — Manutenção elétrica',
-    descricao: 'Visita técnica e reparo no comércio do Sr. Antônio.',
-    status: 'Atrasado',
-    etapaAtual: 'Executar serviço',
-    progresso: 50,
-    atualizadoEm: '13/08/2026',
-    contexto: 'empresa',
-    empresaId: 2,
-  },
-  {
-    id: '4',
-    nome: 'Pagamento de contas do mês',
-    descricao: 'Boletos de água, luz e internet de agosto.',
-    status: 'Concluído',
-    etapaAtual: 'Todas as etapas concluídas',
-    progresso: 100,
-    atualizadoEm: '10/08/2026',
-    contexto: 'pessoal',
-    empresaId: null,
-  },
-];
+function formatarData(data) {
+  if (!data) return '—';
 
+  const dataFormatada = new Date(data);
 
+  if (Number.isNaN(dataFormatada.getTime())) return '—';
+
+  return dataFormatada.toLocaleDateString('pt-BR');
+}
 
 function Inicio() {
   const { usuario } = useAuth();
   const { contexto, empresaSelecionada } = useContextoTrabalho();
 
-  const trabalhosDoContexto = trabalhosRecentes.filter((trabalho) => {
-        if (trabalho.contexto !== contexto) {
-          return false;
-        }
+  const [trabalhos, setTrabalhos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
 
-        if (contexto === 'empresa') {
-          return trabalho.empresaId === empresaSelecionada?.id;
-        }
+  useEffect(() => {
+    async function carregarTrabalhos() {
+      try {
+        setCarregando(true);
+        setErro('');
 
-        return true;
-      });
+        const dados = await listarTrabalhos();
+        const lista = Array.isArray(dados) ? dados : dados.content ?? [];
 
-      const totalEmAndamento = trabalhosDoContexto.filter(
-        (trabalho) => trabalho.status === 'Em andamento'
-      ).length;
+        setTrabalhos(lista);
+      } catch (error) {
+        setErro(error.message || 'Não foi possível carregar os trabalhos.');
+      } finally {
+        setCarregando(false);
+      }
+    }
 
-      const totalAtencao = trabalhosDoContexto.filter(
-        (trabalho) =>
-          trabalho.status === 'Precisa de atenção' ||
-          trabalho.status === 'Atrasado'
-      ).length;
+    carregarTrabalhos();
+  }, []);
 
-      const totalConcluidos = trabalhosDoContexto.filter(
-        (trabalho) => trabalho.status === 'Concluído'
-      ).length;
+  const trabalhosDoContexto = trabalhos
+    .filter((trabalho) => {
+      if (contexto === 'pessoal') {
+        return trabalho.tipo === 'PESSOAL';
+      }
+
+      return (
+        trabalho.tipo === 'EMPRESA' &&
+        Number(trabalho.empresaId) === Number(empresaSelecionada?.id)
+      );
+    })
+    .sort((a, b) => {
+      const dataA = new Date(a.dataAtualizacao || a.dataCriacao || 0).getTime();
+      const dataB = new Date(b.dataAtualizacao || b.dataCriacao || 0).getTime();
+
+      return dataB - dataA;
+    });
+
+  const totalEmAndamento = trabalhosDoContexto.filter(
+    (trabalho) => trabalho.status === 'EM_ANDAMENTO'
+  ).length;
+
+  const totalAtencao = trabalhosDoContexto.filter(
+    (trabalho) => trabalho.status === 'PENDENTE'
+  ).length;
+
+  const totalConcluidos = trabalhosDoContexto.filter(
+    (trabalho) => trabalho.status === 'CONCLUIDO'
+  ).length;
+
+  const recentes = trabalhosDoContexto.slice(0, 4);
 
   return (
     <main className="inicio">
@@ -122,8 +136,8 @@ function Inicio() {
           </Link>
         </div>
 
-       <div className="inicio__ilustracao">
-         <img
+        <div className="inicio__ilustracao">
+          <img
             src={ilustracaoOrganizacao}
             alt="Pessoa organizando pastas e documentos"
           />
@@ -138,15 +152,15 @@ function Inicio() {
             <span className="indicador__icone">
               <CirclePlay size={20} />
             </span>
-            <strong>{totalEmAndamento}</strong>
+            <strong>{carregando ? '—' : totalEmAndamento}</strong>
             <span>Em andamento</span>
           </article>
 
           <article className="indicador indicador--atencao">
             <span className="indicador__icone">
-             <TriangleAlert size={20} />
+              <TriangleAlert size={20} />
             </span>
-            <strong>{totalAtencao}</strong>
+            <strong>{carregando ? '—' : totalAtencao}</strong>
             <span>Precisam de atenção</span>
           </article>
 
@@ -154,7 +168,7 @@ function Inicio() {
             <span className="indicador__icone">
               <CircleCheck size={20} />
             </span>
-            <strong>{totalConcluidos}</strong>
+            <strong>{carregando ? '—' : totalConcluidos}</strong>
             <span>Concluídos</span>
           </article>
         </div>
@@ -172,109 +186,95 @@ function Inicio() {
           </Link>
         </div>
 
-        <div className="trabalhos-lista">
-          {trabalhosDoContexto.map((trabalho) => {  
-            const statusConfig = {
-              'Em andamento': {
-                classe: 'andamento',
-                Icone: CirclePlay,
-              },
-              'Precisa de atenção': {
-                classe: 'atencao',
-                Icone: TriangleAlert,
-              },
-              Atrasado: {
-                classe: 'atrasado',
-                Icone: TriangleAlert,
-              },
-              'Concluído': {
-                classe: 'concluido',
-                Icone: CircleCheck,
-              },
-            };
+        {carregando && (
+          <p>Carregando seus trabalhos...</p>
+        )}
 
-            const status = statusConfig[trabalho.status];
-            const IconeStatus = status.Icone;
-            const trabalhosDoContexto = trabalhosRecentes.filter((trabalho) => {
-              if (trabalho.contexto !== contexto) {
-                return false;
-              }
+        {!carregando && erro && (
+          <p role="alert">{erro}</p>
+        )}
 
-              if (contexto === 'empresa') {
-                return trabalho.empresaId === empresaSelecionada?.id;
-              }
+        {!carregando && !erro && recentes.length === 0 && (
+          <p>Nenhum trabalho encontrado neste contexto.</p>
+        )}
 
-              return true;
-            });
+        {!carregando && !erro && recentes.length > 0 && (
+          <div className="trabalhos-lista">
+            {recentes.map((trabalho) => {
+              const configuracao =
+                statusConfig[trabalho.status] ?? {
+                  texto: trabalho.status ?? 'Status desconhecido',
+                  classe: 'atencao',
+                  Icone: TriangleAlert,
+                };
 
-            const totalEmAndamento = trabalhosDoContexto.filter(
-              (trabalho) => trabalho.status === 'Em andamento'
-            ).length;
+              const IconeStatus = configuracao.Icone;
 
-            const totalAtencao = trabalhosDoContexto.filter(
-              (trabalho) =>
-                trabalho.status === 'Precisa de atenção' ||
-                trabalho.status === 'Atrasado'
-            ).length;
+              return (
 
-            const totalConcluidos = trabalhosDoContexto.filter(
-              (trabalho) => trabalho.status === 'Concluído'
-            ).length;
+                <article className="trabalho-card" key={trabalho.id}>
+                  <div className="trabalho-card__conteudo">
+                    <div className="trabalho-card__cabecalho">
+                      <div className="trabalho-card__titulo">
+                        <BriefcaseBusiness size={20} />
+                        <h3>{trabalho.titulo}</h3>
+                      </div>
 
-            return (
-              <article className="trabalho-card" key={trabalho.id}>
-                <div className="trabalho-card__conteudo">
-                  <div className="trabalho-card__cabecalho">
-                    <div className="trabalho-card__titulo">
-                      <BriefcaseBusiness size={20} />
-                      <h3>{trabalho.nome}</h3>
+                      <span className={`status status--${configuracao.classe}`}>
+                        <IconeStatus size={14} />
+                        {configuracao.texto}
+                      </span>
                     </div>
 
-                    <span className={`status status--${status.classe}`}>
-                      <IconeStatus size={14} />
-                      {trabalho.status}
+                    <p>
+                      {trabalho.descricao || 'Nenhuma descrição informada.'}
+                    </p>
+
+                    <div className="trabalho-card__etapa">
+                      <span>Etapa atual: </span>
+                      <strong>Consulte as etapas do trabalho</strong>
+                    </div>
+
+                    <div className="trabalho-card__progresso">
+                      <div
+                        className="trabalho-card__progresso-barra"
+                        role="progressbar"
+                        aria-label={`Progresso de ${trabalho.titulo}`}
+                        aria-valuenow={trabalho.progresso ?? 0}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
+                        <div
+                          className="trabalho-card__progresso-valor"
+                          style={{ width: `${trabalho.progresso ?? 0}%` }}
+                        />
+                      </div>
+
+                      <span>{trabalho.progresso ?? 0}% concluído</span>
+                    </div>
+                  </div>
+
+                  <div className="trabalho-card__detalhes">
+                    <span className="trabalho-card__data">
+                      Atualizado em{' '}
+                      {formatarData(
+                        trabalho.dataAtualizacao || trabalho.dataCriacao
+                      )}
                     </span>
-                  </div>
 
-                  <p>{trabalho.descricao}</p>
-
-                  <div className="trabalho-card__etapa">
-                    Etapa atual: <strong>{trabalho.etapaAtual}</strong>
-                  </div>
-
-                  <div className="trabalho-card__progresso">
-                    <div
-                      className="trabalho-card__barra"
-                      role="progressbar"
-                      aria-label={`Conclusão de ${trabalho.nome}`}
-                      aria-valuenow={trabalho.progresso}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
+                    <Link
+                      to={`/trabalhos/${trabalho.id}`}
+                      className="trabalho-card__link"
                     >
-                      <span style={{ width: `${trabalho.progresso}%` }} />
-                    </div>
-
-                    <span>{trabalho.progresso}% concluído</span>
+                      Ver trabalho <ArrowRight size={15} />
+                    </Link>
                   </div>
+                </article>
 
-                  <span className="trabalho-card__data">
-                    Atualizado em {trabalho.atualizadoEm}
-                  </span>
-                </div>
-
-                <div className="trabalho-card__detalhes">
-                  <Link
-                    to={`/trabalhos/${trabalho.id}`}
-                    className="trabalho-card__link"
-                  >
-                    Ver trabalho <ArrowRight size={15} />
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-
+              );
+            })}
+          </div>
+        )}
       </section>
     </main>
   );

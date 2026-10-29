@@ -199,6 +199,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  min-width: 0;
 }
 
 .trabalho-card__titulo svg {
@@ -209,6 +210,11 @@
 
 .trabalho-card__titulo h3 {
   margin: 0;
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .trabalho-card {
@@ -216,23 +222,28 @@
   flex-direction: column;
   gap: 16px;
   min-width: 0;
-  min-height: 300px;
   padding: 20px;
   border: 1px solid var(--border);
-  border-radius: 16px;
-  background: #fff;
-  transition: box-shadow 0.2s ease;
+  border-radius: 24px;
+  background: var(--card, var(--background, #fff));
+  box-shadow: var(--shadow-soft);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .trabalho-card:hover {
-  box-shadow: 0 8px 24px -12px var(--foreground);
+  border-color: var(--primary-soft);
+  box-shadow:
+    var(--shadow-lift,
+    0 8px 24px -12px var(--foreground));
 }
 
 /* Conteúdo do trabalho */
 .trabalho-card__conteudo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -253,15 +264,16 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   min-width: 0;
-  flex-wrap: wrap;
 }
 
 
 /* Etapa atual */
+
+/* Progresso do trabalho */
 .trabalho-card__etapa {
-  margin-top: 4px;
   padding: 10px 12px;
   border-radius: 12px;
   background: var(--muted);
@@ -269,6 +281,36 @@
   font-size: 0.875rem;
   line-height: 1.5;
 }
+
+.trabalho-card__progresso-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.trabalho-card__progresso-info span:last-child {
+  color: var(--foreground);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.trabalho-card__progresso-barra {
+  width: 95%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.trabalho-card__progresso-valor {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
 
 .trabalho-card__etapa strong {
   color: var(--foreground);
@@ -280,8 +322,8 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
-  margin-top: 4px;
+  gap: 8px;
+  width: 100%;
 }
 
 .trabalho-card__barra {
@@ -297,6 +339,13 @@
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #8b5cf6 0%, #f0abfc 100%);
+  transition: width 0.5s ease;
+}
+
+.trabalho-card__progresso-valor {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
   transition: width 0.5s ease;
 }
 
@@ -319,35 +368,52 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   flex-shrink: 0;
   width: fit-content;
   max-width: 100%;
   padding: 6px 10px;
+  border: 1px solid transparent;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.4;
-  white-space: normal;
 }
 
 .status svg {
   flex-shrink: 0;
 }
 
+
+
+/* Status dos trabalhos nos cards da tela Início */
+
+/* Em andamento — azul */
 .status--andamento {
-  background: var(--info-soft);
+  background-color: var(--info-soft);
   color: var(--info);
+  border: 1px solid oklch(60% 0.14 255 / 30%);
 }
 
+/* Pendente — amarelo */
 .status--atencao {
-  background: #fff2dc;
-  color: #8a5200;
+  background-color: oklch(96% 0.07 90);
+  color: oklch(32% 0.08 70);
+  border: 1px solid oklch(80% 0.08 80);
 }
 
+/* Concluído — verde */
+.status--concluido {
+  background-color: oklch(94% 0.05 155);
+  color: oklch(42% 0.12 155);
+  border: 1px solid oklch(82% 0.08 155);
+}
+
+/* Cancelado — vermelho */
 .status--atrasado {
-  background: #fee2e2;
-  color: #b91c1c;
+  background-color: oklch(95% 0.04 25);
+  color: var(--destructive);
+  border: 1px solid oklch(85% 0.08 25);
 }
 
 /* Data e link para detalhes */
@@ -357,12 +423,23 @@
   line-height: 1.5;
 }
 
+.trabalho-card__detalhes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
 .trabalho-card__link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 9px 12px;
+  padding: 8px 12px;
   border-radius: 10px;
   background: var(--secondary);
   color: var(--secondary-foreground);
@@ -370,11 +447,14 @@
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .trabalho-card__link:hover {
   background: var(--primary-soft);
+  color: var(--primary);
 }
 
 

@@ -1,19 +1,70 @@
 
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
+import { listarMinhasEmpresas } from "../services/empresaService";
 
 const ContextoTrabalho = createContext(null);
 
-const empresasMock = [
-  { id: 1, nome: "Construtora Acácias" },
-  { id: 2, nome: "Souza Serviços" },
-];
-
 export function ContextoTrabalhoProvider({ children }) {
   const [contexto, setContexto] = useState("pessoal");
-  const [empresas] = useState(empresasMock);
-  const [empresaSelecionada, setEmpresaSelecionada] = useState(
-    empresasMock[0]
-  );
+  const [empresas, setEmpresas] = useState([]);
+  const [empresaSelecionada, setEmpresaSelecionada] = useState(null);
+  const [carregandoEmpresas, setCarregandoEmpresas] = useState(true);
+  const [erroEmpresas, setErroEmpresas] = useState("");
+
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarEmpresas() {
+      try {
+        const resultado = await listarMinhasEmpresas();
+
+        if (!ativo) return;
+
+        const empresasReais = Array.isArray(resultado)
+          ? resultado
+          : [];
+
+        setEmpresas(empresasReais);
+
+        setEmpresaSelecionada((selecionadaAtual) => {
+          return (
+            empresasReais.find(
+              (empresa) =>
+                Number(empresa.id) === Number(selecionadaAtual?.id)
+            ) ??
+            empresasReais[0] ??
+            null
+          );
+        });
+
+        setErroEmpresas("");
+      } catch (error) {
+        if (!ativo) return;
+
+        setEmpresas([]);
+        setEmpresaSelecionada(null);
+        setErroEmpresas(
+          error.message || "Não foi possível carregar as empresas."
+        );
+      } finally {
+        if (ativo) {
+          setCarregandoEmpresas(false);
+        }
+      }
+    }
+
+    carregarEmpresas();
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   function selecionarContexto(novoContexto) {
     if (novoContexto !== "pessoal" && novoContexto !== "empresa") {
@@ -25,7 +76,7 @@ export function ContextoTrabalhoProvider({ children }) {
 
   function selecionarEmpresa(id) {
     const empresa = empresas.find(
-      (empresa) => empresa.id === Number(id)
+      (item) => Number(item.id) === Number(id)
     );
 
     if (empresa) {
@@ -41,6 +92,8 @@ export function ContextoTrabalhoProvider({ children }) {
         empresas,
         empresaSelecionada,
         selecionarEmpresa,
+        carregandoEmpresas,
+        erroEmpresas,
       }}
     >
       {children}
