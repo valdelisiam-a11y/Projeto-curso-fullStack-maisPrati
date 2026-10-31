@@ -5,13 +5,13 @@ import br.com.docflow.backend.dto.DocumentoRespostaDTO;
 import br.com.docflow.backend.service.DocumentoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
-@RequestMapping("/documentos")
+@RequestMapping("/api/documentos")
 public class DocumentoController {
 
     @Autowired
@@ -19,7 +19,7 @@ public class DocumentoController {
 
     @PostMapping
     public ResponseEntity<DocumentoRespostaDTO> adicionar(@RequestBody @Valid DocumentoCadastroDTO dto) {
-        return ResponseEntity.ok(documentoService.adicionar(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(documentoService.adicionar(dto));
     }
 
     @GetMapping("/etapa/{etapaId}")
