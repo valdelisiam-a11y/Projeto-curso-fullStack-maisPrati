@@ -10,16 +10,16 @@ import br.com.docflow.backend.dto.EtapaStatusDTO;
 import br.com.docflow.backend.dto.HistoricoEtapaRespostaDTO;
 import br.com.docflow.backend.entity.Etapa;
 import br.com.docflow.backend.entity.HistoricoEtapa;
-import br.com.docflow.backend.entity.StatusTrabalho;
+import br.com.docflow.backend.entity.StatusEtapa;
 import br.com.docflow.backend.entity.Trabalho;
 import br.com.docflow.backend.entity.Usuario;
 import br.com.docflow.backend.repository.EtapaRepository;
 import br.com.docflow.backend.repository.HistoricoEtapaRepository;
 import br.com.docflow.backend.repository.TrabalhoRepository;
 import br.com.docflow.backend.repository.UsuarioRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,22 +33,19 @@ public class EtapaService {
     private final TrabalhoRepository trabalhoRepository;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAutenticadoService usuarioAutenticadoService;
-    private final UsuarioEmpresaRepository usuarioEmpresaRepository;
 
     public EtapaService(
             EtapaRepository etapaRepository,
             HistoricoEtapaRepository historicoEtapaRepository,
             TrabalhoRepository trabalhoRepository,
             UsuarioRepository usuarioRepository,
-            UsuarioAutenticadoService usuarioAutenticadoService,
-            UsuarioEmpresaRepository usuarioEmpresaRepository) {
+            UsuarioAutenticadoService usuarioAutenticadoService) {
 
         this.etapaRepository = etapaRepository;
         this.historicoEtapaRepository = historicoEtapaRepository;
         this.trabalhoRepository = trabalhoRepository;
         this.usuarioRepository = usuarioRepository;
         this.usuarioAutenticadoService = usuarioAutenticadoService;
-        this.usuarioEmpresaRepository = usuarioEmpresaRepository;
     }
 
     @Transactional
@@ -60,11 +57,11 @@ public class EtapaService {
 
         etapa.setTitulo(dto.getTitulo());
         etapa.setDescricao(dto.getDescricao());
-        etapa.setStatus(StatusTrabalho.PENDENTE);
+        etapa.setStatus(StatusEtapa.PENDENTE);
         etapa.setPercentualConclusao(0);
         etapa.setTrabalho(trabalho);
 
-        // Responsável é opcional, mas precisa ser da mesma empresa do trabalho
+        // Responsável é opcional, mas precisa ser o criador ou um participante do trabalho
         if (dto.getResponsavelId() != null) {
             etapa.setResponsavel(buscarResponsavel(dto.getResponsavelId(), trabalho));
         }
@@ -117,24 +114,31 @@ public class EtapaService {
 
         Etapa etapa = buscarEntidade(id);
 
+        // O usuário do histórico vem sempre do JWT; o usuarioId do corpo é ignorado
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
-        StatusTrabalho statusAnterior = etapa.getStatus();
+        StatusEtapa statusAnterior = etapa.getStatus();
+        StatusEtapa statusNovo = dto.getStatus();
 
-        if (statusAnterior == dto.getStatus()) {
+        if (statusAnterior == statusNovo) {
             throw new EtapaStatusInalteradoException("A etapa já está com este status");
         }
 
-        etapa.setStatus(dto.getStatus());
-
-        // Regra: etapa concluída tem sempre 100% de conclusão
-        if (dto.getStatus() == StatusTrabalho.CONCLUIDO) {
+        if (statusNovo == StatusEtapa.CONCLUIDO) {
+            // Regra: etapa concluída tem sempre 100% de conclusão
             etapa.setPercentualConclusao(100);
+        } else if (statusAnterior == StatusEtapa.CONCLUIDO) {
+            // Regra: etapa que deixa de estar concluída não pode permanecer com 100%.
+            // O usuário informa o percentual ao qual ela retorna.
+            etapa.setPercentualConclusao(
+                    validarPercentualDeRetorno(statusNovo, dto.getPercentualConclusao()));
         }
+
+        etapa.setStatus(statusNovo);
 
         Etapa etapaAtualizada = etapaRepository.save(etapa);
 
-        registrarHistorico(etapaAtualizada, statusAnterior, dto.getStatus(), usuario);
+        registrarHistorico(etapaAtualizada, statusAnterior, statusNovo, usuario);
 
         return converterParaResposta(etapaAtualizada);
     }
@@ -144,20 +148,25 @@ public class EtapaService {
 
         Etapa etapa = buscarEntidade(id);
 
+        // O usuário do histórico vem sempre do JWT; o usuarioId do corpo é ignorado
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
-        StatusTrabalho statusAnterior = etapa.getStatus();
+        StatusEtapa statusAnterior = etapa.getStatus();
         int percentual = dto.getPercentualConclusao();
 
         etapa.setPercentualConclusao(percentual);
 
         if (percentual == 100) {
-            // Regra: ao chegar em 100%, a etapa é concluída
-            etapa.setStatus(StatusTrabalho.CONCLUIDO);
-        } else if (statusAnterior == StatusTrabalho.CONCLUIDO) {
-            // Se estava concluída e o percentual baixou, a etapa é reaberta
-            etapa.setStatus(StatusTrabalho.EM_ANDAMENTO);
+            // Regra: ao atingir 100%, a etapa é concluída
+            etapa.setStatus(StatusEtapa.CONCLUIDO);
+        } else if (statusAnterior == StatusEtapa.CONCLUIDO) {
+            // Regra: se o percentual for reduzido, a etapa concluída volta para EM_ANDAMENTO
+            etapa.setStatus(StatusEtapa.EM_ANDAMENTO);
+        } else if (statusAnterior == StatusEtapa.PENDENTE && percentual > 0) {
+            // Regra: etapa pendente que passa a ter progresso entra em andamento
+            etapa.setStatus(StatusEtapa.EM_ANDAMENTO);
         }
+        // IMPEDIDO e EM_ANDAMENTO abaixo de 100% mantêm o status (sem restrições adicionais)
 
         Etapa etapaAtualizada = etapaRepository.save(etapa);
 
@@ -249,8 +258,8 @@ public class EtapaService {
         etapaRepository.saveAll(etapas);
     }
 
-    private void registrarHistorico(Etapa etapa, StatusTrabalho statusAnterior,
-                                    StatusTrabalho statusNovo, Usuario usuario) {
+    private void registrarHistorico(Etapa etapa, StatusEtapa statusAnterior,
+                                    StatusEtapa statusNovo, Usuario usuario) {
 
         HistoricoEtapa historico = new HistoricoEtapa();
 
@@ -263,72 +272,84 @@ public class EtapaService {
         historicoEtapaRepository.save(historico);
     }
 
-    // Busca o usuário responsável e garante que ele é da mesma empresa do trabalho
+    // Percentual informado ao reabrir uma etapa concluída: obrigatório, de 0 a 99,
+    // e PENDENTE só aceita 0% (percentual inicial da etapa)
+    private int validarPercentualDeRetorno(StatusEtapa statusNovo, Integer percentual) {
+
+        if (percentual == null) {
+            throw new EtapaPercentualInvalidoException(
+                    "Informe o percentual de conclusão ao reabrir uma etapa concluída");
+        }
+
+        if (percentual < 0 || percentual > 99) {
+            throw new EtapaPercentualInvalidoException(
+                    "O percentual de retorno deve estar entre 0 e 99");
+        }
+
+        if (statusNovo == StatusEtapa.PENDENTE && percentual > 0) {
+            throw new EtapaPercentualInvalidoException(
+                    "Uma etapa pendente deve ter 0% de conclusão");
+        }
+
+        return percentual;
+    }
+
+    // Busca o usuário responsável e garante que ele é o criador ou um participante do trabalho
+    // (o mesmo critério que dá acesso à etapa)
     private Usuario buscarResponsavel(Long usuarioId, Trabalho trabalho) {
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário responsável não encontrado"));
 
-        if (!mesmaEmpresa(usuario, trabalho)) {
-            throw new UsuarioEmpresaDiferenteException(
-                    "O responsável deve pertencer à mesma empresa do trabalho");
+        if (!possuiAcesso(usuario, trabalho)) {
+            throw new ResponsavelSemAcessoException(
+                    "O responsável deve ser o criador ou um participante do trabalho");
         }
 
         return usuario;
     }
 
-    private boolean mesmaEmpresa(Usuario usuario, Trabalho trabalho) {
-        return trabalho.getEmpresa() != null
-                && usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
-                usuario, trabalho.getEmpresa());
+    // Acesso ao trabalho: somente o criador ou um participante autorizado
+    private boolean possuiAcesso(Usuario usuario, Trabalho trabalho) {
+
+        if (trabalho.getCriadoPor().getId().equals(usuario.getId())) {
+            return true;
+        }
+
+        return trabalhoRepository
+                .findAcessiveisPorUsuario(usuario)
+                .stream()
+                .anyMatch(t -> t.getId().equals(trabalho.getId()));
+    }
+
+    private void exigirAcesso(Trabalho trabalho, String mensagem) {
+
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        if (!possuiAcesso(usuario, trabalho)) {
+            throw new AccessDeniedException(mensagem);
+        }
     }
 
     private Trabalho validarAcessoTrabalho(Long trabalhoId) {
-
-        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
         Trabalho trabalho = trabalhoRepository.findById(trabalhoId)
                 .orElseThrow(() ->
                         new RecursoNaoEncontradoException("Trabalho não encontrado"));
 
-        boolean criador = trabalho.getCriadoPor().getId()
-                .equals(usuario.getId());
-
-        boolean participante = trabalhoRepository
-                .findAcessiveisPorUsuario(usuario)
-                .stream()
-                .anyMatch(t -> t.getId().equals(trabalhoId));
-
-        if (!criador && !participante) {
-            throw new org.springframework.security.access.AccessDeniedException(
-                    "Você não tem permissão para acessar este trabalho.");
-        }
+        exigirAcesso(trabalho, "Você não tem permissão para acessar este trabalho.");
 
         return trabalho;
     }
 
-    // verifica se o usuário é o criador ou tem acesso ao trabalho por meio das associações existentes
+    // Busca a etapa e verifica se o usuário autenticado tem acesso ao trabalho dela
     private Etapa buscarEntidade(Long id) {
 
         Etapa etapa = etapaRepository.findById(id)
                 .orElseThrow(() ->
                         new RecursoNaoEncontradoException("Etapa não encontrada"));
 
-        Trabalho trabalho = etapa.getTrabalho();
-        Usuario usuario = usuarioAutenticadoService.obterUsuario();
-
-        boolean criador = trabalho.getCriadoPor().getId()
-                .equals(usuario.getId());
-
-        boolean participante = trabalhoRepository
-                .findAcessiveisPorUsuario(usuario)
-                .stream()
-                .anyMatch(t -> t.getId().equals(trabalho.getId()));
-
-        if (!criador && !participante) {
-            throw new org.springframework.security.access.AccessDeniedException(
-                    "Você não tem permissão para acessar esta etapa.");
-        }
+        exigirAcesso(etapa.getTrabalho(), "Você não tem permissão para acessar esta etapa.");
 
         return etapa;
     }

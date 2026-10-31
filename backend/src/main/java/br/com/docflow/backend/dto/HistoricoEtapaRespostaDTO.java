@@ -1,14 +1,14 @@
 package br.com.docflow.backend.dto;
 
-import br.com.docflow.backend.entity.StatusTrabalho;
+import br.com.docflow.backend.entity.StatusEtapa;
 
 import java.time.LocalDateTime;
 
 public class HistoricoEtapaRespostaDTO {
 
     private Long id;
-    private StatusTrabalho statusAnterior;
-    private StatusTrabalho statusNovo;
+    private StatusEtapa statusAnterior;
+    private StatusEtapa statusNovo;
     private LocalDateTime dataAlteracao;
     private Long usuarioId;
     private String usuarioNome;
@@ -16,11 +16,11 @@ public class HistoricoEtapaRespostaDTO {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public StatusTrabalho getStatusAnterior() { return statusAnterior; }
-    public void setStatusAnterior(StatusTrabalho statusAnterior) { this.statusAnterior = statusAnterior; }
+    public StatusEtapa getStatusAnterior() { return statusAnterior; }
+    public void setStatusAnterior(StatusEtapa statusAnterior) { this.statusAnterior = statusAnterior; }
 
-    public StatusTrabalho getStatusNovo() { return statusNovo; }
-    public void setStatusNovo(StatusTrabalho statusNovo) { this.statusNovo = statusNovo; }
+    public StatusEtapa getStatusNovo() { return statusNovo; }
+    public void setStatusNovo(StatusEtapa statusNovo) { this.statusNovo = statusNovo; }
 
     public LocalDateTime getDataAlteracao() { return dataAlteracao; }
     public void setDataAlteracao(LocalDateTime dataAlteracao) { this.dataAlteracao = dataAlteracao; }

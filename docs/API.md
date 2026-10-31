@@ -437,13 +437,23 @@ O projeto ainda não utiliza Swagger/OpenAPI para geração automática da docum
 As informações sensíveis de acesso ao banco de dados não são armazenadas diretamente na documentação ou no código versionado. A senha do banco é fornecida por meio da variável de ambiente `DB_PASSWORD`.
 
 ## 13. Etapas
-
-Um trabalho pode ser dividido em etapas. Cada etapa pertence a um único trabalho, pode ter um usuário responsável (da mesma empresa do trabalho), possui percentual de conclusão (0 a 100), ordem dentro do trabalho e status, com histórico de alterações.
-
+ 
+Um trabalho pode ser dividido em etapas. Cada etapa pertence a um único trabalho, pode ter um usuário responsável (criador ou participante do trabalho), possui percentual de conclusão (0 a 100), ordem dentro do trabalho e status, com histórico de alterações.
+ 
 **Autenticação:** todos os endpoints exigem token JWT.
-
-### 13.1 Resumo dos endpoints
-
+ 
+### 13.1 Controle de acesso
+ 
+O acesso a uma etapa (consultar, listar, alterar, excluir ou ver o histórico) é permitido somente para:
+ 
+* o **criador** do trabalho; ou
+* um **participante** do trabalho.
+Pertencer à mesma empresa do trabalho **não** concede acesso. Quem não atende a nenhuma das duas condições recebe `403 Forbidden`.
+ 
+O usuário que realiza cada operação é sempre o **usuário autenticado** (obtido do token JWT). O campo `usuarioId`, quando enviado no corpo das requisições de status e percentual, é opcional e **ignorado** pelo backend; ele existe apenas por compatibilidade temporária. O histórico registra o usuário autenticado.
+ 
+### 13.2 Resumo dos endpoints
+ 
 | Método | Endpoint                        | Operação                      |
 | ------ | ------------------------------- | ----------------------------- |
 | POST   | `/trabalhos/{trabalhoId}/etapas`| Cadastrar etapa               |
@@ -456,11 +466,24 @@ Um trabalho pode ser dividido em etapas. Cada etapa pertence a um único trabalh
 | PATCH  | `/etapas/{id}/responsavel`      | Definir ou remover responsável|
 | GET    | `/etapas/{id}/historico`        | Consultar histórico de status |
 | DELETE | `/etapas/{id}`                  | Excluir etapa                 |
-
-### 13.2 Cadastrar etapa
-
+ 
+### 13.3 Status da etapa
+ 
+| Status         | Descrição                                   |
+| -------------- | ------------------------------------------- |
+| `PENDENTE`     | Etapa criada, ainda sem progresso.          |
+| `EM_ANDAMENTO` | Etapa em execução.                          |
+| `IMPEDIDO`     | Etapa bloqueada por algum impedimento.      |
+| `CONCLUIDO`    | Etapa finalizada (sempre com 100%).         |
+ 
+`CANCELADO` é um status de Trabalho e **não existe** para Etapa; enviá-lo retorna `400 Bad Request`.
+ 
+Uma etapa `IMPEDIDO` pode fazer o trabalho ser exibido como "Precisa de atenção" no dashboard, mas **não altera** o status do trabalho. O status `IMPEDIDO` não impõe restrições adicionais ao percentual.
+ 
+### 13.4 Cadastrar etapa
+ 
 ### POST `/trabalhos/{trabalhoId}/etapas`
-
+ 
 ```json
 {
   "titulo": "Revisão jurídica",
@@ -469,11 +492,11 @@ Um trabalho pode ser dividido em etapas. Cada etapa pertence a um único trabalh
   "responsavelId": 2
 }
 ```
-
-Somente `titulo` é obrigatório (máximo de 200 caracteres). Se `ordem` não for informada, a etapa vai para o final; se for informada, as demais são reposicionadas. A etapa nasce com status `PENDENTE` e percentual `0`.
-
+ 
+Somente `titulo` é obrigatório (máximo de 200 caracteres). Se `ordem` não for informada, a etapa vai para o final; se for informada, as demais são reposicionadas. Se `responsavelId` for informado, o usuário deve ser o criador ou um participante do trabalho. A etapa nasce com status `PENDENTE` e percentual `0`.
+ 
 **Resposta:** `HTTP 201 Created`
-
+ 
 ```json
 {
   "id": 1,
@@ -488,99 +511,107 @@ Somente `titulo` é obrigatório (máximo de 200 caracteres). Se `ordem` não fo
   "responsavelId": 2
 }
 ```
-
-### 13.3 Listar etapas de um trabalho
-
+ 
+### 13.5 Listar etapas de um trabalho
+ 
 ### GET `/trabalhos/{trabalhoId}/etapas`
-
+ 
 Retorna as etapas do trabalho ordenadas pelo campo `ordem`. **Resposta:** `HTTP 200 OK`.
-
-### 13.4 Buscar etapa por ID
-
+ 
+### 13.6 Buscar etapa por ID
+ 
 ### GET `/etapas/{id}`
-
+ 
 **Resposta:** `HTTP 200 OK`.
-
-### 13.5 Atualizar etapa
-
+ 
+### 13.7 Atualizar etapa
+ 
 ### PUT `/etapas/{id}`
-
+ 
 ```json
 {
   "titulo": "Revisão jurídica - ajustada",
   "descricao": "Nova descrição"
 }
 ```
-
+ 
 Altera apenas título (obrigatório) e descrição. Status, percentual, ordem e responsável têm endpoints próprios. **Resposta:** `HTTP 200 OK`.
-
-### 13.6 Alterar status
-
+ 
+### 13.8 Alterar status
+ 
 ### PATCH `/etapas/{id}/status`
-
+ 
+```json
+{
+  "status": "EM_ANDAMENTO"
+}
+```
+ 
+Para reabrir uma etapa `CONCLUIDO`, informe também o percentual ao qual ela retorna:
+ 
 ```json
 {
   "status": "EM_ANDAMENTO",
-  "usuarioId": 1
+  "percentualConclusao": 60
 }
 ```
-
-Status disponíveis: `PENDENTE`, `EM_ANDAMENTO`, `CONCLUIDO`, `CANCELADO` (os mesmos do trabalho). O `usuarioId` deve pertencer à empresa do trabalho e é registrado no histórico.
-
+ 
 Regras:
-
+ 
+* informar o status que a etapa já possui retorna `409 Conflict`;
 * ao marcar como `CONCLUIDO`, o percentual passa para 100;
-* informar o status que a etapa já possui retorna `409 Conflict`.
-
-### 13.7 Atualizar percentual
-
+* ao sair de `CONCLUIDO` para outro status, `percentualConclusao` é **obrigatório** e deve estar entre 0 e 99 (uma etapa não pode continuar com 100% se deixou de estar concluída); para `PENDENTE`, o único valor aceito é 0. Caso contrário, retorna `400 Bad Request` e nada é alterado;
+* nas demais mudanças de status, o percentual atual é mantido e `percentualConclusao` é ignorado;
+* toda mudança de status é registrada no histórico com o usuário autenticado.
+### 13.9 Atualizar percentual
+ 
 ### PATCH `/etapas/{id}/percentual`
-
+ 
 ```json
 {
-  "percentualConclusao": 60,
-  "usuarioId": 1
+  "percentualConclusao": 60
 }
 ```
-
+ 
 O percentual deve estar entre 0 e 100.
-
+ 
 Regras:
-
+ 
 * ao chegar em 100, a etapa passa para `CONCLUIDO`;
-* se a etapa estava `CONCLUIDO` e o percentual diminui, ela volta para `EM_ANDAMENTO`;
+* se a etapa estava `CONCLUIDO` e o percentual diminui, ela volta para `EM_ANDAMENTO` (com o percentual informado);
+* se a etapa estava `PENDENTE` e o percentual informado é maior que 0, ela passa para `EM_ANDAMENTO`;
+* em `EM_ANDAMENTO` e `IMPEDIDO`, percentuais abaixo de 100 mantêm o status;
 * o histórico só é registrado quando o percentual altera o status.
-
-### 13.8 Alterar ordem
-
+### 13.10 Alterar ordem
+ 
 ### PATCH `/etapas/{id}/ordem`
-
+ 
 ```json
 {
   "ordem": 2
 }
 ```
-
+ 
 A etapa é movida para a posição informada e as demais descem ou sobem uma posição (comportamento de lista), mantendo a sequência 1, 2, 3... sem repetições. Se a ordem for maior que o total de etapas, a etapa vai para o final. Ao excluir uma etapa, a sequência é renumerada.
-
-### 13.9 Definir ou remover responsável
-
+ 
+### 13.11 Definir ou remover responsável
+ 
 ### PATCH `/etapas/{id}/responsavel`
-
+ 
 ```json
 {
   "responsavelId": 2
 }
 ```
-
-Enviar `"responsavelId": null` remove o responsável. O usuário deve pertencer à mesma empresa do trabalho; caso contrário, retorna `409 Conflict`.
-
-### 13.10 Histórico de status
-
+ 
+Enviar `"responsavelId": null` remove o responsável. O responsável deve ser o **criador** ou um **participante** do trabalho; caso contrário, retorna `409 Conflict`. Ser da mesma empresa não é suficiente.
+ 
+### 13.12 Histórico de status
+ 
 ### GET `/etapas/{id}/historico`
-
+ 
 Retorna as alterações de status da etapa, da mais recente para a mais antiga.
-
+ 
 ```json
 [
   {
@@ -593,21 +624,32 @@ Retorna as alterações de status da etapa, da mais recente para a mais antiga.
   }
 ]
 ```
-
-### 13.11 Excluir etapa
-
+ 
+### 13.13 Excluir etapa
+ 
 ### DELETE `/etapas/{id}`
-
+ 
 **Resposta:** `HTTP 204 No Content`. O histórico da etapa é excluído junto e as etapas restantes são renumeradas.
-
+ 
 Ao excluir um trabalho, suas etapas e os históricos delas também são excluídos (`ON DELETE CASCADE` no banco).
-
-### 13.12 Erros
-
-Os erros seguem o formato `timestamp`, `status`, `erro`, `mensagem`.
-
-| Status | Quando                                                                                  |
-| ------ | --------------------------------------------------------------------------------------- |
-| 400    | Dados inválidos (título vazio, percentual fora de 0 a 100, ordem menor que 1, status inexistente, campo obrigatório ausente) |
-| 404    | Trabalho, etapa ou usuário não encontrado                                               |
-| 409    | Usuário de empresa diferente da empresa do trabalho; status igual ao atual              |
+ 
+### 13.14 Erros
+ 
+Os erros tratados pelas etapas seguem o formato `timestamp`, `status`, `erro`, `mensagem`.
+ 
+| Status | Quando                                                                                                                                                         |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | Dados inválidos (título vazio, percentual fora de 0 a 100, ordem menor que 1, status inexistente ou `CANCELADO`, campo obrigatório ausente); percentual de retorno ausente ou inválido ao reabrir uma etapa `CONCLUIDO` |
+| 403    | Usuário sem token válido, ou que não é o criador nem participante do trabalho. O corpo da resposta é vazio (resposta padrão do Spring Security)                |
+| 404    | Trabalho, etapa ou usuário responsável não encontrado                                                                                                          |
+| 409    | Responsável que não é criador nem participante do trabalho; status igual ao atual                                                                              |
+ 
+### 13.15 Testes automatizados
+ 
+Os testes das etapas ficam em `EtapaServiceTest` (regras de negócio e autorização do service) e `EtapaDtoValidacaoTest` (validações dos DTOs). Para executá-los, sem acessar o banco de dados:
+ 
+```bash
+cd backend
+mvn test -Dtest='EtapaServiceTest,EtapaDtoValidacaoTest'
+```
+ 

@@ -4,6 +4,8 @@ import br.com.docflow.backend.controller.EtapaController;
 import br.com.docflow.backend.dto.ErroRespostaDTO;
 import br.com.docflow.backend.service.EtapaStatusInalteradoException;
 import br.com.docflow.backend.service.RecursoNaoEncontradoException;
+import br.com.docflow.backend.service.EtapaPercentualInvalidoException;
+import br.com.docflow.backend.service.ResponsavelSemAcessoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -60,5 +62,25 @@ public class EtapaExceptionHandler {
                 "Corpo da requisição ausente, malformado ou com valor não reconhecido"
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
+    @ExceptionHandler(EtapaPercentualInvalidoException.class)
+    public ResponseEntity<ErroRespostaDTO> handlePercentualInvalido(EtapaPercentualInvalidoException ex) {
+        ErroRespostaDTO erro = new ErroRespostaDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                "Percentual inválido",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
+    @ExceptionHandler(ResponsavelSemAcessoException.class)
+    public ResponseEntity<ErroRespostaDTO> handleResponsavelSemAcesso(ResponsavelSemAcessoException ex) {
+        ErroRespostaDTO erro = new ErroRespostaDTO(
+                HttpStatus.CONFLICT.value(),
+                "Responsável inválido",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }
 }

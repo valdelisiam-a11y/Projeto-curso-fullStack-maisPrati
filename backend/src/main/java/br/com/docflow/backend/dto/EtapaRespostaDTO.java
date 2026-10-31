@@ -1,6 +1,6 @@
 package br.com.docflow.backend.dto;
 
-import br.com.docflow.backend.entity.StatusTrabalho;
+import br.com.docflow.backend.entity.StatusEtapa;
 
 import java.time.LocalDateTime;
 
@@ -9,7 +9,7 @@ public class EtapaRespostaDTO {
     private Long id;
     private String titulo;
     private String descricao;
-    private StatusTrabalho status;
+    private StatusEtapa status;
     private Integer percentualConclusao;
     private Integer ordem;
     private LocalDateTime dataCriacao;
@@ -26,8 +26,8 @@ public class EtapaRespostaDTO {
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
 
-    public StatusTrabalho getStatus() { return status; }
-    public void setStatus(StatusTrabalho status) { this.status = status; }
+    public StatusEtapa getStatus() { return status; }
+    public void setStatus(StatusEtapa status) { this.status = status; }
 
     public Integer getPercentualConclusao() { return percentualConclusao; }
     public void setPercentualConclusao(Integer percentualConclusao) { this.percentualConclusao = percentualConclusao; }

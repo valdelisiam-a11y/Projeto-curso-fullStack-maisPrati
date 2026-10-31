@@ -21,10 +21,11 @@ public class Etapa {
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
-    // Mesmo enum do Trabalho (PENDENTE, EM_ANDAMENTO, CONCLUIDO, CANCELADO)
+    // Status próprios da etapa (PENDENTE, EM_ANDAMENTO, IMPEDIDO, CONCLUIDO).
+    // CANCELADO é um status de Trabalho e não existe para Etapa.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private StatusTrabalho status;
+    private StatusEtapa status;
 
     @Min(0)
     @Max(100)
@@ -73,8 +74,8 @@ public class Etapa {
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
 
-    public StatusTrabalho getStatus() { return status; }
-    public void setStatus(StatusTrabalho status) { this.status = status; }
+    public StatusEtapa getStatus() { return status; }
+    public void setStatus(StatusEtapa status) { this.status = status; }
 
     public Integer getPercentualConclusao() { return percentualConclusao; }
     public void setPercentualConclusao(Integer percentualConclusao) { this.percentualConclusao = percentualConclusao; }

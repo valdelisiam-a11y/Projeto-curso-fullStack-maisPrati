@@ -11,9 +11,8 @@ public class EtapaPercentualDTO {
     @Max(value = 100, message = "O percentual deve ser no máximo 100")
     private Integer percentualConclusao;
 
-    // Usuário que está fazendo a alteração: o percentual pode mudar o status
-    // da etapa automaticamente, e essa mudança vai para o histórico
-    @NotNull(message = "O usuário é obrigatório")
+    // Mantido temporariamente para não quebrar o front.
+    // O backend ignora este valor e usa o usuário autenticado (JWT).
     private Long usuarioId;
 
     public Integer getPercentualConclusao() { return percentualConclusao; }

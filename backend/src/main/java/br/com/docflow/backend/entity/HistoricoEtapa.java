@@ -15,11 +15,11 @@ public class HistoricoEtapa {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private StatusTrabalho statusAnterior;
+    private StatusEtapa statusAnterior;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private StatusTrabalho statusNovo;
+    private StatusEtapa statusNovo;
 
     @Column(nullable = false)
     private LocalDateTime dataAlteracao;
@@ -37,11 +37,11 @@ public class HistoricoEtapa {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public StatusTrabalho getStatusAnterior() { return statusAnterior; }
-    public void setStatusAnterior(StatusTrabalho statusAnterior) { this.statusAnterior = statusAnterior; }
+    public StatusEtapa getStatusAnterior() { return statusAnterior; }
+    public void setStatusAnterior(StatusEtapa statusAnterior) { this.statusAnterior = statusAnterior; }
 
-    public StatusTrabalho getStatusNovo() { return statusNovo; }
-    public void setStatusNovo(StatusTrabalho statusNovo) { this.statusNovo = statusNovo; }
+    public StatusEtapa getStatusNovo() { return statusNovo; }
+    public void setStatusNovo(StatusEtapa statusNovo) { this.statusNovo = statusNovo; }
 
     public LocalDateTime getDataAlteracao() { return dataAlteracao; }
     public void setDataAlteracao(LocalDateTime dataAlteracao) { this.dataAlteracao = dataAlteracao; }
