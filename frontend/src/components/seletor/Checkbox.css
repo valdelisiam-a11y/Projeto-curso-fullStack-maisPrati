@@ -1,0 +1,70 @@
+.checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  color: var(--foreground);
+  font-family: inherit;
+  user-select: none;
+}
+
+/* Esconde o checkbox original sem perder a acessibilidade */
+.checkbox-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* Caixa personalizada */
+.checkbox-custom {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1.5px solid var(--border);
+  border-radius: 0.3rem;
+  background: var(--background);
+  color: var(--primary-foreground);
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+/* Estado marcado */
+.checkbox-input:checked + .checkbox-custom {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Símbolo de check */
+.checkbox-check {
+  width: 100%;
+  height: 100%;
+}
+
+/* Foco pelo teclado */
+.checkbox-input:focus-visible + .checkbox-custom {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* Estado desabilitado */
+.checkbox-input:disabled + .checkbox-custom {
+  opacity: 0.5;
+}
+
+.checkbox-input:disabled ~ .checkbox-label,
+.checkbox-container:has(.checkbox-input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkbox-label {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
