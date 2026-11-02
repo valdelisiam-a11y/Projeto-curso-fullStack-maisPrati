@@ -1,0 +1,178 @@
+.feedback {
+  --feedback-cor: var(--primary);
+  --feedback-fundo: var(--primary-soft, var(--background));
+  --feedback-borda: var(--primary);
+
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+
+  color: var(--foreground);
+  background: var(--feedback-fundo);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--feedback-borda);
+  border-radius: 10px;
+
+  font-family: inherit;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 4%);
+
+  animation: feedback-entrada 180ms ease-out;
+}
+
+.feedback *,
+.feedback *::before,
+.feedback *::after {
+  box-sizing: border-box;
+}
+
+/* Ícone */
+
+.feedback__icone {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--feedback-cor);
+}
+
+/* Conteúdo */
+
+.feedback__conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
+.feedback__titulo {
+  display: block;
+  margin: 0 0 4px;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.feedback__mensagem {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* Botão de fechar */
+
+.feedback__fechar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 30px;
+  height: 30px;
+  margin: -4px -6px 0 0;
+  padding: 0;
+
+  color: var(--foreground);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+
+  cursor: pointer;
+  opacity: 0.7;
+  transition:
+    opacity 150ms ease,
+    background-color 150ms ease;
+}
+
+.feedback__fechar:hover {
+  opacity: 1;
+  background: var(--background);
+}
+
+.feedback__fechar:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Sucesso */
+
+.feedback--sucesso {
+  --feedback-cor: var(--feedback-success, oklch(48% 0.14 155));
+  --feedback-fundo: var(
+    --feedback-success-soft,
+    color-mix(in oklch, var(--feedback-cor) 8%, var(--background))
+  );
+  --feedback-borda: var(--feedback-cor);
+}
+
+/* Erro */
+
+.feedback--erro {
+  --feedback-cor: var(--destructive);
+  --feedback-fundo: color-mix(
+    in oklch,
+    var(--destructive) 8%,
+    var(--background)
+  );
+  --feedback-borda: var(--destructive);
+}
+
+/* Aviso */
+
+.feedback--aviso {
+  --feedback-cor: var(--feedback-warning, oklch(58% 0.14 75));
+  --feedback-fundo: var(
+    --feedback-warning-soft,
+    color-mix(in oklch, var(--feedback-cor) 9%, var(--background))
+  );
+  --feedback-borda: var(--feedback-cor);
+}
+
+/* Carregamento */
+
+.feedback--carregamento {
+  --feedback-cor: var(--primary);
+  --feedback-fundo: var(--primary-soft, var(--background));
+  --feedback-borda: var(--primary);
+}
+
+/* Animação do ícone de carregamento */
+
+.feedback__icone--animada {
+  animation: feedback-girar 1s linear infinite;
+}
+
+/* Animação de entrada */
+
+@keyframes feedback-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes feedback-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Respeita a preferência de movimento reduzido */
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback,
+  .feedback__icone--animada {
+    animation: none;
+  }
+
+  .feedback__fechar {
+    transition: none;
+  }
+}

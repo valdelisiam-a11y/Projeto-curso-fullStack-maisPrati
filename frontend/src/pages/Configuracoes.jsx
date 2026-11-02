@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { User, Palette, Bell, Lock, Check } from "lucide-react";
 import "./Configuracoes.css";
+import {
+  User,
+  Palette,
+  Bell,
+  Lock,
+  Check,
+  Building2,
+  ArrowRight,
+} from "lucide-react";
+import { alterarSenha } from "../services/authService";
 
 export default function Configuracoes() {
   const [profileData, setProfileData] = useState({
@@ -39,11 +48,35 @@ export default function Configuracoes() {
     setTimeout(() => setFeedback(""), 3000);
   };
 
-  const handleChangePassword = (e) => {
-    e.preventDefault();
+  
+const handleChangePassword = async (e) => {
+  e.preventDefault();
+  setFeedback("");
+
+  try {
+    const resposta = await alterarSenha(
+      securityData.senhaAtual,
+      securityData.novaSenha
+    );
+
+    if (!resposta.ok) {
+      const erro = await resposta.json().catch(() => null);
+
+      setFeedback(
+        erro?.message ||
+        erro?.mensagem ||
+        "Não foi possível alterar a senha. Verifique a senha atual."
+      );
+      return;
+    }
+
     setFeedback("Senha alterada com sucesso!");
-    setTimeout(() => setFeedback(""), 3000);
-  };
+    setSecurityData({ senhaAtual: "", novaSenha: "" });
+  } catch {
+    setFeedback("Não foi possível conectar ao servidor.");
+  }
+};
+
 
   return (
     <div className="configuracoes-container">
@@ -148,6 +181,33 @@ export default function Configuracoes() {
         </div>
       </div>
 
+      {/* CARD 3: EMPRESA */}
+      <div className="config-card">
+        <div className="config-card-title">
+          <Building2 className="icon-title" />
+          <span>Empresa</span>
+        </div>
+
+        <div className="empresa-resumo">
+          <div>
+            <h3>DocFlow Tecnologia</h3>
+            <p>Perfil: Criador</p>
+            <p>3 de 5 usuários</p>
+          </div>
+
+          <button
+            type="button"
+            className="btn-purple"
+            onClick={() => {
+              window.location.href = "/empresas";
+            }}
+          >
+            <span>Gerenciar empresas</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* CARD 3: SEGURANÇA */}
       <div className="config-card">
         <div className="config-card-title">
@@ -162,6 +222,7 @@ export default function Configuracoes() {
               <input
                 id="senhaAtual"
                 type="password"
+                required
                 value={securityData.senhaAtual}
                 onChange={(e) =>
                   setSecurityData({
@@ -177,6 +238,8 @@ export default function Configuracoes() {
               <input
                 id="novaSenha"
                 type="password"
+                required
+                minLength={8}
                 value={securityData.novaSenha}
                 onChange={(e) =>
                   setSecurityData({
@@ -195,6 +258,7 @@ export default function Configuracoes() {
           </div>
         </form>
       </div>
+
     </div>
   );
 }

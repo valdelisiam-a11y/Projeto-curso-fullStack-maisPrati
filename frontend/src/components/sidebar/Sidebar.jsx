@@ -1,22 +1,34 @@
-
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home,
   FolderKanban,
+  ListChecks,
   FileText,
   Settings,
   User,
+  Building2,
   LogOut,
   Menu,
   X,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import "./Sidebar.css";
 import { useAuth } from "../../contexts/useAuth";
+import { useContextoTrabalho } from "../../contexts/ContextoTrabalho";
 
 function Sidebar() {
   const [menuAberto, setMenuAberto] = useState(false);
-    const { usuario, logout } = useAuth();
+  const { usuario, logout } = useAuth();
+  const {
+    contexto,
+    selecionarContexto,
+    empresas,
+    empresaSelecionada,
+    selecionarEmpresa,
+  } = useContextoTrabalho();
+  const [menuEmpresasAberto, setMenuEmpresasAberto] = useState(false);
 
   function fecharMenu() {
     setMenuAberto(false);
@@ -65,6 +77,66 @@ function Sidebar() {
             <h1>DocFlow</h1>
           </div>
 
+          <div className="sidebar__contexto">
+            <button
+              type="button"
+              className={contexto === "pessoal" ? "ativo" : ""}
+              onClick={() => selecionarContexto("pessoal")}
+              aria-pressed={contexto === "pessoal"}
+            >
+              <User size={16} />
+              <span>Pessoal</span>
+            </button>
+
+            <button
+              type="button"
+              className={contexto === "empresa" ? "ativo" : ""}
+              onClick={() => selecionarContexto("empresa")}
+              aria-pressed={contexto === "empresa"}
+            >
+              <Building2 size={16} />
+              <span>Empresa</span>
+            </button>
+          </div>
+
+          {contexto === "empresa" && (
+            <div className="sidebar__empresa">
+              <button
+                type="button"
+                className="sidebar__empresa-seletor"
+                aria-label="Empresa selecionada"
+                aria-expanded={menuEmpresasAberto}
+                onClick={() => setMenuEmpresasAberto((aberto) => !aberto)}
+              >
+                <span>{empresaSelecionada?.nome ?? "Selecionar empresa"}</span>
+                <ChevronDown size={16} />
+              </button>
+
+              {menuEmpresasAberto && (
+                <div className="sidebar__empresa-menu">
+                  {empresas.map((empresa) => (
+                    <button
+                      key={empresa.id}
+                      type="button"
+                      className={`sidebar__empresa-opcao ${
+                        empresaSelecionada?.id === empresa.id ? "ativo" : ""
+                      }`}
+                      onClick={() => {
+                        selecionarEmpresa(empresa.id);
+                        setMenuEmpresasAberto(false);
+                      }}
+                    >
+                      <span>{empresa.nome}</span>
+                      {empresaSelecionada?.id === empresa.id && (
+                        <Check size={16} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <nav className="sidebar__nav">
             <ul>
               <li>
@@ -78,6 +150,13 @@ function Sidebar() {
                 <NavLink to="/trabalhos" onClick={fecharMenu}>
                   <FolderKanban size={20} />
                   <span>Meus trabalhos</span>
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink to="/minhas-etapas" onClick={fecharMenu}>
+                  <ListChecks size={20} />
+                  <span>Minhas etapas</span>
                 </NavLink>
               </li>
 

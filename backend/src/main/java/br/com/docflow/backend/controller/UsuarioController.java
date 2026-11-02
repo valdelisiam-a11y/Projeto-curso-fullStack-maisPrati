@@ -12,12 +12,16 @@ import br.com.docflow.backend.dto.UsuarioRespostaDTO;
 import jakarta.validation.Valid;
 import br.com.docflow.backend.service.EmailJaCadastradoException;
 import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/usuarios")
 
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private static final Logger log =
+            LoggerFactory.getLogger(UsuarioController.class);
 
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
@@ -39,6 +43,7 @@ public class UsuarioController {
             return ResponseEntity.ok(resposta);
 
         } catch (EmailJaCadastradoException e) {
+            log.warn("Falha no cadastro de usuário: {}", e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .build();

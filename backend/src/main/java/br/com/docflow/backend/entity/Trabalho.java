@@ -11,6 +11,10 @@ public class Trabalho {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private TipoTrabalho tipo;
+
     @Column(nullable = false, length = 200)
     private String titulo;
 
@@ -30,7 +34,7 @@ public class Trabalho {
     private LocalDateTime dataConclusao;
 
     @ManyToOne
-    @JoinColumn(name = "empresa_id", nullable = false)
+    @JoinColumn(name = "empresa_id", nullable = true)
     private Empresa empresa;
 
     @ManyToOne
@@ -107,5 +111,13 @@ public class Trabalho {
 
     public void setCriadoPor(Usuario criadoPor) {
         this.criadoPor = criadoPor;
+    }
+
+    public TipoTrabalho getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoTrabalho tipo) {
+        this.tipo = tipo;
     }
 }

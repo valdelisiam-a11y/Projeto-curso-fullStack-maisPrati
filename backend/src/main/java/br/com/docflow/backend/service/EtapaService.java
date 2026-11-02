@@ -19,6 +19,10 @@ import br.com.docflow.backend.repository.TrabalhoRepository;
 import br.com.docflow.backend.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
+import br.com.docflow.backend.entity.TipoTrabalho;
+import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
+import br.com.docflow.backend.service.TrabalhoService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,19 +36,28 @@ public class EtapaService {
     private final TrabalhoRepository trabalhoRepository;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioAutenticadoService usuarioAutenticadoService;
+    private final UsuarioEmpresaRepository usuarioEmpresaRepository;
+    private final UsuarioTrabalhoRepository usuarioTrabalhoRepository;
+    private final TrabalhoService trabalhoService;
 
     public EtapaService(
             EtapaRepository etapaRepository,
             HistoricoEtapaRepository historicoEtapaRepository,
             TrabalhoRepository trabalhoRepository,
             UsuarioRepository usuarioRepository,
-            UsuarioAutenticadoService usuarioAutenticadoService) {
+            UsuarioAutenticadoService usuarioAutenticadoService,
+            UsuarioEmpresaRepository usuarioEmpresaRepository,
+            UsuarioTrabalhoRepository usuarioTrabalhoRepository,
+            TrabalhoService trabalhoService) {
 
         this.etapaRepository = etapaRepository;
         this.historicoEtapaRepository = historicoEtapaRepository;
         this.trabalhoRepository = trabalhoRepository;
         this.usuarioRepository = usuarioRepository;
         this.usuarioAutenticadoService = usuarioAutenticadoService;
+        this.usuarioEmpresaRepository = usuarioEmpresaRepository;
+        this.usuarioTrabalhoRepository = usuarioTrabalhoRepository;
+        this.trabalhoService = trabalhoService;
     }
 
     @Transactional
@@ -73,6 +86,7 @@ public class EtapaService {
         if (dto.getOrdem() != null) {
             posicionar(etapaSalva, dto.getOrdem());
         }
+        trabalhoService.sincronizarStatusComEtapas(trabalho.getId());
 
         return converterParaResposta(etapaSalva);
     }
@@ -132,6 +146,10 @@ public class EtapaService {
 
         registrarHistorico(etapaAtualizada, statusAnterior, dto.getStatus(), usuario);
 
+        trabalhoService.sincronizarStatusComEtapas(
+                etapaAtualizada.getTrabalho().getId()
+        );
+
         return converterParaResposta(etapaAtualizada);
     }
 
@@ -161,6 +179,10 @@ public class EtapaService {
         if (etapaAtualizada.getStatus() != statusAnterior) {
             registrarHistorico(etapaAtualizada, statusAnterior, etapaAtualizada.getStatus(), usuario);
         }
+
+        trabalhoService.sincronizarStatusComEtapas(
+                etapaAtualizada.getTrabalho().getId()
+        );
 
         return converterParaResposta(etapaAtualizada);
     }
@@ -203,6 +225,8 @@ public class EtapaService {
 
         // Fecha o "buraco" deixado na sequência (1, 3, 4 vira 1, 2, 3)
         renumerar(new ArrayList<>(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(trabalhoId)));
+
+        trabalhoService.sincronizarStatusComEtapas(trabalhoId);
     }
 
     @Transactional(readOnly = true)
@@ -274,10 +298,9 @@ public class EtapaService {
     }
 
     private boolean mesmaEmpresa(Usuario usuario, Trabalho trabalho) {
-
-        return usuario.getEmpresa() != null
-                && trabalho.getEmpresa() != null
-                && usuario.getEmpresa().getId().equals(trabalho.getEmpresa().getId());
+        return trabalho.getEmpresa() != null
+                && usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
+                usuario, trabalho.getEmpresa());
     }
 
     private Trabalho validarAcessoTrabalho(Long trabalhoId) {
@@ -291,10 +314,10 @@ public class EtapaService {
         boolean criador = trabalho.getCriadoPor().getId()
                 .equals(usuario.getId());
 
-        boolean participante = trabalhoRepository
-                .findAcessiveisPorUsuario(usuario)
-                .stream()
-                .anyMatch(t -> t.getId().equals(trabalhoId));
+        boolean participante = trabalho.getTipo() == TipoTrabalho.EMPRESA
+                && usuarioTrabalhoRepository
+                .findByTrabalhoAndUsuario(trabalho, usuario)
+                .isPresent();
 
         if (!criador && !participante) {
             throw new org.springframework.security.access.AccessDeniedException(
@@ -317,10 +340,10 @@ public class EtapaService {
         boolean criador = trabalho.getCriadoPor().getId()
                 .equals(usuario.getId());
 
-        boolean participante = trabalhoRepository
-                .findAcessiveisPorUsuario(usuario)
-                .stream()
-                .anyMatch(t -> t.getId().equals(trabalho.getId()));
+        boolean participante = trabalho.getTipo() == TipoTrabalho.EMPRESA
+                && usuarioTrabalhoRepository
+                .findByTrabalhoAndUsuario(trabalho, usuario)
+                .isPresent();
 
         if (!criador && !participante) {
             throw new org.springframework.security.access.AccessDeniedException(

@@ -308,6 +308,76 @@ body.dark-theme .feedback-alert {
   color: #d1fae5;
 }
 
+
+/* Card Empresa */
+.empresa-resumo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.empresa-resumo > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.empresa-resumo h3 {
+  margin: 0;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.empresa-resumo p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.empresa-resumo .btn-purple {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--primary);
+  border-radius: 0.65rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.empresa-resumo .btn-purple:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 600px) {
+  .empresa-resumo {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .empresa-resumo .btn-purple {
+    align-self: flex-start;
+    white-space: normal;
+  }
+}
+
+
 /* --- RESPONSIVIDADE PARA TELEMÓVEIS (Ecrãs abaixo de 768px) --- */
 @media (max-width: 768px) {
   /* Se a sidebar estiver visível, podemos transformá-la num menu compacto ou ocultá-la em telas muito pequenas */

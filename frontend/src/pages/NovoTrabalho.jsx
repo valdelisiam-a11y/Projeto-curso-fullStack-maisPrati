@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -7,10 +8,17 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+
 import "./NovoTrabalho.css";
+import { useContextoTrabalho } from "../contexts/ContextoTrabalho";
+import {
+  cadastrarTrabalho,
+  cadastrarEtapa,
+} from "../services/trabalhoService";
 
 export default function NovoTrabalho() {
   const navigate = useNavigate();
+  const { contexto, empresaSelecionada } = useContextoTrabalho();
 
   const [nomeTrabalho, setNomeTrabalho] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -20,68 +28,135 @@ export default function NovoTrabalho() {
     { id: 1, titulo: "Receber documentos" },
     { id: 2, titulo: "Conferir documentação" },
   ]);
+
   const [novaEtapaInput, setNovaEtapaInput] = useState("");
   const [erros, setErros] = useState({});
-
-  // Estado específico para a frase de aviso ao tentar submetendo sem nome
   const [erroCriacao, setErroCriacao] = useState("");
+  const [salvando, setSalvando] = useState(false);
 
   const handleAdicionarEtapa = () => {
     if (!novaEtapaInput.trim()) return;
-    const novaEtapa = {
-      id: Date.now(),
-      titulo: novaEtapaInput.trim(),
-    };
-    setEtapas([...etapas, novaEtapa]);
+
+    setEtapas((anteriores) => [
+      ...anteriores,
+      {
+        id: Date.now(),
+        titulo: novaEtapaInput.trim(),
+      },
+    ]);
+
     setNovaEtapaInput("");
-    if (erros.etapas) setErros((prev) => ({ ...prev, etapas: null }));
+    setErros((anteriores) => ({ ...anteriores, etapas: "" }));
   };
 
   const handleRemoverEtapa = (id) => {
-    setEtapas(etapas.filter((etapa) => etapa.id !== id));
+    setEtapas((anteriores) =>
+      anteriores.filter((etapa) => etapa.id !== id)
+    );
   };
 
   const handleEditarEtapa = (id, novoTitulo) => {
-    setEtapas(
-      etapas.map((etapa) =>
-        etapa.id === id ? { ...etapa, titulo: novoTitulo } : etapa,
-      ),
+    setEtapas((anteriores) =>
+      anteriores.map((etapa) =>
+        etapa.id === id ? { ...etapa, titulo: novoTitulo } : etapa
+      )
     );
   };
 
   const handleMoverEtapa = (index, direcao) => {
     const novoIndex = direcao === "up" ? index - 1 : index + 1;
+
     if (novoIndex < 0 || novoIndex >= etapas.length) return;
-    const etapasAtualizadas = [...etapas];
-    const [itemRemovido] = etapasAtualizadas.splice(index, 1);
-    etapasAtualizadas.splice(novoIndex, 0, itemRemovido);
-    setEtapas(etapasAtualizadas);
+
+    const atualizadas = [...etapas];
+    const [etapaMovida] = atualizadas.splice(index, 1);
+    atualizadas.splice(novoIndex, 0, etapaMovida);
+
+    setEtapas(atualizadas);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validação do nome do trabalho para exibir a mensagem solicitada
-    if (!nomeTrabalho.trim()) {
-      setErroCriacao("Escreva o nome do trabalho para continuar.");
-      return;
-    }
-
-    // Limpa o erro se estiver preenchido corretamente
-    setErroCriacao("");
+    if (salvando) return;
 
     const novosErros = {};
-    if (!prazo) novosErros.prazo = "O prazo é obrigatório.";
-    if (etapas.length === 0)
+
+    if (!nomeTrabalho.trim()) {
+      novosErros.nomeTrabalho = "Informe o nome do trabalho.";
+    }
+
+    if (!prazo) {
+      novosErros.prazo = "O prazo é obrigatório.";
+    }
+
+    if (etapas.length === 0) {
       novosErros.etapas = "Adicione pelo menos uma etapa.";
+    } else if (etapas.some((etapa) => !etapa.titulo.trim())) {
+      novosErros.etapas = "Todas as etapas precisam ter um título.";
+    }
 
     if (Object.keys(novosErros).length > 0) {
       setErros(novosErros);
+      setErroCriacao("");
       return;
     }
 
-    alert("Trabalho criado com sucesso!");
-    navigate("/trabalhos");
+    // Por segurança, não enviamos IDs de empresas demonstrativas.
+    if (contexto === "empresa" && !empresaSelecionada?.id) {
+      setErroCriacao(
+        "Selecione uma empresa antes de cadastrar um trabalho empresarial."
+      );
+      return;
+    }
+
+    setSalvando(true);
+    setErroCriacao("");
+    setErros({});
+
+    let trabalhoCriado;
+
+    try {
+     trabalhoCriado = await cadastrarTrabalho({
+        titulo: nomeTrabalho.trim(),
+        descricao: descricao.trim(),
+        tipo: contexto === "empresa" ? "EMPRESA" : "PESSOAL",
+        ...(contexto === "empresa"
+          ? { empresaId: empresaSelecionada.id }
+          : {}),
+    });
+
+      if (!trabalhoCriado?.id) {
+        throw new Error(
+          "O trabalho foi enviado, mas a resposta não trouxe o ID esperado."
+        );
+      }
+    } catch (error) {
+      setErroCriacao(
+        error.message || "Não foi possível cadastrar o trabalho."
+      );
+      setSalvando(false);
+      return;
+    }
+
+    try {
+      for (let index = 0; index < etapas.length; index++) {
+        const etapa = etapas[index];
+
+        await cadastrarEtapa(trabalhoCriado.id, {
+          titulo: etapa.titulo.trim(),
+          ordem: index + 1,
+        });
+      }
+
+      navigate("/trabalhos");
+    } catch (error) {
+      setErroCriacao(
+        `O trabalho foi criado, mas houve um erro ao cadastrar as etapas. ${error.message || "Verifique os dados e tente novamente."} O trabalho já existe; não o cadastre novamente.`
+      );
+    } finally {
+      setSalvando(false);
+    }
   };
 
   return (
@@ -94,23 +169,29 @@ export default function NovoTrabalho() {
       </div>
 
       <div className="novo-trabalho-grid">
-        {/* COLUNA ESQUERDA: FORMULÁRIO */}
         <form className="novo-trabalho-form" onSubmit={handleSubmit}>
-          {/* Dados Principais */}
           <div className="form-card">
             <div className="form-group">
               <label htmlFor="nomeTrabalho">Nome do trabalho</label>
               <input
-                id="nomeTrabbelho"
+                id="nomeTrabalho"
                 type="text"
                 placeholder="Ex.: Cadastro de novo cliente"
                 value={nomeTrabalho}
                 onChange={(e) => {
                   setNomeTrabalho(e.target.value);
-                  if (e.target.value.trim()) setErroCriacao(""); // Limpa o aviso ao digitar
+                  setErros((anteriores) => ({
+                    ...anteriores,
+                    nomeTrabalho: "",
+                  }));
                 }}
                 className={erros.nomeTrabalho ? "input-erro" : ""}
               />
+              {erros.nomeTrabalho && (
+                <p className="aviso-obrigatorio-criacao">
+                  {erros.nomeTrabalho}
+                </p>
+              )}
             </div>
 
             <div className="form-group">
@@ -130,13 +211,26 @@ export default function NovoTrabalho() {
                 id="prazo"
                 type="date"
                 value={prazo}
-                onChange={(e) => setPrazo(e.target.value)}
+                onChange={(e) => {
+                  setPrazo(e.target.value);
+                  setErros((anteriores) => ({
+                    ...anteriores,
+                    prazo: "",
+                  }));
+                }}
                 className={erros.prazo ? "input-erro" : ""}
               />
+              {erros.prazo && (
+                <p className="aviso-obrigatorio-criacao">
+                  {erros.prazo}
+                </p>
+              )}
+              <small>
+                O prazo ainda não é persistido pelo backend.
+              </small>
             </div>
           </div>
 
-          {/* Card Separado: Quais são os passos? */}
           <div className="form-card">
             <div className="etapas-header-title">
               <h3>Quais são os passos?</h3>
@@ -144,7 +238,7 @@ export default function NovoTrabalho() {
             </div>
 
             {erros.etapas && (
-              <div className="alerta-erro-etapas">
+              <div className="alerta-erro-etapas" role="alert">
                 <AlertCircle className="w-4 h-4" />
                 <span>{erros.etapas}</span>
               </div>
@@ -157,32 +251,40 @@ export default function NovoTrabalho() {
                   <input
                     type="text"
                     value={etapa.titulo}
+                    aria-label={`Título da etapa ${index + 1}`}
                     onChange={(e) =>
                       handleEditarEtapa(etapa.id, e.target.value)
                     }
                     className="etapa-input-edit"
                   />
+
                   <div className="etapa-acoes">
                     <button
                       type="button"
                       className="btn-acao-etapa"
                       onClick={() => handleMoverEtapa(index, "up")}
-                      disabled={index === 0}
+                      disabled={index === 0 || salvando}
+                      aria-label="Mover etapa para cima"
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
                     </button>
+
                     <button
                       type="button"
                       className="btn-acao-etapa"
                       onClick={() => handleMoverEtapa(index, "down")}
-                      disabled={index === etapas.length - 1}
+                      disabled={index === etapas.length - 1 || salvando}
+                      aria-label="Mover etapa para baixo"
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
                     </button>
+
                     <button
                       type="button"
                       className="btn-acao-etapa btn-deletar"
                       onClick={() => handleRemoverEtapa(etapa.id)}
+                      disabled={salvando}
+                      aria-label="Excluir etapa"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -197,6 +299,7 @@ export default function NovoTrabalho() {
                 placeholder="Ex.: Enviar proposta"
                 value={novaEtapaInput}
                 onChange={(e) => setNovaEtapaInput(e.target.value)}
+                disabled={salvando}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -208,6 +311,7 @@ export default function NovoTrabalho() {
                 type="button"
                 className="btn-add-etapa"
                 onClick={handleAdicionarEtapa}
+                disabled={salvando}
               >
                 + Adicionar etapa
               </button>
@@ -215,26 +319,27 @@ export default function NovoTrabalho() {
           </div>
         </form>
 
-        {/* COLUNA DIREITA: LIVE PREVIEW E AÇÕES */}
         <div className="preview-column">
           <div className="preview-card">
             <span className="preview-badge">Prévia do seu fluxo</span>
             <p className="preview-subtext">Assim o trabalho vai aparecer.</p>
 
             <h4 className="preview-trabalho-titulo">
-              {nomeTrabalho.trim() ? nomeTrabalho : "Nome do trabalho"}
+              {nomeTrabalho.trim() || "Nome do trabalho"}
             </h4>
 
             <div className="preview-etapas-lista">
               {etapas.length === 0 ? (
-                <p className="preview-vazio">Nenhuma etapa cadastrada ainda.</p>
+                <p className="preview-vazio">
+                  Nenhuma etapa cadastrada ainda.
+                </p>
               ) : (
-                etapas.map((etapa, idx) => (
+                etapas.map((etapa, index) => (
                   <div key={etapa.id} className="preview-etapa-item">
-                    {idx === 0 ? (
+                    {index === 0 ? (
                       <CheckCircle2 className="w-4 h-4 text-concluido" />
                     ) : (
-                      <span className="preview-numero">{idx + 1}</span>
+                      <span className="preview-numero">{index + 1}</span>
                     )}
                     <span>{etapa.titulo || "Etapa sem título"}</span>
                   </div>
@@ -244,23 +349,29 @@ export default function NovoTrabalho() {
           </div>
 
           <div className="preview-actions">
-            {/* Mensagem exibida condicionalmente idêntica à referência visual */}
             {erroCriacao && (
-              <span className="aviso-obrigatorio-criacao">{erroCriacao}</span>
+              <p className="aviso-obrigatorio-criacao" role="alert">
+                {erroCriacao}
+              </p>
             )}
 
             <button
               type="button"
               className="btn-criar-trabalho"
               onClick={handleSubmit}
+              disabled={salvando}
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Criar trabalho</span>
+              <span>
+                {salvando ? "Salvando..." : "Criar trabalho"}
+              </span>
             </button>
+
             <button
               type="button"
               className="btn-cancelar"
               onClick={() => navigate(-1)}
+              disabled={salvando}
             >
               Cancelar
             </button>

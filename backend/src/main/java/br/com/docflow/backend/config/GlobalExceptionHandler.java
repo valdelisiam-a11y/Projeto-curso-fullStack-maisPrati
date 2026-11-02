@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.security.access.AccessDeniedException;
+import br.com.docflow.backend.service.LimiteMembrosEmpresaException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -59,6 +60,21 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
+                .body(erro);
+    }
+
+    @ExceptionHandler(LimiteMembrosEmpresaException.class)
+    public ResponseEntity<ErroRespostaDTO> handleLimiteMembrosEmpresa(
+            LimiteMembrosEmpresaException ex) {
+
+        ErroRespostaDTO erro = new ErroRespostaDTO(
+                HttpStatus.CONFLICT.value(),
+                "Limite de membros atingido",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(erro);
     }
 }

@@ -1,14 +1,8 @@
 
 package br.com.docflow.backend.service;
 
-import br.com.docflow.backend.entity.Empresa;
-import br.com.docflow.backend.entity.Trabalho;
-import br.com.docflow.backend.entity.Usuario;
-import br.com.docflow.backend.repository.EmpresaRepository;
-import br.com.docflow.backend.repository.HistoricoTrabalhoRepository;
-import br.com.docflow.backend.repository.TrabalhoRepository;
-import br.com.docflow.backend.repository.UsuarioRepository;
-import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
+import br.com.docflow.backend.entity.*;
+import br.com.docflow.backend.repository.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,11 +16,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import br.com.docflow.backend.entity.StatusTrabalho;
 import org.junit.jupiter.api.Assertions;
 import java.time.LocalDateTime;
 import br.com.docflow.backend.dto.TrabalhoCadastroDTO;
 import br.com.docflow.backend.dto.TrabalhoStatusDTO;
+
+import java.util.List;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +43,13 @@ class TrabalhoServiceTest {
     private UsuarioTrabalhoRepository usuarioTrabalhoRepository;
 
     @Mock
+    private UsuarioEmpresaRepository usuarioEmpresaRepository;
+
+    @Mock
     private UsuarioAutenticadoService usuarioAutenticadoService;
+
+    @Mock
+    private EtapaRepository etapaRepository;
 
     @InjectMocks
     private TrabalhoService trabalhoService;
@@ -112,6 +113,9 @@ class TrabalhoServiceTest {
         when(trabalhoRepository.findById(10L))
                 .thenReturn(Optional.of(trabalho));
 
+        when(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(10L))
+                .thenReturn(List.of());
+
         var resposta = trabalhoService.buscarPorId(10L);
 
         Assertions.assertEquals(10L, resposta.getId());
@@ -170,7 +174,8 @@ class TrabalhoServiceTest {
         dto.setTitulo("Trabalho de teste");
         dto.setDescricao("Teste de segurança");
         dto.setEmpresaId(1L);
-        dto.setCriadoPorId(999L); // ID diferente do usuário autenticado
+        dto.setCriadoPorId(999L);
+        dto.setTipo(TipoTrabalho.EMPRESA);// ID diferente do usuário autenticado
 
         when(usuarioAutenticadoService.obterUsuario())
                 .thenReturn(usuarioAutenticado);
@@ -178,7 +183,10 @@ class TrabalhoServiceTest {
         when(empresaRepository.findById(1L))
                 .thenReturn(Optional.of(empresa));
 
-        usuarioAutenticado.setEmpresa(empresa);
+        when(usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
+                usuarioAutenticado, empresa))
+                .thenReturn(true);
+
 
         when(trabalhoRepository.save(
                 org.mockito.ArgumentMatchers.any(Trabalho.class)))
@@ -187,6 +195,9 @@ class TrabalhoServiceTest {
                     trabalhoSalvo.setId(10L);
                     return trabalhoSalvo;
                 });
+
+        when(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(10L))
+                .thenReturn(List.of());
 
         var resposta = trabalhoService.cadastrar(dto);
 
@@ -232,6 +243,9 @@ class TrabalhoServiceTest {
 
         when(usuarioAutenticadoService.obterUsuario())
                 .thenReturn(usuarioAutenticado);
+
+        when(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(10L))
+                .thenReturn(List.of());
 
         when(trabalhoRepository.findById(10L))
                 .thenReturn(Optional.of(trabalho));

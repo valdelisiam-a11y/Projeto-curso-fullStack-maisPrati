@@ -1,242 +1,308 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FolderKanban,
   Search,
   ArrowRight,
-  AlertCircle,
-  CheckCircle2,
+  BriefcaseBusiness,
+  CirclePlay,
+  TriangleAlert,
+  CircleCheck,
   Clock3,
   Plus,
-} from "lucide-react";
-import "./MeusTrabalhos.css";
+} from 'lucide-react';
+
+import './MeusTrabalhos.css';
+import { useContextoTrabalho } from '../contexts/ContextoTrabalho';
+import { listarTrabalhos } from '../services/trabalhoService';
+
+const statusConfig = {
+  EM_ANDAMENTO: {
+    texto: 'Em andamento',
+    classe: 'andamento',
+    Icone: CirclePlay,
+  },
+  PENDENTE: {
+    texto: 'Pendente',
+    classe: 'atencao',
+    Icone: Clock3,
+  },
+  CONCLUIDO: {
+    texto: 'Concluído',
+    classe: 'concluido',
+    Icone: CircleCheck,
+  },
+  CANCELADO: {
+    texto: 'Cancelado',
+    classe: 'atrasado',
+    Icone: TriangleAlert,
+  },
+};
+
+function formatarData(data) {
+  if (!data) return '—';
+
+  const dataFormatada = new Date(data);
+
+  if (Number.isNaN(dataFormatada.getTime())) return '—';
+
+  return dataFormatada.toLocaleDateString('pt-BR');
+}
 
 export default function MeusTrabalhos() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filtroAtivo, setFiltroAtivo] = useState("Todos");
+  const location = useLocation();
 
-  // Dados mockados
-  const [trabalhos] = useState([
-    {
-      id: 1,
-      nome: "Cadastro de novo cliente",
-      descricao: "Documentação e contrato do cliente Marina Souza.",
-      situacao: "Em andamento",
-      etapaAtual: "Enviar proposta",
-      progresso: 40,
-      atualizadoEm: "17/08/2026",
-    },
-    {
-      id: 2,
-      nome: "Compra de materiais",
-      descricao: "Cimento, areia e ferragem para a obra da Rua das Acácias.",
-      situacao: "Precisa de atenção",
-      etapaAtual: "Aprovação",
-      progresso: 40,
-      atualizadoEm: "16/08/2026",
-    },
-    {
-      id: 3,
-      nome: "Prestação de serviço — Manutenção elétrica",
-      descricao: "Visita técnica e reparo no comércio do Sr. Antônio.",
-      situacao: "Atrasado",
-      etapaAtual: "Executar serviço",
-      progresso: 50,
-      atualizadoEm: "13/08/2026",
-    },
-    {
-      id: 4,
-      nome: "Pagamento de contas do mês",
-      descricao: "Boletos de água, luz e internet de agosto.",
-      situacao: "Concluído",
-      etapaAtual: "Todas as etapas concluídas",
-      progresso: 100,
-      atualizadoEm: "10/08/2026",
-    },
-  ]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filtroAtivo, setFiltroAtivo] = useState('Todos');
+  const [trabalhos, setTrabalhos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
 
-  // Filtra os trabalhos pelo nome e pela situação selecionada
+  const { contexto, empresaSelecionada } = useContextoTrabalho();
+
+  useEffect(() => {
+    async function carregarTrabalhos() {
+      try {
+        setCarregando(true);
+        setErro('');
+
+        const dados = await listarTrabalhos();
+        const lista = Array.isArray(dados) ? dados : dados.content ?? [];
+
+        const trabalhosDoContexto = lista.filter((trabalho) => {
+          if (contexto === 'pessoal') {
+            return trabalho.tipo === 'PESSOAL';
+          }
+
+          if (contexto === 'empresa') {
+            return (
+              trabalho.tipo === 'EMPRESA' &&
+              empresaSelecionada?.id != null &&
+              Number(trabalho.empresaId) === Number(empresaSelecionada.id)
+            );
+          }
+
+          return false;
+        });
+
+        setTrabalhos(trabalhosDoContexto);
+      } catch (error) {
+        setErro(error.message || 'Não foi possível carregar os trabalhos.');
+      } finally {
+        setCarregando(false);
+      }
+    }
+
+    carregarTrabalhos();
+  }, [contexto, empresaSelecionada?.id, location.key]);
+
+  const filtros = [
+    'Todos',
+    'Pendentes',
+    'Em andamento',
+    'Concluídos',
+    'Cancelados',
+  ];
+
   const trabalhosFiltrados = trabalhos.filter((trabalho) => {
-    const matchNome = trabalho.nome
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const nome = (trabalho.titulo ?? '').toLowerCase();
+    const correspondeAoNome = nome.includes(searchTerm.trim().toLowerCase());
 
-    if (filtroAtivo === "Todos") return matchNome;
+    if (!correspondeAoNome) return false;
 
-    if (filtroAtivo === "Em andamento") {
-      return matchNome && trabalho.situacao === "Em andamento";
+    switch (filtroAtivo) {
+      case 'Pendentes':
+        return trabalho.status === 'PENDENTE';
+
+      case 'Em andamento':
+        return trabalho.status === 'EM_ANDAMENTO';
+
+      case 'Concluídos':
+        return trabalho.status === 'CONCLUIDO';
+
+      case 'Cancelados':
+        return trabalho.status === 'CANCELADO';
+
+      case 'Todos':
+      default:
+        return true;
     }
-
-    if (filtroAtivo === "Precisam de atenção") {
-      return matchNome && trabalho.situacao === "Precisa de atenção";
-    }
-
-    if (filtroAtivo === "Atrasados") {
-      return matchNome && trabalho.situacao === "Atrasado";
-    }
-
-    if (filtroAtivo === "Concluídos") {
-      return matchNome && trabalho.situacao === "Concluído";
-    }
-
-    return matchNome;
   });
 
-  // Abre a página de detalhes do trabalho
   const handleVerTrabalho = (id) => {
     navigate(`/trabalhos/${id}`);
   };
 
-  // Define o estilo e o ícone conforme a situação
-  const getBadgeStatus = (situacao) => {
-    switch (situacao) {
-      case "Concluído":
-        return {
-          className: "status-badge status-concluido",
-          icon: <CheckCircle2 className="status-icon" />,
-        };
-
-      case "Precisa de atenção":
-        return {
-          className: "status-badge status-atencao",
-          icon: <AlertCircle className="status-icon" />,
-        };
-
-      case "Atrasado":
-        return {
-          className: "status-badge status-atrasado",
-          icon: <AlertCircle className="status-icon" />,
-        };
-
-      default:
-        return {
-          className: "status-badge status-andamento",
-          icon: <Clock3 className="status-icon" />,
-        };
-    }
-  };
-
   return (
-    <div className="trabalhos-container">
-      {/* Cabeçalho principal */}
-      <div className="trabalhos-header-flex">
+    <main className="trabalhos-container">
+      <header className="trabalhos-header-flex">
         <div className="trabalhos-main-header">
           <h1>Meus trabalhos</h1>
-          <p>Acompanhe tudo o que você está organizando.</p>
+
+          <p>
+            {contexto === 'pessoal'
+              ? 'Seus trabalhos pessoais — só você vê.'
+              : `Trabalhos da empresa ${empresaSelecionada?.nome ?? ''}.`}
+          </p>
         </div>
 
         <button
+          type="button"
           className="btn-novo-trabalho"
-          onClick={() => navigate("/trabalhos/novo")}
+          onClick={() => navigate('/trabalhos/novo')}
         >
-          <Plus className="w-4 h-4" />
+          <Plus size={18} />
           <span>Novo trabalho</span>
         </button>
-      </div>
+      </header>
 
-      {/* Pesquisa e filtros */}
-      <div className="search-filter-card">
-        <label className="search-label">O que você está procurando?</label>
+      <section className="search-filter-card">
+        <label className="search-label" htmlFor="pesquisa-trabalhos">
+          O que você está procurando?
+        </label>
 
         <div className="search-input-wrapper">
           <Search className="search-icon" />
+
           <input
-            type="text"
+            id="pesquisa-trabalhos"
+            type="search"
             placeholder="Procure pelo nome do trabalho"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(event) => setSearchTerm(event.target.value)}
           />
         </div>
 
-        {/* Pílulas de filtro */}
-        <div className="filter-pills">
-          {[
-            "Todos",
-            "Em andamento",
-            "Precisam de atenção",
-            "Atrasados",
-            "Concluídos",
-          ].map((filtro) => (
+        <div
+          className="filter-pills"
+          role="group"
+          aria-label="Filtrar trabalhos por situação"
+        >
+          {filtros.map((filtro) => (
             <button
               key={filtro}
+              type="button"
               className={`filter-pill ${
-                filtroAtivo === filtro ? "active" : ""
+                filtroAtivo === filtro ? 'active' : ''
               }`}
+              aria-pressed={filtroAtivo === filtro}
               onClick={() => setFiltroAtivo(filtro)}
             >
               {filtro}
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Lista de cards ou estado vazio */}
-      {trabalhosFiltrados.length === 0 ? (
-        <div className="empty-state">
+      {carregando ? (
+        <section className="empty-state" role="status">
+          <p>Carregando trabalhos...</p>
+        </section>
+      ) : erro ? (
+        <section className="empty-state" role="alert">
+          <h3>Não foi possível carregar os trabalhos</h3>
+          <p>{erro}</p>
+        </section>
+      ) : trabalhosFiltrados.length === 0 ? (
+        <section className="empty-state">
           <FolderKanban className="empty-icon" />
           <h3>Nenhum trabalho encontrado</h3>
           <p>Tente buscar por outro termo ou categoria.</p>
-        </div>
+        </section>
       ) : (
-        <div className="trabalhos-list">
+        <section className="trabalhos-list">
           {trabalhosFiltrados.map((trabalho) => {
-            const badge = getBadgeStatus(trabalho.situacao);
-            const isConcluido = trabalho.situacao === "Concluído";
+            const configuracao =
+              statusConfig[trabalho.status] ?? {
+                texto: trabalho.status ?? 'Status desconhecido',
+                classe: 'atencao',
+                Icone: TriangleAlert,
+              };
+
+            const IconeStatus = configuracao.Icone;
+            const progresso = Math.min(
+              100,
+              Math.max(0, Number(trabalho.progresso) || 0)
+            );
 
             return (
-              <div key={trabalho.id} className="trabalho-card">
-                <div className="trabalho-card-header">
-                  <h3 className="trabalho-nome">{trabalho.nome}</h3>
+              <article key={trabalho.id} className="trabalho-card">
+                <div className="trabalho-card__conteudo">
+                  <div className="trabalho-card-header">
+                    <div className="trabalho-card__titulo">
+                      <BriefcaseBusiness size={20} />
 
-                  <span className={badge.className}>
-                    {badge.icon}
-                    <span>{trabalho.situacao}</span>
-                  </span>
-                </div>
+                      <h3 className="trabalho-nome">
+                        {trabalho.titulo}
+                      </h3>
+                    </div>
 
-                <p className="trabalho-descricao">{trabalho.descricao}</p>
-
-                <div className="etapa-atual-box">
-                  <span>
-                    Etapa atual: <strong>{trabalho.etapaAtual}</strong>
-                  </span>
-                </div>
-
-                {/* Barra de progresso */}
-                <div className="progress-container">
-                  <div className="progress-bar-bg">
-                    <div
-                      className={`progress-bar-fill ${
-                        isConcluido ? "fill-concluido" : ""
-                      }`}
-                      style={{ width: `${trabalho.progresso}%` }}
-                    />
+                    <span
+                      className={`status-badge status-${configuracao.classe}`}
+                    >
+                      <IconeStatus className="status-icon" />
+                      <span>{configuracao.texto}</span>
+                    </span>
                   </div>
 
-                  <span className="progress-text">
-                    {trabalho.progresso}% concluído
-                  </span>
+                  <p className="trabalho-descricao">
+                    {trabalho.descricao || 'Nenhuma descrição informada.'}
+                  </p>
+
+                  <div className="etapa-atual-box">
+                    <span>
+                      Etapa atual:{' '}
+                      <strong>Consulte as etapas do trabalho</strong>
+                    </span>
+                  </div>
+
+                  <div className="progress-container">
+                    <div
+                      className="progress-bar-bg"
+                      role="progressbar"
+                      aria-label={`Progresso de ${trabalho.titulo}`}
+                      aria-valuenow={progresso}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    >
+                      <div
+                        className={`progress-bar-fill ${
+                          trabalho.status === 'CONCLUIDO'
+                            ? 'fill-concluido'
+                            : ''
+                        }`}
+                        style={{ width: `${progresso}%` }}
+                      />
+                    </div>
+
+                    <span>{progresso}% concluído</span>
+                  </div>
                 </div>
 
-                <div className="trabalho-card-footer">
+                <footer className="trabalho-card-footer">
                   <span className="atualizado-texto">
-                    Atualizado em {trabalho.atualizadoEm}
+                    Atualizado em{' '}
+                    {formatarData(
+                      trabalho.dataAtualizacao || trabalho.dataCriacao
+                    )}
                   </span>
 
                   <button
+                    type="button"
                     className="btn-ver-trabalho"
                     onClick={() => handleVerTrabalho(trabalho.id)}
                   >
                     <span>Ver trabalho</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight size={15} />
                   </button>
-                </div>
-              </div>
+                </footer>
+              </article>
             );
           })}
-        </div>
+        </section>
       )}
-    </div>
+    </main>
   );
 }
