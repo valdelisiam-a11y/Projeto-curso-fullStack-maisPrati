@@ -11,8 +11,8 @@ onClick={onClick}
 {...props}
 >
 {children}
-
-);
+    </button>
+  );
 };
 
 export default Button;
