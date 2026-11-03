@@ -14,14 +14,13 @@
 }
 
 .docflow-message-success {
-  background-color: var(--info-soft); /* Usando info-soft provisoriamente para sucesso, já que a paleta não tem verde explícito */
+  background-color: var(--info-soft);
   color: var(--info);
   border: 1px solid var(--info);
 }
 
 .docflow-message-error {
   background-color: var(--destructive);
-  color: var(--primary-foreground); /* Texto branco no fundo destrutivo */
+  color: var(--primary-foreground);
   border: 1px solid var(--destructive);
-  opacity: 0.9;
 }

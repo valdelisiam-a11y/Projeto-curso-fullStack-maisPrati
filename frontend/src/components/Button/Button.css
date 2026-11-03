@@ -19,7 +19,6 @@
 
 .docflow-btn:hover:not(:disabled) {
   opacity: 0.9;
-  box-shadow: 0 4px 12px -4px var(--primary);
 }
 
 .docflow-btn:active:not(:disabled) {
