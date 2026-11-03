@@ -1,0 +1,27 @@
+.docflow-message {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  font-family: inherit;
+  box-shadow: var(--shadow-soft);
+}
+
+.docflow-message-success {
+  background-color: var(--info-soft); /* Usando info-soft provisoriamente para sucesso, já que a paleta não tem verde explícito */
+  color: var(--info);
+  border: 1px solid var(--info);
+}
+
+.docflow-message-error {
+  background-color: var(--destructive);
+  color: var(--primary-foreground); /* Texto branco no fundo destrutivo */
+  border: 1px solid var(--destructive);
+  opacity: 0.9;
+}

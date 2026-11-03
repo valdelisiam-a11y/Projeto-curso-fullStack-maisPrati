@@ -1,0 +1,36 @@
+.docflow-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.docflow-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+  margin-bottom: 6px;
+  font-family: inherit;
+}
+
+.docflow-input {
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  outline: none;
+  font-family: inherit;
+}
+
+.docflow-input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.docflow-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
