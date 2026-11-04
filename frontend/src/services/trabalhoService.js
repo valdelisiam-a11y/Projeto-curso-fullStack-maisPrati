@@ -79,6 +79,25 @@ export async function listarEtapasDoTrabalho(trabalhoId) {
   return resposta.json();
 }
 
+export async function atualizarEtapa(etapaId, dados) {
+  const resposta = await apiFetch(`/etapas/${etapaId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(dados),
+  });
+
+  if (!resposta.ok) {
+    const mensagem = await resposta.text();
+    throw new Error(
+      mensagem || `Erro ao atualizar etapa (${resposta.status}).`
+    );
+  }
+
+  return resposta.json();
+}
+
 export async function listarHistoricoTrabalho(trabalhoId) {
   const resposta = await apiFetch(`/trabalhos/${trabalhoId}/historico`);
 
@@ -105,6 +124,21 @@ export async function alterarStatusEtapa(etapaId, dados) {
     const mensagem = await resposta.text();
     throw new Error(
       mensagem || `Erro ao alterar status da etapa (${resposta.status}).`
+    );
+  }
+
+  return resposta.json();
+}
+
+export async function listarMinhasEtapas(empresaId) {
+  const resposta = await apiFetch(
+    `/empresas/${empresaId}/minhas-etapas`
+  );
+
+  if (!resposta.ok) {
+    const mensagem = await resposta.text();
+    throw new Error(
+      mensagem || `Erro ao listar minhas etapas (${resposta.status}).`
     );
   }
 

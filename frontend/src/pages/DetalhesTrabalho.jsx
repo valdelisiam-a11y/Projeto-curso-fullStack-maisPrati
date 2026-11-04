@@ -12,6 +12,7 @@ import {
   listarEtapasDoTrabalho,
   listarHistoricoTrabalho,
   alterarStatusEtapa,
+  atualizarEtapa,
 } from "../services/trabalhoService";
 import "./DetalhesTrabalho.css";
 
@@ -136,6 +137,22 @@ export default function DetalhesTrabalho() {
     }
   }
 
+  async function salvarEdicaoEtapa(dados) {
+  if (!etapaAtualObj?.id) {
+    throw new Error("Nenhuma etapa foi selecionada.");
+  }
+
+  await atualizarEtapa(etapaAtualObj.id, dados);
+
+  const etapasAtualizadas = await listarEtapasDoTrabalho(trabalho.id);
+
+  setEtapas(
+    etapasAtualizadas
+      .map(mapearEtapa)
+      .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+  );
+}
+
   async function marcarEtapaConcluida() {
       if (!etapaAtualObj) {
         alert("Selecione uma etapa para concluir.");
@@ -247,6 +264,7 @@ export default function DetalhesTrabalho() {
           alert("As observações ainda não estão integradas à API.")
         }
         onMarcarConcluida={marcarEtapaConcluida}
+        onSalvarEdicao={salvarEdicaoEtapa}
       />
 
       <HistoricoTrabalho historico={historico} />

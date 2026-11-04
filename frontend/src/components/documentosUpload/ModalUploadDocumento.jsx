@@ -1,40 +1,122 @@
-import { useState } from "react";
-import { X, Upload, FileText, Image as ImageIcon, File, Trash2 } from "lucide-react";
+
+import { useEffect, useState } from "react";
+import {
+  X,
+  Upload,
+  FileText,
+  Image as ImageIcon,
+  File,
+  Trash2,
+} from "lucide-react";
 import "./ModalUploadDocumento.css";
 
-const trabalhosIniciais = [
-  {
-    id: 1,
-    nome: "Cadastro de novo cliente",
-    etapas: ["Conferência de documentos", "Assinatura do contrato"],
-  },
-  {
-    id: 2,
-    nome: "Compra de materiais",
-    etapas: ["Pesquisa de fornecedores", "Análise de orçamento"],
-  },
-  {
-    id: 3,
-    nome: "Prestação de serviço — Manutenção elétrica",
-    etapas: ["Avaliação técnica", "Execução do serviço"],
-  },
-  {
-    id: 4,
-    nome: "Pagamento de contas do mês",
-    etapas: ["Conferência das contas", "Realização dos pagamentos"],
-  },
+import {
+  listarTrabalhos,
+  listarEtapasDoTrabalho,
+} from "../../services/trabalhoService";
+
+import { enviarDocumento } from "../../services/documentoService";
+
+const TAMANHO_MAXIMO = 10 * 1024 * 1024;
+
+const FORMATOS_PERMITIDOS = [
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".jpg",
+  ".jpeg",
+  ".png",
 ];
 
-function ModalUploadDocumento({ aberto, onFechar, onAdicionar }) {
-  const [nome, setNome] = useState("");
-  const [trabalhoId, setTrabalhoId] = useState("");
-  const [etapa, setEtapa] = useState("");
+function ModalUploadDocumento({
+  aberto,
+  onFechar,
+  onAdicionar,
+  trabalhoIdInicial = "",
+  etapaIdInicial = "",
+}) {
+  const [trabalhos, setTrabalhos] = useState([]);
+  const [etapas, setEtapas] = useState([]);
+
+  const [trabalhoId, setTrabalhoId] = useState(
+    trabalhoIdInicial ? String(trabalhoIdInicial) : ""
+  );
+
+  const [etapaId, setEtapaId] = useState(
+    etapaIdInicial ? String(etapaIdInicial) : ""
+  );
+
   const [arquivo, setArquivo] = useState(null);
+
+  const [carregandoTrabalhos, setCarregandoTrabalhos] = useState(false);
+  const [carregandoEtapas, setCarregandoEtapas] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+
   const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    if (!aberto) return;
+
+    async function carregarTrabalhos() {
+      try {
+        setCarregandoTrabalhos(true);
+        setErro("");
+
+        const dados = await listarTrabalhos();
+        setTrabalhos(dados);
+
+      } catch (error) {
+        setErro(error.message || "Não foi possível carregar os trabalhos.");
+      } finally {
+        setCarregandoTrabalhos(false);
+      }
+    }
+
+    carregarTrabalhos();
+  }, [aberto]);
+
+  useEffect(() => {
+    if (!aberto || !trabalhoId) {
+      setEtapas([]);
+      return;
+    }
+
+    async function carregarEtapas() {
+      try {
+        setCarregandoEtapas(true);
+        setErro("");
+        setEtapas([]);
+        setEtapaId("");
+
+        const dados = await listarEtapasDoTrabalho(trabalhoId);
+
+        setEtapas(dados);
+
+        if (etapaIdInicial) {
+          const etapaExiste = dados.some(
+            (etapa) => String(etapa.id) === String(etapaIdInicial)
+          );
+
+          if (etapaExiste) {
+            setEtapaId(String(etapaIdInicial));
+          }
+        }
+
+      } catch (error) {
+        setErro(error.message || "Não foi possível carregar as etapas.");
+      } finally {
+        setCarregandoEtapas(false);
+      }
+    }
+
+    carregarEtapas();
+  }, [aberto, trabalhoId, etapaIdInicial]);
 
   if (!aberto) return null;
 
-  const trabalhoSelecionado = trabalhosIniciais.find(
+  const trabalhoSelecionado = trabalhos.find(
     (trabalho) => String(trabalho.id) === trabalhoId
   );
 
@@ -44,42 +126,89 @@ function ModalUploadDocumento({ aberto, onFechar, onAdicionar }) {
     if (!arquivoSelecionado) return;
 
     setErro("");
-    setArquivo(arquivoSelecionado);
 
-    if (!nome.trim()) {
-      setNome(arquivoSelecionado.name);
-    }
-  }
-
-  function enviarDocumento(evento) {
-    evento.preventDefault();
-
-    if (!nome.trim() || !trabalhoId || !etapa || !arquivo) {
-      setErro("Preencha os campos e selecione um arquivo.");
+    if (arquivoSelecionado.size > TAMANHO_MAXIMO) {
+      setErro("O arquivo não pode ultrapassar 10 MB.");
+      evento.target.value = "";
       return;
     }
 
-    onAdicionar?.({
-      nome: nome.trim(),
-      trabalhoId: Number(trabalhoId),
-      trabalho: trabalhoSelecionado.nome,
-      etapa,
-      arquivo,
-      tipo: arquivo.type.startsWith("image/") ? "Imagem" : "PDF",
-      data: new Date().toLocaleDateString("pt-BR"),
-    });
+    const extensao = arquivoSelecionado.name
+      .substring(arquivoSelecionado.name.lastIndexOf("."))
+      .toLowerCase();
 
-    setNome("");
-    setTrabalhoId("");
-    setEtapa("");
+    if (!FORMATOS_PERMITIDOS.includes(extensao)) {
+      setErro(
+        "Formato não permitido. Selecione PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG ou PNG."
+      );
+      evento.target.value = "";
+      return;
+    }
+
+    setArquivo(arquivoSelecionado);
+  }
+
+  function limparFormulario() {
     setArquivo(null);
     setErro("");
-    onFechar();
+
+    setTrabalhoId(
+      trabalhoIdInicial ? String(trabalhoIdInicial) : ""
+    );
+
+    setEtapaId(
+      etapaIdInicial ? String(etapaIdInicial) : ""
+    );
+
+    setEtapas([]);
   }
 
   function fecharModal() {
-    setErro("");
+    if (enviando) return;
+
+    limparFormulario();
     onFechar();
+  }
+
+  async function enviarDocumentoSelecionado(evento) {
+    evento.preventDefault();
+
+    if (!trabalhoId || !etapaId || !arquivo) {
+      setErro("Selecione o trabalho, a etapa e o arquivo.");
+      return;
+    }
+
+    try {
+      setEnviando(true);
+      setErro("");
+
+      const documentoCriado = await enviarDocumento(
+        etapaId,
+        arquivo
+      );
+
+      const etapaSelecionada = etapas.find(
+        (etapa) => String(etapa.id) === etapaId
+      );
+
+      onAdicionar?.({
+        ...documentoCriado,
+        nome: documentoCriado.nomeOriginal,
+        trabalhoId: Number(trabalhoId),
+        trabalho: trabalhoSelecionado?.titulo,
+        etapa: etapaSelecionada?.titulo,
+        tipo: arquivo.type.startsWith("image/") ? "Imagem" : "PDF",
+        data: new Date().toLocaleDateString("pt-BR"),
+      });
+
+      limparFormulario();
+      onFechar();
+
+    } catch (error) {
+      setErro(error.message || "Não foi possível enviar o documento.");
+    } finally {
+      setEnviando(false);
+    }
   }
 
   function formatarTamanho(tamanho) {
@@ -124,40 +253,40 @@ function ModalUploadDocumento({ aberto, onFechar, onAdicionar }) {
             className="modal-upload__fechar"
             onClick={fecharModal}
             aria-label="Fechar modal"
+            disabled={enviando}
           >
             <X size={20} />
           </button>
         </header>
 
-        <form className="modal-upload__formulario" onSubmit={enviarDocumento}>
-          <div className="modal-upload__campo">
-            <label htmlFor="nome-documento">Nome do documento</label>
-            <input
-              id="nome-documento"
-              type="text"
-              placeholder="Ex.: Contrato assinado"
-              value={nome}
-              onChange={(evento) => setNome(evento.target.value)}
-              maxLength={120}
-              required
-            />
-          </div>
-
+        <form
+          className="modal-upload__formulario"
+          onSubmit={enviarDocumentoSelecionado}
+        >
           <div className="modal-upload__campo">
             <label htmlFor="trabalho-documento">Trabalho</label>
+
             <select
               id="trabalho-documento"
               value={trabalhoId}
               onChange={(evento) => {
                 setTrabalhoId(evento.target.value);
-                setEtapa("");
+                setEtapaId("");
+                setArquivo(null);
+                setErro("");
               }}
+              disabled={carregandoTrabalhos || enviando || !!trabalhoIdInicial}
               required
             >
-              <option value="">Selecione um trabalho</option>
-              {trabalhosIniciais.map((trabalho) => (
+              <option value="">
+                {carregandoTrabalhos
+                  ? "Carregando trabalhos..."
+                  : "Selecione um trabalho"}
+              </option>
+
+              {trabalhos.map((trabalho) => (
                 <option key={trabalho.id} value={trabalho.id}>
-                  {trabalho.nome}
+                  {trabalho.titulo}
                 </option>
               ))}
             </select>
@@ -165,20 +294,37 @@ function ModalUploadDocumento({ aberto, onFechar, onAdicionar }) {
 
           <div className="modal-upload__campo">
             <label htmlFor="etapa-documento">Etapa</label>
+
             <select
               id="etapa-documento"
-              value={etapa}
-              onChange={(evento) => setEtapa(evento.target.value)}
-              disabled={!trabalhoSelecionado}
+              value={etapaId}
+              onChange={(evento) => setEtapaId(evento.target.value)}
+              disabled={
+                !trabalhoSelecionado ||
+                carregandoEtapas ||
+                enviando ||
+                !!etapaIdInicial
+              }
               required
             >
-              <option value="">Selecione uma etapa</option>
-              {trabalhoSelecionado?.etapas.map((nomeEtapa) => (
-                <option key={nomeEtapa} value={nomeEtapa}>
-                  {nomeEtapa}
+              <option value="">
+                {carregandoEtapas
+                  ? "Carregando etapas..."
+                  : "Selecione uma etapa"}
+              </option>
+
+              {etapas.map((etapa) => (
+                <option key={etapa.id} value={etapa.id}>
+                  {etapa.titulo}
                 </option>
               ))}
             </select>
+
+            {!carregandoEtapas &&
+              trabalhoId &&
+              etapas.length === 0 && (
+                <small>Este trabalho ainda não possui etapas.</small>
+              )}
           </div>
 
           <div className="modal-upload__campo">
@@ -187,12 +333,16 @@ function ModalUploadDocumento({ aberto, onFechar, onAdicionar }) {
             <label className="modal-upload__seletor-arquivo">
               <input
                 type="file"
-                accept=".pdf,.png,.jpg,.jpeg,.webp"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
                 onChange={selecionarArquivo}
+                disabled={enviando}
               />
+
               <Upload size={22} />
               <span>Selecionar arquivo</span>
-              <small>PDF ou imagem (PNG, JPG, WEBP)</small>
+              <small>
+                PDF, DOC, DOCX, XLS, XLSX, JPG ou PNG — máximo 10 MB
+              </small>
             </label>
           </div>
 
@@ -212,6 +362,7 @@ function ModalUploadDocumento({ aberto, onFechar, onAdicionar }) {
                 className="modal-upload__remover-arquivo"
                 aria-label="Remover arquivo selecionado"
                 onClick={() => setArquivo(null)}
+                disabled={enviando}
               >
                 <Trash2 size={18} />
               </button>
@@ -229,12 +380,21 @@ function ModalUploadDocumento({ aberto, onFechar, onAdicionar }) {
               type="button"
               className="modal-upload__botao-cancelar"
               onClick={fecharModal}
+              disabled={enviando}
             >
               Cancelar
             </button>
 
-            <button type="submit" className="modal-upload__botao-enviar">
-              Enviar documento
+            <button
+              type="submit"
+              className="modal-upload__botao-enviar"
+              disabled={
+                enviando ||
+                carregandoTrabalhos ||
+                carregandoEtapas
+              }
+            >
+              {enviando ? "Enviando..." : "Enviar documento"}
             </button>
           </footer>
         </form>

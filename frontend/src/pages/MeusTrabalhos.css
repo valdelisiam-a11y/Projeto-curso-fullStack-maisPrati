@@ -214,6 +214,14 @@
   overflow-wrap: anywhere;
 }
 
+.trabalho-criador {
+  margin: -8px 0 0;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 /* Etapa atual */
 
 .etapa-atual-box {

@@ -153,12 +153,14 @@ function Sidebar() {
                 </NavLink>
               </li>
 
-              <li>
-                <NavLink to="/minhas-etapas" onClick={fecharMenu}>
-                  <ListChecks size={20} />
-                  <span>Minhas etapas</span>
-                </NavLink>
-              </li>
+              {contexto === "empresa" && (
+                <li>
+                  <NavLink to="/minhas-etapas" onClick={fecharMenu}>
+                    <ListChecks size={20} />
+                    <span>Minhas etapas</span>
+                  </NavLink>
+                </li>
+              )}
 
               <li>
                 <NavLink to="/documentos" onClick={fecharMenu}>

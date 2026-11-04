@@ -105,6 +105,15 @@
   overflow-wrap: anywhere;
 }
 
+.trabalho-criado-por {
+  display: block;
+  margin-top: 0.4rem;
+
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
 .prazo-info {
   display: flex;
   align-items: center;
@@ -443,6 +452,16 @@
   color: var(--muted-foreground);
   font-size: 0.8rem;
   line-height: 1.5;
+}
+
+.etapa-detalhe-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.etapa-detalhe-info p {
+  margin: 0;
 }
 
 /* ==========================================================================

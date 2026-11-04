@@ -8,6 +8,10 @@ export default function TopoTrabalho({ trabalho, getTopBadgeClass }) {
         <div>
           <h2>{trabalho.nome}</h2>
           <p>{trabalho.descricao}</p>
+
+          <span className="trabalho-criado-por">
+            Criado por: {trabalho.criadoPorNome || "Não informado"}
+          </span>
         </div>
         <span
           className={`badge-status-geral ${getTopBadgeClass(trabalho.situacao)}`}

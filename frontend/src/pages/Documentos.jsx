@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Plus,
@@ -9,46 +10,116 @@ import {
   Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useContextoTrabalho } from "../contexts/ContextoTrabalho";
+
 import "./Documentos.css";
 import ModalUploadDocumento from "../components/documentosUpload/ModalUploadDocumento.jsx";
 
-const documentosIniciais = [
-  {
-    id: 1,
-    nome: "Contrato_cliente.pdf",
-    tipo: "PDF",
-    trabalho: "Cadastro de novo cliente",
-    trabalhoId: 1,
-    etapa: "Assinatura do contrato",
-    data: "10/10/2026",
-  },
-  {
-    id: 2,
-    nome: "Documento_identidade.png",
-    tipo: "Imagem",
-    trabalho: "Cadastro de novo cliente",
-    trabalhoId: 1,
-    etapa: "Conferência de documentos",
-    data: "09/10/2026",
-  },
-  {
-    id: 3,
-    nome: "Orcamento_materiais.pdf",
-    tipo: "PDF",
-    trabalho: "Compra de materiais",
-    trabalhoId: 2,
-    etapa: "Análise de orçamento",
-    data: "08/10/2026",
-  },
-];
+import {
+  listarTrabalhos,
+  listarEtapasDoTrabalho,
+} from "../services/trabalhoService";
+
+import {
+  listarDocumentos,
+  baixarDocumento as baixarArquivo,
+} from "../services/documentoService";
+
+function formatarData(data) {
+  if (!data) return "Data não informada";
+
+  return new Date(data).toLocaleDateString("pt-BR");
+}
+
+function identificarTipo(documento) {
+  const contentType = documento.contentType?.toLowerCase() || "";
+  const nome = documento.nomeOriginal?.toLowerCase() || "";
+
+  if (
+    contentType.startsWith("image/") ||
+    /\.(jpg|jpeg|png)$/.test(nome)
+  ) {
+    return "Imagem";
+  }
+
+  if (contentType === "application/pdf" || nome.endsWith(".pdf")) {
+    return "PDF";
+  }
+
+  return "Documento";
+}
 
 function Documentos() {
-  const [documentos, setDocumentos] = useState(documentosIniciais);
+  const [documentos, setDocumentos] = useState([]);
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState("Todos");
   const [modalAberto, setModalAberto] = useState(false);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
 
   const navigate = useNavigate();
+  const { contexto, empresaSelecionada } = useContextoTrabalho();
+
+const carregarDocumentos = useCallback(async () => {
+  try {
+    setCarregando(true);
+    setErro("");
+
+    const dados = await listarTrabalhos();
+    const lista = Array.isArray(dados) ? dados : dados.content ?? [];
+
+    const trabalhos = lista.filter((trabalho) => {
+      if (contexto === "pessoal") {
+        return trabalho.tipo === "PESSOAL";
+      }
+
+      if (contexto === "empresa") {
+        return (
+          trabalho.tipo === "EMPRESA" &&
+          empresaSelecionada?.id != null &&
+          Number(trabalho.empresaId) === Number(empresaSelecionada.id)
+        );
+      }
+
+      return false;
+    });
+
+    const documentosPorTrabalho = await Promise.all(
+      trabalhos.map(async (trabalho) => {
+        const etapas = await listarEtapasDoTrabalho(trabalho.id);
+
+        const documentosPorEtapa = await Promise.all(
+          etapas.map(async (etapa) => {
+            const documentosEtapa = await listarDocumentos(etapa.id);
+
+            return documentosEtapa.map((documento) => ({
+              ...documento,
+              nome: documento.nomeOriginal,
+              tipo: identificarTipo(documento),
+              trabalho: trabalho.titulo,
+              trabalhoId: trabalho.id,
+              etapa: etapa.titulo,
+              data: formatarData(documento.dataUpload),
+            }));
+          })
+        );
+
+        return documentosPorEtapa.flat();
+      })
+    );
+
+    setDocumentos(documentosPorTrabalho.flat());
+
+  } catch (error) {
+    setErro(error.message || "Não foi possível carregar os documentos.");
+  } finally {
+    setCarregando(false);
+  }
+}, [contexto, empresaSelecionada?.id]);
+
+  useEffect(() => {
+    carregarDocumentos();
+  }, [carregarDocumentos]);
 
   const documentosFiltrados = documentos.filter((documento) => {
     const termo = busca.trim().toLowerCase();
@@ -64,24 +135,47 @@ function Documentos() {
     return correspondeBusca && correspondeFiltro;
   });
 
-  function excluirDocumento(id) {
-    const confirmar = window.confirm(
-      "Deseja realmente excluir este documento?"
-    );
+  async function obterArquivo(documento) {
+    return baixarArquivo(documento.etapaId, documento.id);
+  }
 
-    if (confirmar) {
-      setDocumentos((lista) =>
-        lista.filter((documento) => documento.id !== id)
-      );
+  async function baixarDocumento(documento) {
+    try {
+      const arquivo = await obterArquivo(documento);
+      const url = URL.createObjectURL(arquivo);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = documento.nome;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      window.alert(error.message || "Não foi possível baixar o documento.");
     }
   }
 
-  function visualizarDocumento(nome) {
-    window.alert(`A visualização de "${nome}" será integrada posteriormente.`);
-  }
+  async function visualizarDocumento(documento) {
+    const novaAba = window.open("", "_blank");
 
-  function baixarDocumento(nome) {
-    window.alert(`O download de "${nome}" será integrado posteriormente.`);
+    if (!novaAba) {
+      window.alert("Permita a abertura de novas abas para visualizar o documento.");
+      return;
+    }
+
+    try {
+      const arquivo = await obterArquivo(documento);
+      const url = URL.createObjectURL(arquivo);
+
+      novaAba.location.href = url;
+
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (error) {
+      novaAba.close();
+      window.alert(error.message || "Não foi possível visualizar o documento.");
+    }
   }
 
   return (
@@ -92,21 +186,21 @@ function Documentos() {
           <p>Encontre rapidamente os documentos dos seus trabalhos.</p>
         </div>
 
-      <button
-        type="button"
-        className="documentos__botao-adicionar"
-        onClick={() => setModalAberto(true)}
-      >
-        <Plus size={18} />
-        Adicionar documento
-      </button>
+        <button
+          type="button"
+          className="documentos__botao-adicionar"
+          onClick={() => setModalAberto(true)}
+        >
+          <Plus size={18} />
+          Adicionar documento
+        </button>
       </header>
 
       <section
         className="documentos__ferramentas"
         aria-label="Busca e filtros de documentos"
       >
-       <div className="documentos__busca-container">
+        <div className="documentos__busca-container">
           <label
             className="documentos__busca-label"
             htmlFor="busca-doc"
@@ -132,7 +226,7 @@ function Documentos() {
           className="documentos__filtros"
           aria-label="Filtrar por tipo"
         >
-          {["Todos", "PDF", "Imagem"].map((tipo) => (
+          {["Todos", "PDF", "Imagem", "Documento"].map((tipo) => (
             <button
               key={tipo}
               type="button"
@@ -142,7 +236,11 @@ function Documentos() {
               aria-pressed={filtro === tipo}
               onClick={() => setFiltro(tipo)}
             >
-              {tipo === "Imagem" ? "Imagens" : tipo}
+              {tipo === "Imagem"
+                ? "Imagens"
+                : tipo === "Documento"
+                  ? "Outros documentos"
+                  : tipo}
             </button>
           ))}
         </div>
@@ -152,14 +250,27 @@ function Documentos() {
         className="documentos__lista"
         aria-label="Meus documentos"
       >
-        {documentosFiltrados.length > 0 ? (
+        {carregando ? (
+          <div className="documentos__vazio">
+            <p>Carregando documentos...</p>
+          </div>
+        ) : erro ? (
+          <div className="documentos__vazio">
+            <h2>Não foi possível carregar os documentos</h2>
+            <p>{erro}</p>
+
+            <button type="button" onClick={carregarDocumentos}>
+              Tentar novamente
+            </button>
+          </div>
+        ) : documentosFiltrados.length > 0 ? (
           documentosFiltrados.map((documento) => (
-            <article className="documento-card" key={documento.id}>
+            <article className="documento-card" key={`${documento.etapaId}-${documento.id}`}>
               <div className="documento-card__icone" aria-hidden="true">
-                {documento.tipo === "PDF" ? (
-                  <FileText size={24} />
-                ) : (
+                {documento.tipo === "Imagem" ? (
                   <ImageIcon size={24} />
+                ) : (
+                  <FileText size={24} />
                 )}
               </div>
 
@@ -180,7 +291,8 @@ function Documentos() {
                 </p>
 
                 <p>
-                  Etapa: {documento.etapa} <span aria-hidden="true">·</span>{" "}
+                  Etapa: {documento.etapa}{" "}
+                  <span aria-hidden="true">·</span>{" "}
                   Data: {documento.data}
                 </p>
               </div>
@@ -193,7 +305,7 @@ function Documentos() {
                   type="button"
                   aria-label={`Visualizar ${documento.nome}`}
                   title="Visualizar"
-                  onClick={() => visualizarDocumento(documento.nome)}
+                  onClick={() => visualizarDocumento(documento)}
                 >
                   <Eye size={18} />
                   <span>Visualizar</span>
@@ -203,7 +315,7 @@ function Documentos() {
                   type="button"
                   aria-label={`Baixar ${documento.nome}`}
                   title="Baixar"
-                  onClick={() => baixarDocumento(documento.nome)}
+                  onClick={() => baixarDocumento(documento)}
                 >
                   <Download size={18} />
                   <span>Baixar</span>
@@ -214,7 +326,7 @@ function Documentos() {
                   className="documento-card__acao-excluir"
                   aria-label={`Excluir ${documento.nome}`}
                   title="Excluir"
-                  onClick={() => excluirDocumento(documento.id)}
+                  disabled
                 >
                   <Trash2 size={18} />
                   <span>Excluir</span>
@@ -227,7 +339,9 @@ function Documentos() {
             <FileText size={36} aria-hidden="true" />
             <h2>Nenhum documento encontrado</h2>
             <p>
-              Experimente alterar a busca ou selecionar outro filtro.
+              {documentos.length === 0
+                ? "Ainda não existem documentos nos seus trabalhos."
+                : "Experimente alterar a busca ou selecionar outro filtro."}
             </p>
           </div>
         )}
@@ -236,15 +350,7 @@ function Documentos() {
       <ModalUploadDocumento
         aberto={modalAberto}
         onFechar={() => setModalAberto(false)}
-        onAdicionar={(novoDocumento) => {
-          setDocumentos((lista) => [
-            {
-              ...novoDocumento,
-              id: Date.now(),
-            },
-            ...lista,
-          ]);
-        }}
+        onAdicionar={carregarDocumentos}
       />
     </main>
   );

@@ -229,6 +229,9 @@ function Inicio() {
                     <p>
                       {trabalho.descricao || 'Nenhuma descrição informada.'}
                     </p>
+                    <p className="trabalho-card__criador">
+                      Criado por: {trabalho.criadoPorNome || 'Não informado'}
+                    </p>
 
                     <div className="trabalho-card__etapa">
                       <span>Etapa atual: </span>

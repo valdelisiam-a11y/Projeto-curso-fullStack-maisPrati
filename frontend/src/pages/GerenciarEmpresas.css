@@ -537,6 +537,17 @@
   font-size: 13px;
 }
 
+.membros-lista .membro-item {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.membros-lista .membro-selecionado {
+  border: 1px solid var(--primary);
+  background: var(--primary-soft);
+}
 
 @media (max-width: 768px) {
   .gerenciar-empresas-container {

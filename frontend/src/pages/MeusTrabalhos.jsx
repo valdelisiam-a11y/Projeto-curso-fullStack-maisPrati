@@ -17,6 +17,7 @@ import './MeusTrabalhos.css';
 import { useContextoTrabalho } from '../contexts/ContextoTrabalho';
 import { listarTrabalhos } from '../services/trabalhoService';
 
+
 const statusConfig = {
   EM_ANDAMENTO: {
     texto: 'Em andamento',
@@ -249,6 +250,9 @@ export default function MeusTrabalhos() {
 
                   <p className="trabalho-descricao">
                     {trabalho.descricao || 'Nenhuma descrição informada.'}
+                  </p>
+                  <p className="trabalho-criador">
+                    Criado por: {trabalho.criadoPorNome || 'Não informado'}
                   </p>
 
                   <div className="etapa-atual-box">
