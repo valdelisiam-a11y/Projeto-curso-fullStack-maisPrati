@@ -255,7 +255,42 @@ public class TrabalhoService {
     @Transactional
     public void sincronizarStatusComEtapas(Long trabalhoId) {
 
-        Trabalho trabalho = validarAcesso(trabalhoId);
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        Trabalho trabalho = trabalhoRepository.findById(trabalhoId)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Trabalho não encontrado"));
+
+        boolean criador = trabalho.getCriadoPor().getId()
+                .equals(usuario.getId());
+
+        boolean participante = trabalho.getTipo() == TipoTrabalho.EMPRESA
+                && usuarioTrabalhoRepository
+                .findByTrabalhoAndUsuario(trabalho, usuario)
+                .isPresent();
+
+        boolean responsavel = false;
+
+        if (trabalho.getTipo() == TipoTrabalho.EMPRESA
+                && trabalho.getEmpresa() != null
+                && usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
+                usuario, trabalho.getEmpresa())) {
+
+            responsavel = etapaRepository
+                    .findByResponsavelIdAndTrabalhoEmpresaIdOrderByOrdemAsc(
+                            usuario.getId(),
+                            trabalho.getEmpresa().getId()
+                    )
+                    .stream()
+                    .anyMatch(etapa ->
+                            etapa.getTrabalho().getId().equals(trabalhoId));
+        }
+
+        if (!criador && !participante && !responsavel) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para sincronizar este trabalho."
+            );
+        }
 
         // Um trabalho cancelado não deve ser reaberto automaticamente.
         if (trabalho.getStatus() == StatusTrabalho.CANCELADO) {
@@ -295,8 +330,6 @@ public class TrabalhoService {
         if (statusAnterior == statusNovo) {
             return;
         }
-
-        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
         trabalho.setStatus(statusNovo);
         trabalho.setDataAtualizacao(LocalDateTime.now());
@@ -353,6 +386,7 @@ public class TrabalhoService {
         );
 
         resposta.setCriadoPorId(trabalho.getCriadoPor().getId());
+        resposta.setCriadoPorNome(trabalho.getCriadoPor().getNome());
 
         return resposta;
     }

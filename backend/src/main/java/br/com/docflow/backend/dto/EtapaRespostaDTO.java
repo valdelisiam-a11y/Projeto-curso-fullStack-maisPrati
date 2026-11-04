@@ -16,6 +16,7 @@ public class EtapaRespostaDTO {
     private LocalDateTime dataAtualizacao;
     private Long trabalhoId;
     private Long responsavelId;
+    private String responsavelNome;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -46,4 +47,12 @@ public class EtapaRespostaDTO {
 
     public Long getResponsavelId() { return responsavelId; }
     public void setResponsavelId(Long responsavelId) { this.responsavelId = responsavelId; }
+
+    public String getResponsavelNome() {
+        return responsavelNome;
+    }
+
+    public void setResponsavelNome(String responsavelNome) {
+        this.responsavelNome = responsavelNome;
+    }
 }

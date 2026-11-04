@@ -14,4 +14,9 @@ public interface EtapaRepository extends JpaRepository<Etapa, Long> {
     // Maior ordem já usada no trabalho (0 se ainda não houver etapas)
     @Query("SELECT COALESCE(MAX(e.ordem), 0) FROM Etapa e WHERE e.trabalho.id = :trabalhoId")
     int buscarMaiorOrdem(@Param("trabalhoId") Long trabalhoId);
+
+    List<Etapa> findByResponsavelIdAndTrabalhoEmpresaIdOrderByOrdemAsc(
+            Long responsavelId,
+            Long empresaId
+    );
 }

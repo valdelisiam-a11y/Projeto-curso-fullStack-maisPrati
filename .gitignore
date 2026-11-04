@@ -6,3 +6,5 @@ application-local.properties
 # Variáveis de ambiente e segredos
 .env
 .env.*
+
+!.env.example

@@ -8,6 +8,7 @@ import br.com.docflow.backend.dto.EtapaRespostaDTO;
 import br.com.docflow.backend.dto.EtapaResponsavelDTO;
 import br.com.docflow.backend.dto.EtapaStatusDTO;
 import br.com.docflow.backend.dto.HistoricoEtapaRespostaDTO;
+import br.com.docflow.backend.dto.MinhaEtapaRespostaDTO;
 import br.com.docflow.backend.service.EtapaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,15 @@ public class EtapaController {
             @PathVariable Long trabalhoId) {
 
         return ResponseEntity.ok(etapaService.listarPorTrabalho(trabalhoId));
+    }
+
+    @GetMapping("/empresas/{empresaId}/minhas-etapas")
+    public ResponseEntity<List<MinhaEtapaRespostaDTO>> listarMinhasEtapas(
+            @PathVariable Long empresaId) {
+
+        return ResponseEntity.ok(
+                etapaService.listarMinhasEtapas(empresaId)
+        );
     }
 
     @GetMapping("/etapas/{id}")
