@@ -8,21 +8,22 @@ import br.com.docflow.backend.dto.EtapaRespostaDTO;
 import br.com.docflow.backend.dto.EtapaResponsavelDTO;
 import br.com.docflow.backend.dto.EtapaStatusDTO;
 import br.com.docflow.backend.dto.HistoricoEtapaRespostaDTO;
+import br.com.docflow.backend.dto.MinhaEtapaRespostaDTO;
 import br.com.docflow.backend.entity.Etapa;
 import br.com.docflow.backend.entity.HistoricoEtapa;
 import br.com.docflow.backend.entity.StatusTrabalho;
+import br.com.docflow.backend.entity.TipoTrabalho;
 import br.com.docflow.backend.entity.Trabalho;
 import br.com.docflow.backend.entity.Usuario;
 import br.com.docflow.backend.repository.EtapaRepository;
 import br.com.docflow.backend.repository.HistoricoEtapaRepository;
 import br.com.docflow.backend.repository.TrabalhoRepository;
+import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 import br.com.docflow.backend.repository.UsuarioRepository;
+import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
-import br.com.docflow.backend.entity.TipoTrabalho;
-import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
-import br.com.docflow.backend.service.TrabalhoService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -75,7 +76,9 @@ public class EtapaService {
 
         // Responsável é opcional, mas precisa ser da mesma empresa do trabalho
         if (dto.getResponsavelId() != null) {
-            etapa.setResponsavel(buscarResponsavel(dto.getResponsavelId(), trabalho));
+            etapa.setResponsavel(
+                    buscarResponsavel(dto.getResponsavelId(), trabalho)
+            );
         }
 
         // Entra sempre no final; se uma ordem foi pedida, reposicionamos em seguida
@@ -86,6 +89,7 @@ public class EtapaService {
         if (dto.getOrdem() != null) {
             posicionar(etapaSalva, dto.getOrdem());
         }
+
         trabalhoService.sincronizarStatusComEtapas(trabalho.getId());
 
         return converterParaResposta(etapaSalva);
@@ -103,15 +107,72 @@ public class EtapaService {
     }
 
     @Transactional(readOnly = true)
+    public List<MinhaEtapaRespostaDTO> listarMinhasEtapas(Long empresaId) {
+
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        // Confirma que o usuário pertence à empresa selecionada
+        boolean pertenceEmpresa = usuarioEmpresaRepository
+                .findByUsuario(usuario)
+                .stream()
+                .anyMatch(vinculo ->
+                        vinculo.getEmpresa().getId().equals(empresaId)
+                );
+
+        if (!pertenceEmpresa) {
+            throw new AccessDeniedException(
+                    "Você não tem acesso a esta empresa."
+            );
+        }
+
+        // Busca somente as etapas atribuídas ao usuário nessa empresa
+        return etapaRepository
+                .findByResponsavelIdAndTrabalhoEmpresaIdOrderByOrdemAsc(
+                        usuario.getId(),
+                        empresaId
+                )
+                .stream()
+                .map(etapa -> {
+                    MinhaEtapaRespostaDTO resposta =
+                            new MinhaEtapaRespostaDTO();
+
+                    resposta.setEtapaId(etapa.getId());
+                    resposta.setEtapaTitulo(etapa.getTitulo());
+                    resposta.setStatus(etapa.getStatus());
+                    resposta.setPercentualConclusao(
+                            etapa.getPercentualConclusao()
+                    );
+                    resposta.setOrdem(etapa.getOrdem());
+
+                    resposta.setTrabalhoId(
+                            etapa.getTrabalho().getId()
+                    );
+                    resposta.setTrabalhoTitulo(
+                            etapa.getTrabalho().getTitulo()
+                    );
+
+                    resposta.setEmpresaId(
+                            etapa.getTrabalho().getEmpresa().getId()
+                    );
+                    resposta.setEmpresaNome(
+                            etapa.getTrabalho().getEmpresa().getNome()
+                    );
+
+                    return resposta;
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public EtapaRespostaDTO buscarPorId(Long id) {
 
-        return converterParaResposta(buscarEntidade(id));
+        return converterParaResposta(buscarEntidadeComAcesso(id));
     }
 
     @Transactional
     public EtapaRespostaDTO atualizar(Long id, EtapaAtualizacaoDTO dto) {
 
-        Etapa etapa = buscarEntidade(id);
+        Etapa etapa = buscarEntidadeComAcesso(id);
 
         etapa.setTitulo(dto.getTitulo());
         etapa.setDescricao(dto.getDescricao());
@@ -125,14 +186,16 @@ public class EtapaService {
     @Transactional
     public EtapaRespostaDTO alterarStatus(Long id, EtapaStatusDTO dto) {
 
-        Etapa etapa = buscarEntidade(id);
+        Etapa etapa = buscarEntidadeComAcesso(id);
 
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
         StatusTrabalho statusAnterior = etapa.getStatus();
 
         if (statusAnterior == dto.getStatus()) {
-            throw new EtapaStatusInalteradoException("A etapa já está com este status");
+            throw new EtapaStatusInalteradoException(
+                    "A etapa já está com este status"
+            );
         }
 
         etapa.setStatus(dto.getStatus());
@@ -144,7 +207,12 @@ public class EtapaService {
 
         Etapa etapaAtualizada = etapaRepository.save(etapa);
 
-        registrarHistorico(etapaAtualizada, statusAnterior, dto.getStatus(), usuario);
+        registrarHistorico(
+                etapaAtualizada,
+                statusAnterior,
+                dto.getStatus(),
+                usuario
+        );
 
         trabalhoService.sincronizarStatusComEtapas(
                 etapaAtualizada.getTrabalho().getId()
@@ -156,7 +224,7 @@ public class EtapaService {
     @Transactional
     public EtapaRespostaDTO atualizarPercentual(Long id, EtapaPercentualDTO dto) {
 
-        Etapa etapa = buscarEntidade(id);
+        Etapa etapa = buscarEntidadeComAcesso(id);
 
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
@@ -166,8 +234,9 @@ public class EtapaService {
         etapa.setPercentualConclusao(percentual);
 
         if (percentual == 100) {
-            // Regra: ao chegar em 100%, a etapa é concluída
+            // Ao chegar em 100%, a etapa é concluída
             etapa.setStatus(StatusTrabalho.CONCLUIDO);
+
         } else if (statusAnterior == StatusTrabalho.CONCLUIDO) {
             // Se estava concluída e o percentual baixou, a etapa é reaberta
             etapa.setStatus(StatusTrabalho.EM_ANDAMENTO);
@@ -177,7 +246,12 @@ public class EtapaService {
 
         // Só registra histórico se o percentual mudou o status
         if (etapaAtualizada.getStatus() != statusAnterior) {
-            registrarHistorico(etapaAtualizada, statusAnterior, etapaAtualizada.getStatus(), usuario);
+            registrarHistorico(
+                    etapaAtualizada,
+                    statusAnterior,
+                    etapaAtualizada.getStatus(),
+                    usuario
+            );
         }
 
         trabalhoService.sincronizarStatusComEtapas(
@@ -190,13 +264,16 @@ public class EtapaService {
     @Transactional
     public EtapaRespostaDTO definirResponsavel(Long id, EtapaResponsavelDTO dto) {
 
-        Etapa etapa = buscarEntidade(id);
+        Etapa etapa = buscarEntidadeComAcesso(id);
 
         if (dto.getResponsavelId() == null) {
             // Sem ID: remove o responsável
             etapa.setResponsavel(null);
+
         } else {
-            etapa.setResponsavel(buscarResponsavel(dto.getResponsavelId(), etapa.getTrabalho()));
+            etapa.setResponsavel(
+                    buscarResponsavel(dto.getResponsavelId(), etapa.getTrabalho())
+            );
         }
 
         Etapa etapaAtualizada = etapaRepository.save(etapa);
@@ -207,7 +284,7 @@ public class EtapaService {
     @Transactional
     public EtapaRespostaDTO alterarOrdem(Long id, EtapaOrdemDTO dto) {
 
-        Etapa etapa = buscarEntidade(id);
+        Etapa etapa = buscarEntidadeComAcesso(id);
 
         posicionar(etapa, dto.getOrdem());
 
@@ -217,14 +294,18 @@ public class EtapaService {
     @Transactional
     public void excluir(Long id) {
 
-        Etapa etapa = buscarEntidade(id);
+        Etapa etapa = buscarEntidadeComAcesso(id);
         Long trabalhoId = etapa.getTrabalho().getId();
 
         // O histórico da etapa é excluído pelo banco (ON DELETE CASCADE)
         etapaRepository.delete(etapa);
 
-        // Fecha o "buraco" deixado na sequência (1, 3, 4 vira 1, 2, 3)
-        renumerar(new ArrayList<>(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(trabalhoId)));
+        // Fecha o buraco deixado na sequência
+        renumerar(
+                new ArrayList<>(
+                        etapaRepository.findByTrabalhoIdOrderByOrdemAsc(trabalhoId)
+                )
+        );
 
         trabalhoService.sincronizarStatusComEtapas(trabalhoId);
     }
@@ -232,7 +313,7 @@ public class EtapaService {
     @Transactional(readOnly = true)
     public List<HistoricoEtapaRespostaDTO> listarHistorico(Long etapaId) {
 
-        Etapa etapa = buscarEntidade(etapaId);
+        Etapa etapa = buscarEntidadeComAcesso(etapaId);
 
         return historicoEtapaRepository
                 .findByEtapaIdOrderByDataAlteracaoDesc(etapa.getId())
@@ -241,13 +322,15 @@ public class EtapaService {
                 .toList();
     }
 
-    // Move a etapa para a nova posição; as demais descem ou sobem uma posição (comportamento de lista).
-    // Se a ordem pedida for maior que o total de etapas, a etapa vai para o final.
+    // Move a etapa para a nova posição.
+    // Se a ordem pedida for maior que o total, a etapa vai para o final.
     private void posicionar(Etapa etapa, int novaOrdem) {
 
         Long trabalhoId = etapa.getTrabalho().getId();
 
-        List<Etapa> etapas = new ArrayList<>(etapaRepository.findByTrabalhoIdOrderByOrdemAsc(trabalhoId));
+        List<Etapa> etapas = new ArrayList<>(
+                etapaRepository.findByTrabalhoIdOrderByOrdemAsc(trabalhoId)
+        );
 
         etapas.removeIf(e -> e.getId().equals(etapa.getId()));
 
@@ -269,8 +352,11 @@ public class EtapaService {
         etapaRepository.saveAll(etapas);
     }
 
-    private void registrarHistorico(Etapa etapa, StatusTrabalho statusAnterior,
-                                    StatusTrabalho statusNovo, Usuario usuario) {
+    private void registrarHistorico(
+            Etapa etapa,
+            StatusTrabalho statusAnterior,
+            StatusTrabalho statusNovo,
+            Usuario usuario) {
 
         HistoricoEtapa historico = new HistoricoEtapa();
 
@@ -287,20 +373,28 @@ public class EtapaService {
     private Usuario buscarResponsavel(Long usuarioId, Trabalho trabalho) {
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário responsável não encontrado"));
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException(
+                                "Usuário responsável não encontrado"
+                        )
+                );
 
         if (!mesmaEmpresa(usuario, trabalho)) {
             throw new UsuarioEmpresaDiferenteException(
-                    "O responsável deve pertencer à mesma empresa do trabalho");
+                    "O responsável deve pertencer à mesma empresa do trabalho"
+            );
         }
 
         return usuario;
     }
 
     private boolean mesmaEmpresa(Usuario usuario, Trabalho trabalho) {
+
         return trabalho.getEmpresa() != null
                 && usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
-                usuario, trabalho.getEmpresa());
+                usuario,
+                trabalho.getEmpresa()
+        );
     }
 
     private Trabalho validarAcessoTrabalho(Long trabalhoId) {
@@ -309,7 +403,10 @@ public class EtapaService {
 
         Trabalho trabalho = trabalhoRepository.findById(trabalhoId)
                 .orElseThrow(() ->
-                        new RecursoNaoEncontradoException("Trabalho não encontrado"));
+                        new RecursoNaoEncontradoException(
+                                "Trabalho não encontrado"
+                        )
+                );
 
         boolean criador = trabalho.getCriadoPor().getId()
                 .equals(usuario.getId());
@@ -320,19 +417,58 @@ public class EtapaService {
                 .isPresent();
 
         if (!criador && !participante) {
-            throw new org.springframework.security.access.AccessDeniedException(
-                    "Você não tem permissão para acessar este trabalho.");
+            throw new AccessDeniedException(
+                    "Você não tem permissão para acessar este trabalho."
+            );
         }
 
         return trabalho;
     }
 
-    // verifica se o usuário é o criador ou tem acesso ao trabalho por meio das associações existentes
-    private Etapa buscarEntidade(Long id) {
+    // Permite que o responsável consulte e atualize operacionalmente sua etapa
+    private Etapa buscarEtapaComAcessoOperacional(Long id) {
 
         Etapa etapa = etapaRepository.findById(id)
                 .orElseThrow(() ->
-                        new RecursoNaoEncontradoException("Etapa não encontrada"));
+                        new RecursoNaoEncontradoException(
+                                "Etapa não encontrada"
+                        )
+                );
+
+        Trabalho trabalho = etapa.getTrabalho();
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        boolean criador = trabalho.getCriadoPor().getId()
+                .equals(usuario.getId());
+
+        boolean participante = trabalho.getTipo() == TipoTrabalho.EMPRESA
+                && usuarioTrabalhoRepository
+                .findByTrabalhoAndUsuario(trabalho, usuario)
+                .isPresent();
+
+        boolean responsavel = etapa.getResponsavel() != null
+                && etapa.getResponsavel().getId().equals(usuario.getId())
+                && mesmaEmpresa(usuario, trabalho);
+
+        if (!criador && !participante && !responsavel) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para acessar esta etapa."
+            );
+        }
+
+        return etapa;
+    }
+
+    // Busca a etapa e valida se o usuário pode acessar o trabalho relacionado.
+    @Transactional(readOnly = true)
+    public Etapa buscarEntidadeComAcesso(Long id) {
+
+        Etapa etapa = etapaRepository.findById(id)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException(
+                                "Etapa não encontrada"
+                        )
+                );
 
         Trabalho trabalho = etapa.getTrabalho();
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
@@ -346,8 +482,9 @@ public class EtapaService {
                 .isPresent();
 
         if (!criador && !participante) {
-            throw new org.springframework.security.access.AccessDeniedException(
-                    "Você não tem permissão para acessar esta etapa.");
+            throw new AccessDeniedException(
+                    "Você não tem permissão para acessar esta etapa."
+            );
         }
 
         return etapa;
@@ -369,12 +506,13 @@ public class EtapaService {
 
         if (etapa.getResponsavel() != null) {
             resposta.setResponsavelId(etapa.getResponsavel().getId());
+            resposta.setResponsavelNome(etapa.getResponsavel().getNome());
         }
-
         return resposta;
     }
 
-    private HistoricoEtapaRespostaDTO converterHistoricoParaResposta(HistoricoEtapa historico) {
+    private HistoricoEtapaRespostaDTO converterHistoricoParaResposta(
+            HistoricoEtapa historico) {
 
         HistoricoEtapaRespostaDTO resposta = new HistoricoEtapaRespostaDTO();
 

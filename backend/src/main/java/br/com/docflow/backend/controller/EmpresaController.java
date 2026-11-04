@@ -78,4 +78,13 @@ public class EmpresaController {
                 usuarioEmpresaService.listarMembros(empresaId)
         );
     }
+
+    @GetMapping("/{empresaId}/membros-disponiveis")
+    public ResponseEntity<java.util.List<MembroEmpresaDTO>> listarMembrosDisponiveis(
+            @PathVariable Long empresaId) {
+
+        return ResponseEntity.ok(
+                usuarioEmpresaService.listarMembrosDisponiveis(empresaId)
+        );
+    }
 }

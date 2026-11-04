@@ -1,114 +1,179 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   PlayCircle,
   AlertTriangle,
-  Eye,
-  Pencil,
   ArrowRight,
 } from "lucide-react";
+
+import { listarMinhasEtapas } from "../services/trabalhoService";
+import { useContextoTrabalho } from "../contexts/ContextoTrabalho";
+
 import "./MinhasEtapas.css";
 
 export default function MinhasEtapas() {
   const navigate = useNavigate();
-  const [etapas, setEtapas] = useState([
-    {
-      id: 1,
-      nome: "Conferir notas fiscais",
-      trabalho: "Reforma da loja centro",
-      empresa: "Construtora Acácias",
-      status: "Em andamento",
-      permissao: "editar",
-      compartilhadoPor: "Carlos Mendes",
-    },
-    {
-      id: 2,
-      nome: "Revisar relatório final",
-      trabalho: "Auditoria trimestral",
-      empresa: "Souza Serviços",
-      status: "Precisa de atenção",
-      permissao: "visualizar",
-      compartilhadoPor: "João Pereira",
-    },
-  ]);
+
+  const { contexto, empresaSelecionada } = useContextoTrabalho();
+
+  const [etapas, setEtapas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarEtapas() {
+      if (contexto !== "empresa" || !empresaSelecionada?.id) {
+        setEtapas([]);
+        setErro(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setErro(null);
+
+        const resultado = await listarMinhasEtapas(
+          empresaSelecionada.id
+        );
+
+        if (ativo) {
+          setEtapas(Array.isArray(resultado) ? resultado : []);
+        }
+      } catch (error) {
+        if (ativo) {
+          setEtapas([]);
+          setErro(
+            error.message || "Não foi possível carregar suas etapas."
+          );
+        }
+      } finally {
+        if (ativo) {
+          setLoading(false);
+        }
+      }
+    }
+
+    carregarEtapas();
+
+    return () => {
+      ativo = false;
+    };
+  }, [contexto, empresaSelecionada?.id]);
+
+  function obterStatus(status) {
+    switch (status) {
+      case "EM_ANDAMENTO":
+        return (
+          <span className="badge-status em-andamento">
+            <PlayCircle size={14} /> Em andamento
+          </span>
+        );
+
+      case "PENDENTE":
+        return (
+          <span className="badge-status precisa-atencao">
+            <AlertTriangle size={14} /> Pendente
+          </span>
+        );
+
+      case "CONCLUIDO":
+        return (
+          <span className="badge-status">
+            Concluída
+          </span>
+        );
+
+      case "CANCELADO":
+        return (
+          <span className="badge-status">
+            Cancelada
+          </span>
+        );
+
+      default:
+        return (
+          <span className="badge-status">
+            {status || "Sem status"}
+          </span>
+        );
+    }
+  }
 
   return (
     <div className="minhas-etapas-container">
       <div className="header-secao">
         <h1>Minhas etapas</h1>
         <p>
-          Etapas que outras pessoas compartilharam com você. Você vê só a etapa,
-          não o trabalho inteiro.
+          Etapas atribuídas a você na empresa selecionada.
         </p>
-        <div className="banner-demo">
-          Demonstração: estas etapas são exemplos, ainda não vêm de outras
-          contas reais.
-        </div>
       </div>
 
-      {loading && (
-        <div className="estado-carregamento">A carregar etapas...</div>
-      )}
-      {erro && <div className="estado-erro">{erro}</div>}
-
-      {!loading && !erro && etapas.length === 0 && (
+      {contexto !== "empresa" && (
         <div className="estado-vazio">
-          <p>Nenhuma etapa compartilhada encontrada.</p>
+          <p>Minhas etapas está disponível no contexto empresarial.</p>
         </div>
       )}
 
-      <div className="lista-etapas-compartilhadas">
-        {etapas.map((etapa) => (
-          <div key={etapa.id} className="card-etapa">
-            <div className="card-topo">
-              <div className="card-info-principal">
-                <h3>{etapa.nome}</h3>
-                <p className="subtitulo-trabalho">
-                  {etapa.trabalho} · {etapa.empresa}
-                </p>
-              </div>
+      {contexto === "empresa" && loading && (
+        <div className="estado-carregamento">
+          Carregando etapas...
+        </div>
+      )}
 
-              <div>
-                {etapa.status === "Em andamento" ? (
-                  <span className="badge-status em-andamento">
-                    <PlayCircle size={14} /> Em andamento
-                  </span>
-                ) : (
-                  <span className="badge-status precisa-atencao">
-                    <AlertTriangle size={14} /> Precisa de atenção
-                  </span>
-                )}
-              </div>
-            </div>
+      {contexto === "empresa" && erro && (
+        <div className="estado-erro">{erro}</div>
+      )}
 
-            <div className="card-rodape">
-              <div className="permissao-info">
-                {etapa.permissao === "editar" ? (
-                  <>
-                    <Pencil size={14} /> Pode editar · compartilhada por{" "}
-                    {etapa.compartilhadoPor}
-                  </>
-                ) : (
-                  <>
-                    <Eye size={14} /> Pode visualizar · compartilhada por{" "}
-                    {etapa.compartilhadoPor}
-                  </>
-                )}
-              </div>
-
-              {/* Botão com o redirecionamento corrigido */}
-              <button
-                className="btn-abrir-etapa"
-                onClick={() => navigate(`/etapas/${etapa.id}`)}
-              >
-                Abrir etapa <ArrowRight size={14} />
-              </button>
-            </div>
+      {contexto === "empresa" &&
+        !loading &&
+        !erro &&
+        etapas.length === 0 && (
+          <div className="estado-vazio">
+            <p>
+              Você não está participando de nenhuma etapa nesta empresa.
+            </p>
           </div>
-        ))}
-      </div>
+        )}
+
+      {!loading && !erro && (
+        <div className="lista-etapas-compartilhadas">
+          {etapas.map((etapa) => (
+            <div key={etapa.etapaId} className="card-etapa">
+              <div className="card-topo">
+                <div className="card-info-principal">
+                  <h3>{etapa.etapaTitulo}</h3>
+
+                  <p className="subtitulo-trabalho">
+                    {etapa.trabalhoTitulo} · {etapa.empresaNome}
+                  </p>
+                </div>
+
+                <div>
+                  {obterStatus(etapa.status)}
+                </div>
+              </div>
+
+              <div className="card-rodape">
+                <div className="permissao-info">
+                  Progresso: {etapa.percentualConclusao}%
+                </div>
+
+                <button
+                  className="btn-abrir-etapa"
+                  onClick={() =>
+                    navigate(`/etapas/${etapa.etapaId}`)
+                  }
+                >
+                  Abrir etapa <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -103,3 +103,18 @@ export async function removerMembroEmpresa(empresaId, usuarioId) {
     );
   }
 }
+
+export async function listarMembrosDisponiveis(empresaId) {
+  const resposta = await apiFetch(
+    `/empresas/${empresaId}/membros-disponiveis`
+  );
+
+  if (!resposta.ok) {
+    const mensagem = await resposta.text();
+    throw new Error(
+      mensagem || `Erro ao listar colaboradores disponíveis (${resposta.status}).`
+    );
+  }
+
+  return resposta.json();
+}

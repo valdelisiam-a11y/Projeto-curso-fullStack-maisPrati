@@ -1,140 +1,208 @@
+
 /* ==========================================================================
-   1. ESTRUTURA GERAL E FORMULÁRIO
+   NOVO TRABALHO
    ========================================================================== */
+
 .novo-trabalho-container {
-  padding: 2.5rem 2rem;
+  width: 100%;
   max-width: 1080px;
   margin: 0 auto;
+  padding: 1.5rem;
   color: var(--foreground);
-  box-sizing: border-box;
+  font-family: inherit;
 }
 
 .novo-trabalho-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .novo-trabalho-header h1 {
-  font-size: 1.625rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--foreground);
-  margin: 0 0 0.35rem 0;
 }
 
 .novo-trabalho-header p {
+  margin: 0;
   font-size: 0.9rem;
   color: var(--muted-foreground);
-  margin: 0;
 }
+
+/* ==========================================================================
+   FORMULÁRIO
+   ========================================================================== */
 
 .novo-trabalho-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr) 340px;
   align-items: start;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.preview-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 1.5rem;
+  min-width: 0;
 }
 
 .novo-trabalho-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  width: 100%;
   min-width: 0;
 }
 
 .form-card {
-  background-color: var(--sidebar);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   padding: 1.5rem;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  width: 100%;
 }
 
-.form-group:last-child {
-  margin-bottom: 0;
-}
-
-.form-group label {
-  font-size: 0.85rem;
-  font-weight: 500;
+.form-group label,
+.etapa-campo > label {
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--foreground);
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.add-etapa-wrapper input,
+.etapa-input-edit,
+.etapa-select {
   width: 100%;
-  padding: 0.7rem 0.875rem;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) - 0.2rem);
-  font-size: 0.9rem;
   background-color: var(--background);
   color: var(--foreground);
+  font-family: inherit;
+  font-size: 0.875rem;
   outline: none;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group textarea {
+  min-height: 90px;
+  resize: vertical;
 }
 
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.add-etapa-wrapper input:focus,
+.etapa-input-edit:focus,
+.etapa-select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
+.form-group input::placeholder,
+.form-group textarea::placeholder,
+.add-etapa-wrapper input::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.8;
+}
+
+.form-group small {
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+.input-erro {
+  border-color: var(--destructive) !important;
+}
+
+.aviso-obrigatorio-criacao {
+  margin: 0.25rem 0 0;
+  color: var(--destructive);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   ETAPAS
+   ========================================================================== */
+
 .etapas-header-title {
-  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .etapas-header-title h3 {
+  margin: 0;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--foreground);
-  margin: 0 0 0.2rem 0;
 }
 
 .etapas-header-title p {
-  font-size: 0.8rem;
-  color: var(--muted-foreground);
   margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  line-height: 1.5;
 }
 
 .etapas-lista {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
-  margin-bottom: 1rem;
+  gap: 0.875rem;
 }
 
 .etapa-item {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.875rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--background);
+}
+
+.etapa-linha-principal {
+  display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: var(--muted);
-  border: 1px solid var(--border);
-  padding: 0.5rem 0.75rem;
-  border-radius: calc(var(--radius) - 0.2rem);
+  width: 100%;
+  min-width: 0;
 }
 
 .etapa-numero {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--muted-foreground);
-  width: 16px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background-color: var(--primary-soft);
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .etapa-input-edit {
   flex: 1;
-  border: none;
-  background: transparent;
-  font-size: 0.875rem;
-  color: var(--foreground);
-  outline: none;
   min-width: 0;
 }
 
@@ -146,16 +214,18 @@
 }
 
 .btn-acao-etapa {
-  background: transparent;
-  border: none;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  padding: 0.3rem;
-  border-radius: 4px;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-acao-etapa:hover:not(:disabled) {
@@ -163,210 +233,369 @@
   color: var(--primary);
 }
 
-.btn-acao-etapa.btn-deletar:hover:not(:disabled) {
-  background-color: oklch(95% 0.04 25);
-  color: var(--destructive);
-}
-
 .btn-acao-etapa:disabled {
-  opacity: 0.3;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
-.add-etapa-wrapper {
-  display: flex;
-  gap: 0.5rem;
+.btn-acao-etapa.btn-deletar:hover:not(:disabled) {
+  background-color: var(--background);
+  color: var(--destructive);
 }
 
-.add-etapa-wrapper input {
-  flex: 1;
-  padding: 0.6rem 0.875rem;
+/* ==========================================================================
+   RESPONSÁVEL E DOCUMENTOS DAS ETAPAS
+   ========================================================================== */
+
+.etapa-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-left: 2.5rem;
+}
+
+.etapa-select {
+  cursor: pointer;
+}
+
+.etapa-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.etapa-arquivo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.input-arquivo-oculto {
+  display: none;
+}
+
+.btn-selecionar-arquivo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.4rem;
+  padding: 0.55rem 0.85rem;
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) - 0.2rem);
-  font-size: 0.85rem;
-  outline: none;
   background-color: var(--background);
   color: var(--foreground);
-  min-width: 0;
-}
-
-.btn-add-etapa {
-  background-color: var(--secondary);
-  color: var(--secondary-foreground);
-  border: 1px solid var(--border);
-  padding: 0.6rem 1rem;
-  border-radius: calc(var(--radius) - 0.2rem);
-  font-size: 0.825rem;
+  font-family: inherit;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
-.btn-add-etapa:hover {
+.btn-selecionar-arquivo:hover {
+  border-color: var(--primary);
   background-color: var(--primary-soft);
   color: var(--primary);
 }
 
+.arquivo-selecionado {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.45rem 0.65rem;
+  border-radius: calc(var(--radius) - 0.2rem);
+  background-color: var(--primary-soft);
+  color: var(--foreground);
+  font-size: 0.8rem;
+}
+
+.arquivo-selecionado span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.btn-remover-arquivo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.2rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.btn-remover-arquivo:hover {
+  color: var(--destructive);
+  background-color: var(--background);
+}
+
+.btn-remover-arquivo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ==========================================================================
-   2. LIVE PREVIEW
+   ADICIONAR ETAPA
    ========================================================================== */
+
+.add-etapa-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.add-etapa-wrapper input {
+  flex: 1;
+}
+
+.btn-add-etapa {
+  flex-shrink: 0;
+  min-height: 2.65rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--primary);
+  border-radius: calc(var(--radius) - 0.2rem);
+  background-color: var(--primary-soft);
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-add-etapa:hover:not(:disabled) {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-add-etapa:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   MENSAGENS E AÇÕES
+   ========================================================================== */
+
+.alerta-erro-etapas {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--destructive);
+  border-radius: calc(var(--radius) - 0.2rem);
+  color: var(--destructive);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
 .preview-column {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
   position: sticky;
-  top: 2rem;
+  top: 1.5rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .preview-card {
-  background-color: var(--accent);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--primary-soft);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
+  border-radius: calc(var(--radius) + 8px);
+  box-shadow: var(--shadow-soft);
 }
 
 .preview-badge {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--accent-foreground);
+  align-self: flex-start;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background-color: var(--primary-soft);
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .preview-subtext {
-  font-size: 0.775rem;
+  margin: 0;
   color: var(--muted-foreground);
-  margin: 0.2rem 0 1.25rem 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .preview-trabalho-titulo {
-  font-size: 0.95rem;
+  margin: 0;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--foreground);
-  margin: 0 0 1rem 0;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .preview-etapas-lista {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.875rem;
 }
 
 .preview-etapa-item {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  background-color: var(--sidebar);
-  padding: 0.65rem 0.875rem;
-  border-radius: 20px;
-  font-size: 0.825rem;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background-color: color-mix(in srgb, var(--card) 80%, transparent);
   color: var(--foreground);
-  font-weight: 500;
-  box-shadow: var(--shadow-soft);
-  word-break: break-word;
+  font-size: 0.875rem;
+}
+
+.preview-etapa-item span:last-child {
+  overflow-wrap: anywhere;
 }
 
 .preview-numero {
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  width: 16px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-}
-
-.text-concluido {
-  color: oklch(65% 0.17 150);
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .preview-vazio {
-  font-size: 0.8rem;
-  color: var(--muted-foreground);
-  font-style: italic;
   margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
 }
 
 .preview-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 0.75rem;
+  width: 100%;
 }
 
-.btn-criar-trabalho {
+.btn-criar-trabalho,
+.btn-cancelar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  padding: 0.75rem 1.25rem;
-  border-radius: calc(var(--radius) - 0.1rem);
-  border: none;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: calc(var(--radius) - 0.2rem);
+  font-family: inherit;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s ease;
-  box-shadow: var(--shadow-soft);
+  transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
-.btn-criar-trabalho:hover {
+.btn-criar-trabalho {
+  border: 1px solid var(--primary);
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-criar-trabalho:hover:not(:disabled) {
   opacity: 0.9;
 }
 
 .btn-cancelar {
-  background: transparent;
-  border: none;
-  color: var(--muted-foreground);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0.5rem;
-  transition: color 0.2s ease;
-  text-align: center;
-}
-
-.btn-cancelar:hover {
+  border: 1px solid var(--border);
+  background-color: var(--background);
   color: var(--foreground);
 }
 
-.aviso-obrigatorio-criacao {
-  display: block;
-  width: 100%;
-  background-color: oklch(95% 0.04 25);
-  border: 1px solid oklch(88% 0.08 25);
-  color: var(--destructive);
-  font-size: 0.825rem;
-  font-weight: 500;
-  text-align: center;
-  padding: 0.65rem 1rem;
-  border-radius: 9999px;
-  box-sizing: border-box;
+.btn-cancelar:hover:not(:disabled) {
+  border-color: var(--primary);
+  background-color: var(--primary-soft);
+  color: var(--primary);
+}
+
+.btn-criar-trabalho:disabled,
+.btn-cancelar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ==========================================================================
-   3. RESPONSIVIDADE
+   RESPONSIVIDADE
    ========================================================================== */
-@media (max-width: 868px) {
+
+@media (max-width: 600px) {
   .novo-trabalho-container {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
   }
 
-  .novo-trabalho-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .novo-trabalho-header h1 {
+    font-size: 1.25rem;
   }
 
-  .preview-column {
-    position: static;
+  .form-card {
+    padding: 1rem;
   }
-}
 
-@media (max-width: 480px) {
+  .etapa-item {
+    padding: 0.75rem;
+  }
+
+  .etapa-linha-principal {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .etapa-input-edit {
+    flex: 1 1 calc(100% - 3rem);
+  }
+
+  .etapa-acoes {
+    margin-left: auto;
+  }
+
+  .etapa-campo {
+    padding-left: 0;
+  }
+
   .add-etapa-wrapper {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .btn-add-etapa {
     width: 100%;
-    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .novo-trabalho-container {
+    padding: 0.75rem;
+  }
+
+  .form-card {
+    padding: 0.85rem;
+  }
+
+  .etapa-arquivo {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

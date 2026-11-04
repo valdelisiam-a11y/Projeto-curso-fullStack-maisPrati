@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, Navigate  } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 import RotaProtegida from "./components/RotaProtegida.jsx";
 
@@ -14,7 +14,7 @@ import Documentos from "./pages/Documentos";
 import Configuracoes from "./pages/Configuracoes";
 import Sidebar from "./components/sidebar/Sidebar";
 import PaginaNaoEncontrada from "./pages/PaginaNaoEncontrada";
-import { ContextoTrabalhoProvider } from "./contexts/ContextoTrabalho";
+import { ContextoTrabalhoProvider, useContextoTrabalho,} from "./contexts/ContextoTrabalho";
 import GerenciarEmpresas from "./pages/GerenciarEmpresas";
 import DetalhesTrabalho from "./pages/DetalhesTrabalho";
 
@@ -28,6 +28,16 @@ function Layout() {
       </main>
     </div>
   );
+}
+
+function RotaSomenteEmpresa() {
+  const { contexto } = useContextoTrabalho();
+
+  if (contexto !== "empresa") {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
 }
 
 function App() {
@@ -45,7 +55,9 @@ function App() {
               <Route element={<Layout />}>
                 <Route path="/" element={<Inicio />} />
                 <Route path="/trabalhos" element={<MeusTrabalhos />} />
-                <Route path="/minhas-etapas" element={<MinhasEtapas />} />
+                <Route element={<RotaSomenteEmpresa />}>
+                  <Route path="/minhas-etapas" element={<MinhasEtapas />} />
+                </Route>
                 <Route path="/etapas/:id" element={<DetalhesEtapa />} />
                 <Route path="/trabalhos/novo" element={<NovoTrabalho />} />
                 <Route path="/trabalhos/:id" element={<DetalhesTrabalho />} />

@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowUp,
@@ -7,6 +6,8 @@ import {
   Trash2,
   CheckCircle2,
   AlertCircle,
+  Paperclip,
+  X,
 } from "lucide-react";
 
 import "./NovoTrabalho.css";
@@ -15,6 +16,8 @@ import {
   cadastrarTrabalho,
   cadastrarEtapa,
 } from "../services/trabalhoService";
+import { listarMembrosEmpresa } from "../services/empresaService";
+import { enviarDocumento } from "../services/documentoService";
 
 export default function NovoTrabalho() {
   const navigate = useNavigate();
@@ -25,14 +28,90 @@ export default function NovoTrabalho() {
   const [prazo, setPrazo] = useState("");
 
   const [etapas, setEtapas] = useState([
-    { id: 1, titulo: "Receber documentos" },
-    { id: 2, titulo: "Conferir documentação" },
+    {
+      id: 1,
+      titulo: "Receber documentos",
+      responsavelId: "",
+      arquivo: null,
+    },
+    {
+      id: 2,
+      titulo: "Conferir documentação",
+      responsavelId: "",
+      arquivo: null,
+    },
   ]);
+
+  const [membros, setMembros] = useState([]);
+  const [carregandoMembros, setCarregandoMembros] = useState(false);
+  const [erroMembros, setErroMembros] = useState("");
 
   const [novaEtapaInput, setNovaEtapaInput] = useState("");
   const [erros, setErros] = useState({});
   const [erroCriacao, setErroCriacao] = useState("");
   const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => {
+    setMembros([]);
+    setErroMembros("");
+
+    setEtapas((anteriores) =>
+      anteriores.map((etapa) => ({
+        ...etapa,
+        responsavelId: "",
+      }))
+    );
+
+    if (contexto !== "empresa" || !empresaSelecionada?.id) {
+      setCarregandoMembros(false);
+      return;
+    }
+
+    let cancelado = false;
+
+    async function carregarMembros() {
+      setCarregandoMembros(true);
+
+      try {
+        const resposta = await listarMembrosEmpresa(empresaSelecionada.id);
+
+        const lista = Array.isArray(resposta)
+          ? resposta
+          : resposta?.membros ?? [];
+
+        const membrosNormalizados = lista
+          .map((membro) => ({
+            id: membro.usuarioId ?? membro.id,
+            nome:
+              membro.usuarioNome ??
+              membro.nome ??
+              membro.nomeUsuario ??
+              membro.email,
+          }))
+          .filter((membro) => membro.id != null && membro.nome);
+
+        if (!cancelado) {
+          setMembros(membrosNormalizados);
+        }
+      } catch (error) {
+        if (!cancelado) {
+          setErroMembros(
+            error.message || "Não foi possível carregar os membros da empresa."
+          );
+        }
+      } finally {
+        if (!cancelado) {
+          setCarregandoMembros(false);
+        }
+      }
+    }
+
+    carregarMembros();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [contexto, empresaSelecionada?.id]);
 
   const handleAdicionarEtapa = () => {
     if (!novaEtapaInput.trim()) return;
@@ -42,6 +121,8 @@ export default function NovoTrabalho() {
       {
         id: Date.now(),
         titulo: novaEtapaInput.trim(),
+        responsavelId: "",
+        arquivo: null,
       },
     ]);
 
@@ -59,6 +140,30 @@ export default function NovoTrabalho() {
     setEtapas((anteriores) =>
       anteriores.map((etapa) =>
         etapa.id === id ? { ...etapa, titulo: novoTitulo } : etapa
+      )
+    );
+  };
+
+  const handleDefinirResponsavel = (id, responsavelId) => {
+    setEtapas((anteriores) =>
+      anteriores.map((etapa) =>
+        etapa.id === id ? { ...etapa, responsavelId } : etapa
+      )
+    );
+  };
+
+  const handleSelecionarArquivo = (id, arquivo) => {
+    setEtapas((anteriores) =>
+      anteriores.map((etapa) =>
+        etapa.id === id ? { ...etapa, arquivo } : etapa
+      )
+    );
+  };
+
+  const handleRemoverArquivo = (id) => {
+    setEtapas((anteriores) =>
+      anteriores.map((etapa) =>
+        etapa.id === id ? { ...etapa, arquivo: null } : etapa
       )
     );
   };
@@ -102,10 +207,21 @@ export default function NovoTrabalho() {
       return;
     }
 
-    // Por segurança, não enviamos IDs de empresas demonstrativas.
     if (contexto === "empresa" && !empresaSelecionada?.id) {
       setErroCriacao(
         "Selecione uma empresa antes de cadastrar um trabalho empresarial."
+      );
+      return;
+    }
+
+    if (contexto === "empresa" && carregandoMembros) {
+      setErroCriacao("Aguarde o carregamento dos membros da empresa.");
+      return;
+    }
+
+    if (contexto === "empresa" && erroMembros) {
+      setErroCriacao(
+        "Não foi possível carregar os membros da empresa. Tente novamente antes de criar o trabalho."
       );
       return;
     }
@@ -117,18 +233,18 @@ export default function NovoTrabalho() {
     let trabalhoCriado;
 
     try {
-     trabalhoCriado = await cadastrarTrabalho({
+      trabalhoCriado = await cadastrarTrabalho({
         titulo: nomeTrabalho.trim(),
         descricao: descricao.trim(),
         tipo: contexto === "empresa" ? "EMPRESA" : "PESSOAL",
         ...(contexto === "empresa"
           ? { empresaId: empresaSelecionada.id }
           : {}),
-    });
+      });
 
       if (!trabalhoCriado?.id) {
         throw new Error(
-          "O trabalho foi enviado, mas a resposta não trouxe o ID esperado."
+          "A resposta do cadastro do trabalho não trouxe o ID esperado."
         );
       }
     } catch (error) {
@@ -139,20 +255,47 @@ export default function NovoTrabalho() {
       return;
     }
 
+    let etapasCadastradas = 0;
+    let documentosEnviados = 0;
+
     try {
       for (let index = 0; index < etapas.length; index++) {
         const etapa = etapas[index];
 
-        await cadastrarEtapa(trabalhoCriado.id, {
+        const etapaCriada = await cadastrarEtapa(trabalhoCriado.id, {
           titulo: etapa.titulo.trim(),
           ordem: index + 1,
+          ...(contexto === "empresa" && etapa.responsavelId
+            ? { responsavelId: Number(etapa.responsavelId) }
+            : {}),
         });
+
+        etapasCadastradas++;
+
+        if (etapa.arquivo) {
+          if (!etapaCriada?.id) {
+            throw new Error(
+              `A etapa "${etapa.titulo}" foi cadastrada, mas a resposta não trouxe o ID necessário para anexar o documento.`
+            );
+          }
+
+          await enviarDocumento(etapaCriada.id, etapa.arquivo);
+          documentosEnviados++;
+        }
       }
 
       navigate("/trabalhos");
     } catch (error) {
+      const documentosPendentes = etapas.filter(
+        (etapa) => etapa.arquivo
+      ).length - documentosEnviados;
+
       setErroCriacao(
-        `O trabalho foi criado, mas houve um erro ao cadastrar as etapas. ${error.message || "Verifique os dados e tente novamente."} O trabalho já existe; não o cadastre novamente.`
+        `O trabalho foi criado e ${etapasCadastradas} de ${etapas.length} etapa(s) foram cadastradas. ${
+          documentosPendentes > 0
+            ? `${documentosPendentes} documento(s) não foram enviados. `
+            : ""
+        }${error.message || "Ocorreu um erro durante o cadastro."} Não tente cadastrar o trabalho novamente.`
       );
     } finally {
       setSalvando(false);
@@ -225,16 +368,16 @@ export default function NovoTrabalho() {
                   {erros.prazo}
                 </p>
               )}
-              <small>
-                O prazo ainda não é persistido pelo backend.
-              </small>
+              <small>O prazo ainda não é persistido pelo backend.</small>
             </div>
           </div>
 
           <div className="form-card">
             <div className="etapas-header-title">
               <h3>Quais são os passos?</h3>
-              <p>Você pode adicionar, editar, excluir e reordenar as etapas.</p>
+              <p>
+                Você pode adicionar, editar, excluir e reordenar as etapas.
+              </p>
             </div>
 
             {erros.etapas && (
@@ -244,50 +387,144 @@ export default function NovoTrabalho() {
               </div>
             )}
 
+            {contexto === "empresa" && carregandoMembros && (
+              <p>Carregando colaboradores da empresa...</p>
+            )}
+
+            {contexto === "empresa" && erroMembros && (
+              <div className="alerta-erro-etapas" role="alert">
+                <AlertCircle className="w-4 h-4" />
+                <span>{erroMembros}</span>
+              </div>
+            )}
+
             <div className="etapas-lista">
               {etapas.map((etapa, index) => (
                 <div key={etapa.id} className="etapa-item">
-                  <span className="etapa-numero">{index + 1}</span>
-                  <input
-                    type="text"
-                    value={etapa.titulo}
-                    aria-label={`Título da etapa ${index + 1}`}
-                    onChange={(e) =>
-                      handleEditarEtapa(etapa.id, e.target.value)
-                    }
-                    className="etapa-input-edit"
-                  />
+                  <div className="etapa-linha-principal">
+                    <span className="etapa-numero">{index + 1}</span>
 
-                  <div className="etapa-acoes">
-                    <button
-                      type="button"
-                      className="btn-acao-etapa"
-                      onClick={() => handleMoverEtapa(index, "up")}
-                      disabled={index === 0 || salvando}
-                      aria-label="Mover etapa para cima"
-                    >
-                      <ArrowUp className="w-3.5 h-3.5" />
-                    </button>
+                    <input
+                      type="text"
+                      value={etapa.titulo}
+                      aria-label={`Título da etapa ${index + 1}`}
+                      onChange={(e) =>
+                        handleEditarEtapa(etapa.id, e.target.value)
+                      }
+                      className="etapa-input-edit"
+                    />
 
-                    <button
-                      type="button"
-                      className="btn-acao-etapa"
-                      onClick={() => handleMoverEtapa(index, "down")}
-                      disabled={index === etapas.length - 1 || salvando}
-                      aria-label="Mover etapa para baixo"
-                    >
-                      <ArrowDown className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="etapa-acoes">
+                      <button
+                        type="button"
+                        className="btn-acao-etapa"
+                        onClick={() => handleMoverEtapa(index, "up")}
+                        disabled={index === 0 || salvando}
+                        aria-label="Mover etapa para cima"
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
 
-                    <button
-                      type="button"
-                      className="btn-acao-etapa btn-deletar"
-                      onClick={() => handleRemoverEtapa(etapa.id)}
-                      disabled={salvando}
-                      aria-label="Excluir etapa"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                      <button
+                        type="button"
+                        className="btn-acao-etapa"
+                        onClick={() => handleMoverEtapa(index, "down")}
+                        disabled={index === etapas.length - 1 || salvando}
+                        aria-label="Mover etapa para baixo"
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn-acao-etapa btn-deletar"
+                        onClick={() => handleRemoverEtapa(etapa.id)}
+                        disabled={salvando}
+                        aria-label="Excluir etapa"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {contexto === "empresa" && (
+                    <div className="etapa-campo">
+                      <label htmlFor={`responsavel-${etapa.id}`}>
+                        Colaborador responsável
+                      </label>
+
+                      <select
+                        id={`responsavel-${etapa.id}`}
+                        className="etapa-select"
+                        value={etapa.responsavelId}
+                        onChange={(e) =>
+                          handleDefinirResponsavel(
+                            etapa.id,
+                            e.target.value
+                          )
+                        }
+                        disabled={
+                          salvando || carregandoMembros || !!erroMembros
+                        }
+                      >
+                        <option value="">Sem responsável</option>
+
+                        {membros.map((membro) => (
+                          <option key={membro.id} value={membro.id}>
+                            {membro.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="etapa-campo">
+                    <label htmlFor={`arquivo-${etapa.id}`}>
+                      Documento da etapa
+                    </label>
+
+                    <div className="etapa-arquivo">
+                      <label
+                        htmlFor={`arquivo-${etapa.id}`}
+                        className="btn-selecionar-arquivo"
+                      >
+                        <Paperclip size={15} />
+                        <span>
+                          {etapa.arquivo ? "Trocar arquivo" : "Anexar documento"}
+                        </span>
+                      </label>
+
+                     <input
+                        id={`arquivo-${etapa.id}`}
+                        type="file"
+                        className="input-arquivo-oculto"
+                        onChange={(e) => {
+                          const arquivo = e.target.files?.[0] ?? null;
+                          handleSelecionarArquivo(etapa.id, arquivo);
+                          e.target.value = "";
+                        }}
+                        disabled={salvando}
+                      />
+
+                      {etapa.arquivo && (
+                        <div className="arquivo-selecionado">
+                          <span title={etapa.arquivo.name}>
+                            {etapa.arquivo.name}
+                          </span>
+
+                          <button
+                            type="button"
+                            className="btn-remover-arquivo"
+                            onClick={() => handleRemoverArquivo(etapa.id)}
+                            disabled={salvando}
+                            aria-label="Remover documento selecionado"
+                            title="Remover documento"
+                          >
+                            <X size={15} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -362,9 +599,7 @@ export default function NovoTrabalho() {
               disabled={salvando}
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>
-                {salvando ? "Salvando..." : "Criar trabalho"}
-              </span>
+              <span>{salvando ? "Salvando..." : "Criar trabalho"}</span>
             </button>
 
             <button

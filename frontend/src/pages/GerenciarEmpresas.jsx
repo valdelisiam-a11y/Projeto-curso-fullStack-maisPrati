@@ -14,6 +14,7 @@ import {
   listarMinhasEmpresas,
   cadastrarEmpresa,
   listarMembrosEmpresa,
+  listarMembrosDisponiveis,
   adicionarMembroEmpresa,
   removerMembroEmpresa,
 } from "../services/empresaService";
@@ -30,6 +31,9 @@ export default function GerenciarEmpresas() {
 
   const [novoNomeEmpresa, setNovoNomeEmpresa] = useState("");
   const [novoEmailMembro, setNovoEmailMembro] = useState("");
+  const [colaboradoresDisponiveis, setColaboradoresDisponiveis] = useState([]);
+  const [filtroColaboradores, setFiltroColaboradores] = useState("");
+  const [carregandoDisponiveis, setCarregandoDisponiveis] = useState(false);
 
   const [mostrarFormularioEmpresa, setMostrarFormularioEmpresa] =
     useState(false);
@@ -184,6 +188,22 @@ export default function GerenciarEmpresas() {
       );
     } finally {
       setSalvando(false);
+    }
+  }
+
+  async function carregarColaboradoresDisponiveis(empresaId) {
+    setCarregandoDisponiveis(true);
+    setColaboradoresDisponiveis([]);
+
+    try {
+      const dados = await listarMembrosDisponiveis(empresaId);
+      setColaboradoresDisponiveis(dados);
+    } catch (erro) {
+      setFeedback(
+        erro.message || "Não foi possível carregar os colaboradores disponíveis."
+      );
+    } finally {
+      setCarregandoDisponiveis(false);
     }
   }
 
@@ -451,11 +471,18 @@ export default function GerenciarEmpresas() {
                   type="button"
                   className="btn-purple"
                   disabled={limiteAtingido || carregandoMembros}
-                  onClick={() => {
-                    setMostrarFormularioMembro((visivel) => !visivel);
-                    setNovoEmailMembro("");
-                    setFeedback("");
-                  }}
+                 onClick={() => {
+                  const abrir = !mostrarFormularioMembro;
+
+                  setMostrarFormularioMembro(abrir);
+                  setNovoEmailMembro("");
+                  setFiltroColaboradores("");
+                  setFeedback("");
+
+                  if (abrir) {
+                    carregarColaboradoresDisponiveis(empresaSelecionada.id);
+                  }
+                }}
                 >
                   <UserPlus size={17} />
                   Adicionar colaborador
@@ -475,26 +502,72 @@ export default function GerenciarEmpresas() {
                 onSubmit={adicionarMembro}
               >
                 <div className="form-group">
-                  <label htmlFor="novoEmailMembro">
-                    E-mail do usuário cadastrado
+                  <label htmlFor="filtroColaboradores">
+                    Pesquisar colaborador
                   </label>
 
                   <input
-                    id="novoEmailMembro"
-                    type="email"
-                    value={novoEmailMembro}
-                    onChange={(event) =>
-                      setNovoEmailMembro(event.target.value)
-                    }
-                    placeholder="email@exemplo.com"
+                    id="filtroColaboradores"
+                    type="search"
+                    value={filtroColaboradores}
+                    onChange={(event) => {
+                      setFiltroColaboradores(event.target.value);
+                      setNovoEmailMembro("");
+                    }}
+                    placeholder="Digite o nome ou e-mail"
                     maxLength={150}
-                    required
                   />
 
                   <small>
-                    O usuário precisa ter uma conta no DocFlow.
+                    Selecione um usuário cadastrado no DocFlow.
                   </small>
                 </div>
+
+                {carregandoDisponiveis ? (
+                  <p>Carregando colaboradores disponíveis...</p>
+                ) : colaboradoresDisponiveis.length === 0 ? (
+                  <p>Não há colaboradores disponíveis para adicionar.</p>
+                ) : (
+                  <div className="membros-lista">
+                    {colaboradoresDisponiveis
+                      .filter((colaborador) => {
+                        const termo = filtroColaboradores.trim().toLowerCase();
+
+                        return (
+                          colaborador.nome.toLowerCase().includes(termo) ||
+                          colaborador.email.toLowerCase().includes(termo)
+                        );
+                      })
+                      .map((colaborador) => {
+                        const selecionado =
+                          novoEmailMembro === colaborador.email;
+
+                        return (
+                          <button
+                            type="button"
+                            key={colaborador.usuarioId}
+                            className={`membro-item ${selecionado ? "membro-selecionado" : ""}`}
+                            onClick={() => setNovoEmailMembro(colaborador.email)}
+                          >
+                            <div className="membro-avatar" aria-hidden="true">
+                              {colaborador.nome.charAt(0).toUpperCase()}
+                            </div>
+
+                            <div className="membro-dados">
+                              <strong>{colaborador.nome}</strong>
+                              <span>{colaborador.email}</span>
+                            </div>
+
+                            {selecionado && (
+                              <span className="membro-papel">
+                                Selecionado
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                  </div>
+                )}
 
                 <div className="empresa-formulario-acoes">
                   <button
@@ -504,6 +577,7 @@ export default function GerenciarEmpresas() {
                     onClick={() => {
                       setMostrarFormularioMembro(false);
                       setNovoEmailMembro("");
+                      setFiltroColaboradores("");
                     }}
                   >
                     Cancelar
@@ -512,7 +586,7 @@ export default function GerenciarEmpresas() {
                   <button
                     type="submit"
                     className="btn-purple"
-                    disabled={salvando}
+                    disabled={salvando || !novoEmailMembro}
                   >
                     {salvando ? "Adicionando..." : "Adicionar colaborador"}
                   </button>

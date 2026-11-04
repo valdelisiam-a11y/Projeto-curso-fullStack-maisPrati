@@ -247,6 +247,12 @@
   min-width: 0;
 }
 
+.trabalho-card__conteudo > .trabalho-card__criador {
+  margin-top: -8px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
 .trabalho-card__conteudo h3 {
   color: var(--foreground);
   font-size: 1rem;

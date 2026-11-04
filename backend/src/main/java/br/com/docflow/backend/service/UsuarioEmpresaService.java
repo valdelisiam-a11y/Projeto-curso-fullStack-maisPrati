@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import br.com.docflow.backend.dto.EmpresaResumoDTO;
 import br.com.docflow.backend.dto.MembroEmpresaDTO;
+import java.util.List;
 
 @Service
 public class UsuarioEmpresaService {
@@ -73,6 +74,12 @@ public class UsuarioEmpresaService {
                 >= LIMITE_MEMBROS) {
             throw new LimiteMembrosEmpresaException(
                     "A empresa já atingiu o limite de cinco usuários"
+            );
+        }
+
+        if (!Boolean.TRUE.equals(membro.getAtivo())) {
+            throw new IllegalArgumentException(
+                    "Não é possível adicionar um usuário inativo à empresa."
             );
         }
 
@@ -162,6 +169,41 @@ public class UsuarioEmpresaService {
                     dto.setId(vinculo.getEmpresa().getId());
                     dto.setNome(vinculo.getEmpresa().getNome());
                     dto.setPapel(vinculo.getPapel().name());
+                    return dto;
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MembroEmpresaDTO> listarMembrosDisponiveis(Long empresaId) {
+
+        Usuario criador = usuarioAutenticadoService.obterUsuario();
+
+        Empresa empresa = empresaRepository.findById(empresaId)
+                .orElseThrow(() -> new AccessDeniedException(
+                        "Empresa não encontrada."
+                ));
+
+        UsuarioEmpresa vinculoCriador = usuarioEmpresaRepository
+                .findByUsuarioAndEmpresa(criador, empresa)
+                .orElseThrow(() -> new AccessDeniedException(
+                        "Você não tem acesso a esta empresa."
+                ));
+
+        if (vinculoCriador.getPapel() != PapelUsuarioEmpresa.CRIADOR) {
+            throw new AccessDeniedException(
+                    "Somente o criador pode consultar colaboradores disponíveis."
+            );
+        }
+
+        return usuarioRepository
+                .findUsuariosAtivosDisponiveisNaEmpresa(empresaId)
+                .stream()
+                .map(usuario -> {
+                    MembroEmpresaDTO dto = new MembroEmpresaDTO();
+                    dto.setUsuarioId(usuario.getId());
+                    dto.setNome(usuario.getNome());
+                    dto.setEmail(usuario.getEmail());
                     return dto;
                 })
                 .toList();
