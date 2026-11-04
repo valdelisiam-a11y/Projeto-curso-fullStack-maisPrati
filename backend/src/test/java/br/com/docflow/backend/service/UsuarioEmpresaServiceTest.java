@@ -59,6 +59,7 @@ class UsuarioEmpresaServiceTest {
         membro = new Usuario();
         membro.setId(20L);
         membro.setEmail("membro@exemplo.com");
+        membro.setAtivo(true);
 
         vinculoCriador = new UsuarioEmpresa();
         vinculoCriador.setUsuario(criador);

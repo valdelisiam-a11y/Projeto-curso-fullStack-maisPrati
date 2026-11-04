@@ -10,6 +10,7 @@ import br.com.docflow.backend.repository.TrabalhoRepository;
 import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 import br.com.docflow.backend.repository.UsuarioRepository;
 import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
+import br.com.docflow.backend.entity.TipoTrabalho;
 import br.com.docflow.backend.service.UsuarioEmpresaDiferenteException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ class UsuarioTrabalhoServiceTest {
     @Mock
     private UsuarioEmpresaRepository usuarioEmpresaRepository;
 
+    @Mock
+    private UsuarioAutenticadoService usuarioAutenticadoService;
+
     @InjectMocks
     private UsuarioTrabalhoService usuarioTrabalhoService;
 
@@ -52,12 +56,22 @@ class UsuarioTrabalhoServiceTest {
         empresa = new Empresa();
         empresa.setId(1L);
 
+        usuario = new Usuario();
+        usuario.setId(2L);
+        usuario.setEmail("membro@exemplo.com");
+
+        Usuario criador = new Usuario();
+        criador.setId(10L);
+        criador.setEmail("criador@exemplo.com");
+
         trabalho = new Trabalho();
         trabalho.setId(10L);
         trabalho.setEmpresa(empresa);
+        trabalho.setCriadoPor(criador);
+        trabalho.setTipo(TipoTrabalho.EMPRESA);
 
-        usuario = new Usuario();
-        usuario.setId(2L);
+        when(usuarioAutenticadoService.obterUsuario())
+                .thenReturn(criador);
     }
 
     @Test
