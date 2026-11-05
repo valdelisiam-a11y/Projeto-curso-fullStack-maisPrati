@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 import { fazerLogin } from '../services/authService';
+import loginIllustration from '../assets/docflow-login-illustration_v5.jpg';
+import { LogIn, FolderKanban } from 'lucide-react';
 
 function Login() {
     const [email, setEmail] = useState('')
@@ -57,14 +59,22 @@ const handleSubmit = async (e) => {
         <main className="login">
 
         <section className="login-image"> {/* Lado esquerdo da tela */}
-            <div className="image-placeholder">Imagem</div> {/* Espaço reservado para a imagem */}
+            <div className="image-placeholder">
+                <img src={loginIllustration} alt="Ilustração do DocFlow" />
+            </div>
             <p className="login-message">Organize seus trabalhos. Saiba o que falta.
                                         <br />Encontre seus documentos. Conclua.
             </p>
         </section>
 
         <section className="login-form"> {/* Lado direito da tela */}
-            <div className="logo">DocFlow</div>
+            <div className="login-logo">
+                <div className="sidebar__logo-icon">
+                    <FolderKanban size={20} strokeWidth={2} />
+                </div>
+
+                <span>DocFlow</span>
+            </div>
 
             <h1>Organize seus trabalhos de forma simples.</h1>
 
@@ -103,7 +113,10 @@ const handleSubmit = async (e) => {
                 </div>
 
 
-                <button className="login-button" type="submit"> Entrar</button> {/* Botão de envio */}
+                <button className="login-button" type="submit">
+                    <LogIn size={20} strokeWidth={2} />
+                    <span>Entrar</span>
+                </button>
 
                 {/* Links de navegação */}
                 {/*

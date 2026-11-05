@@ -36,6 +36,21 @@
   --border: oklch(92% 0.015 315);
 
   --radius: 0.9rem;
+
+  /* Superfícies e campos */
+--card: oklch(100% 0 0);
+--input: var(--border);
+--ring: var(--primary);
+
+/* Estados de sucesso */
+--success: oklch(45% 0.13 150);
+--success-soft: oklch(96% 0.035 150);
+--success-border: oklch(85% 0.08 150);
+
+/* Estados de erro */
+--error: oklch(50% 0.19 25);
+--error-soft: oklch(97% 0.025 25);
+--error-border: oklch(87% 0.08 25);
 }
 
 * {
@@ -50,6 +65,9 @@ body {
   color: var(--foreground);
   font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 }
+
+
+
 
 /* Ativação do Dark Mode baseada na classe .dark-theme no body */
 body.dark-theme {
@@ -74,4 +92,19 @@ body.dark-theme {
   --muted-foreground: oklch(70% 0.02 300);
 
   --border: oklch(30% 0.02 300);
+
+  /* Superfícies e campos */
+--card: oklch(22% 0.02 300);
+--input: var(--border);
+--ring: var(--primary);
+
+/* Estados de sucesso */
+--success: oklch(75% 0.14 150);
+--success-soft: oklch(28% 0.05 150);
+--success-border: oklch(40% 0.07 150);
+
+/* Estados de erro */
+--error: oklch(75% 0.15 25);
+--error-soft: oklch(28% 0.05 25);
+--error-border: oklch(40% 0.08 25);
 }

@@ -28,6 +28,10 @@ export default function Cadastro() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro('');
+    if (formData.senha.length < 8) {
+      setErro('A senha deve conter pelo menos 8 caracteres.');
+      return;
+    }
     if (formData.senha !== formData.confirmarSenha) {
       setErro('As senhas não coincidem.');
       return;
@@ -135,6 +139,10 @@ export default function Cadastro() {
               onChange={handleChange}
               required
             />
+
+            <small className="senha-ajuda">
+              A senha deve conter pelo menos 8 caracteres.
+            </small>
           </div>
 
           <div className="form-group">
