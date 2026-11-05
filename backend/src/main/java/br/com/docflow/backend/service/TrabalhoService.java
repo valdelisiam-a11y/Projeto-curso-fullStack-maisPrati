@@ -23,6 +23,14 @@ import br.com.docflow.backend.repository.UsuarioEmpresaRepository;
 import br.com.docflow.backend.entity.TipoTrabalho;
 import br.com.docflow.backend.repository.EtapaRepository;
 import br.com.docflow.backend.entity.Etapa;
+import br.com.docflow.backend.entity.EventoTrabalho;
+import br.com.docflow.backend.entity.HistoricoEtapa;
+import br.com.docflow.backend.entity.TipoEventoTrabalho;
+import br.com.docflow.backend.dto.LinhaDoTempoRespostaDTO;
+import br.com.docflow.backend.repository.EventoTrabalhoRepository;
+import br.com.docflow.backend.repository.HistoricoEtapaRepository;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,6 +48,8 @@ public class TrabalhoService {
     private final UsuarioAutenticadoService usuarioAutenticadoService;
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
     private final EtapaRepository etapaRepository;
+    private final EventoTrabalhoRepository eventoTrabalhoRepository;
+    private final HistoricoEtapaRepository historicoEtapaRepository;
 
 
     public TrabalhoService(
@@ -50,7 +60,9 @@ public class TrabalhoService {
             UsuarioTrabalhoRepository usuarioTrabalhoRepository,
             UsuarioAutenticadoService usuarioAutenticadoService,
             UsuarioEmpresaRepository usuarioEmpresaRepository,
-            EtapaRepository etapaRepository) {
+            EtapaRepository etapaRepository,
+            EventoTrabalhoRepository eventoTrabalhoRepository,
+            HistoricoEtapaRepository historicoEtapaRepository) {
 
         this.trabalhoRepository = trabalhoRepository;
         this.empresaRepository = empresaRepository;
@@ -60,8 +72,12 @@ public class TrabalhoService {
         this.usuarioAutenticadoService = usuarioAutenticadoService;
         this.usuarioEmpresaRepository = usuarioEmpresaRepository;
         this.etapaRepository = etapaRepository;
+        this.eventoTrabalhoRepository = eventoTrabalhoRepository;
+        this.historicoEtapaRepository = historicoEtapaRepository;
     }
 
+
+    @Transactional
     public TrabalhoRespostaDTO cadastrar(TrabalhoCadastroDTO dto) {
 
         if (dto.getTipo() == null) {
@@ -113,6 +129,16 @@ public class TrabalhoService {
 
         Trabalho trabalhoSalvo = trabalhoRepository.save(trabalho);
 
+        EventoTrabalho evento = new EventoTrabalho();
+
+        evento.setTipo(TipoEventoTrabalho.TRABALHO_CRIADO);
+        evento.setDescricao("Trabalho criado: " + trabalhoSalvo.getTitulo());
+        evento.setValorNovo(trabalhoSalvo.getTitulo());
+        evento.setTrabalho(trabalhoSalvo);
+        evento.setUsuario(usuario);
+
+        eventoTrabalhoRepository.save(evento);
+
         HistoricoTrabalho historico = new HistoricoTrabalho();
         historico.setStatusAnterior(null);
         historico.setStatusNovo(trabalhoSalvo.getStatus());
@@ -151,11 +177,53 @@ public class TrabalhoService {
                 .toList();
     }
 
+    @Transactional
     public TrabalhoRespostaDTO atualizar(Long id, TrabalhoAtualizacaoDTO dto) {
 
         Trabalho trabalho = validarAcesso(id);
-        trabalho.setTitulo(dto.getTitulo());
-        trabalho.setDescricao(dto.getDescricao());
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        String tituloAnterior = trabalho.getTitulo();
+        String descricaoAnterior = trabalho.getDescricao();
+
+        boolean tituloAlterado =
+                !java.util.Objects.equals(tituloAnterior, dto.getTitulo());
+
+        boolean descricaoAlterada =
+                !java.util.Objects.equals(descricaoAnterior, dto.getDescricao());
+
+        if (!tituloAlterado && !descricaoAlterada) {
+            return converterParaResposta(trabalho);
+        }
+
+        if (tituloAlterado) {
+            EventoTrabalho evento = new EventoTrabalho();
+            evento.setTipo(TipoEventoTrabalho.TRABALHO_EDITADO);
+            evento.setDescricao("Título do trabalho alterado");
+            evento.setValorAnterior(tituloAnterior);
+            evento.setValorNovo(dto.getTitulo());
+            evento.setTrabalho(trabalho);
+            evento.setUsuario(usuario);
+
+            eventoTrabalhoRepository.save(evento);
+
+            trabalho.setTitulo(dto.getTitulo());
+        }
+
+        if (descricaoAlterada) {
+            EventoTrabalho evento = new EventoTrabalho();
+            evento.setTipo(TipoEventoTrabalho.TRABALHO_EDITADO);
+            evento.setDescricao("Descrição do trabalho alterada");
+            evento.setValorAnterior(descricaoAnterior);
+            evento.setValorNovo(dto.getDescricao());
+            evento.setTrabalho(trabalho);
+            evento.setUsuario(usuario);
+
+            eventoTrabalhoRepository.save(evento);
+
+            trabalho.setDescricao(dto.getDescricao());
+        }
+
         trabalho.setDataAtualizacao(LocalDateTime.now());
 
         Trabalho trabalhoAtualizado = trabalhoRepository.save(trabalho);
@@ -190,6 +258,8 @@ public class TrabalhoService {
 
         if (dto.getStatus() == StatusTrabalho.CONCLUIDO) {
             trabalho.setDataConclusao(LocalDateTime.now());
+        } else {
+            trabalho.setDataConclusao(null);
         }
 
         Trabalho trabalhoAtualizado = trabalhoRepository.save(trabalho);
@@ -211,11 +281,137 @@ public class TrabalhoService {
 
         Trabalho trabalho = validarAcesso(trabalhoId);
 
-        return historicoTrabalhoRepository
-                .findByTrabalhoIdOrderByDataAlteracaoDesc(trabalho.getId())
-                .stream()
-                .map(this::converterHistoricoParaResposta)
+        List<HistoricoTrabalhoRespostaDTO> historicoStatus =
+                historicoTrabalhoRepository
+                        .findByTrabalhoIdOrderByDataAlteracaoDesc(trabalho.getId())
+                        .stream()
+                        .map(this::converterHistoricoParaResposta)
+                        .toList();
+
+        List<HistoricoTrabalhoRespostaDTO> historicoEventos =
+                eventoTrabalhoRepository
+                        .findByTrabalhoIdOrderByDataEventoDesc(trabalho.getId())
+                        .stream()
+                        .map(this::converterEventoParaResposta)
+                        .toList();
+
+        return java.util.stream.Stream
+                .concat(historicoStatus.stream(), historicoEventos.stream())
+                .sorted((a, b) -> {
+                    LocalDateTime dataA = a.getDataAlteracao();
+                    LocalDateTime dataB = b.getDataAlteracao();
+
+                    return dataB.compareTo(dataA);
+                })
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<LinhaDoTempoRespostaDTO> listarLinhaDoTempo(Long trabalhoId) {
+
+        Trabalho trabalho = validarAcesso(trabalhoId);
+
+        List<LinhaDoTempoRespostaDTO> linhaDoTempo = new ArrayList<>();
+
+        // Eventos gerais: criação, edição, observações, responsáveis etc.
+        List<EventoTrabalho> eventos =
+                eventoTrabalhoRepository
+                        .findByTrabalhoIdOrderByDataEventoDesc(trabalho.getId());
+
+        for (EventoTrabalho evento : eventos) {
+            LinhaDoTempoRespostaDTO dto = new LinhaDoTempoRespostaDTO();
+
+            dto.setId(evento.getId());
+            dto.setTipo(evento.getTipo().name());
+            dto.setTexto(evento.getDescricao());
+            dto.setValorAnterior(evento.getValorAnterior());
+            dto.setValorNovo(evento.getValorNovo());
+            dto.setData(evento.getDataEvento());
+            dto.setUsuarioId(evento.getUsuario().getId());
+            dto.setUsuarioNome(evento.getUsuario().getNome());
+
+            if (evento.getEtapa() != null) {
+                dto.setEtapaId(evento.getEtapa().getId());
+                dto.setEtapaTitulo(evento.getEtapa().getTitulo());
+            }
+
+            linhaDoTempo.add(dto);
+        }
+
+        // Histórico de alterações de status do trabalho.
+        historicoTrabalhoRepository
+                .findByTrabalhoIdOrderByDataAlteracaoDesc(trabalho.getId())
+                .forEach(historico -> {
+
+                    // Ignora o registro inicial de status.
+                    if (historico.getStatusAnterior() == null) {
+                        return;
+                    }
+
+                    LinhaDoTempoRespostaDTO dto = new LinhaDoTempoRespostaDTO();
+
+                    dto.setId(historico.getId());
+                    dto.setTipo("STATUS_TRABALHO");
+                    dto.setTexto(
+                            "Status do trabalho alterado de "
+                                    + historico.getStatusAnterior()
+                                    + " para "
+                                    + historico.getStatusNovo()
+                    );
+                    dto.setValorAnterior(historico.getStatusAnterior().name());
+                    dto.setValorNovo(historico.getStatusNovo().name());
+                    dto.setData(historico.getDataAlteracao());
+                    dto.setUsuarioId(historico.getUsuario().getId());
+                    dto.setUsuarioNome(historico.getUsuario().getNome());
+
+                    linhaDoTempo.add(dto);
+                });
+
+// Histórico de alterações de status de cada etapa.
+        List<Etapa> etapas =
+                etapaRepository.findByTrabalhoIdOrderByOrdemAsc(trabalho.getId());
+
+        for (Etapa etapa : etapas) {
+            historicoEtapaRepository
+                    .findByEtapaIdOrderByDataAlteracaoDesc(etapa.getId())
+                    .forEach(historico -> {
+
+                        // Ignora o registro inicial, se houver.
+                        if (historico.getStatusAnterior() == null) {
+                            return;
+                        }
+
+                        LinhaDoTempoRespostaDTO dto = new LinhaDoTempoRespostaDTO();
+
+                        dto.setId(historico.getId());
+                        dto.setTipo("STATUS_ETAPA");
+                        dto.setTexto(
+                                "Status da etapa alterado de "
+                                        + historico.getStatusAnterior()
+                                        + " para "
+                                        + historico.getStatusNovo()
+                        );
+                        dto.setValorAnterior(historico.getStatusAnterior().name());
+                        dto.setValorNovo(historico.getStatusNovo().name());
+                        dto.setData(historico.getDataAlteracao());
+                        dto.setUsuarioId(historico.getUsuario().getId());
+                        dto.setUsuarioNome(historico.getUsuario().getNome());
+                        dto.setEtapaId(etapa.getId());
+                        dto.setEtapaTitulo(etapa.getTitulo());
+
+                        linhaDoTempo.add(dto);
+                    });
+        }
+
+// Mais recentes primeiro.
+        linhaDoTempo.sort(
+                Comparator.comparing(
+                        LinhaDoTempoRespostaDTO::getData,
+                        Comparator.nullsLast(Comparator.reverseOrder())
+                )
+        );
+
+        return linhaDoTempo;
     }
 
     private Trabalho validarAcesso(Long trabalhoId) {
@@ -408,16 +604,47 @@ public class TrabalhoService {
         return resposta;
     }
 
-    private HistoricoTrabalhoRespostaDTO converterHistoricoParaResposta(HistoricoTrabalho historico) {
+    private HistoricoTrabalhoRespostaDTO converterHistoricoParaResposta(
+            HistoricoTrabalho historico) {
 
-        HistoricoTrabalhoRespostaDTO resposta = new HistoricoTrabalhoRespostaDTO();
+        HistoricoTrabalhoRespostaDTO resposta =
+                new HistoricoTrabalhoRespostaDTO();
 
         resposta.setId(historico.getId());
+        resposta.setTipo("STATUS");
         resposta.setStatusAnterior(historico.getStatusAnterior());
         resposta.setStatusNovo(historico.getStatusNovo());
+
+        resposta.setTexto(
+                "Status alterado de " +
+                        historico.getStatusAnterior() +
+                        " para " +
+                        historico.getStatusNovo() + "."
+        );
+
         resposta.setDataAlteracao(historico.getDataAlteracao());
         resposta.setUsuarioId(historico.getUsuario().getId());
         resposta.setUsuarioNome(historico.getUsuario().getNome());
+
+        return resposta;
+    }
+
+    private HistoricoTrabalhoRespostaDTO converterEventoParaResposta(
+            EventoTrabalho evento) {
+
+        HistoricoTrabalhoRespostaDTO resposta =
+                new HistoricoTrabalhoRespostaDTO();
+
+        resposta.setId(evento.getId());
+        resposta.setTipo(evento.getTipo().name());
+        resposta.setTexto(evento.getDescricao());
+        resposta.setDataAlteracao(evento.getDataEvento());
+        resposta.setUsuarioId(evento.getUsuario().getId());
+        resposta.setUsuarioNome(evento.getUsuario().getNome());
+
+        if (evento.getEtapa() != null) {
+            resposta.setEtapaTitulo(evento.getEtapa().getTitulo());
+        }
 
         return resposta;
     }

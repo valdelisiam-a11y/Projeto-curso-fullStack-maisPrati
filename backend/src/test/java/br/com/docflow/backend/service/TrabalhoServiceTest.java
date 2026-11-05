@@ -40,6 +40,9 @@ class TrabalhoServiceTest {
     private HistoricoTrabalhoRepository historicoTrabalhoRepository;
 
     @Mock
+    private EventoTrabalhoRepository eventoTrabalhoRepository;
+
+    @Mock
     private UsuarioTrabalhoRepository usuarioTrabalhoRepository;
 
     @Mock

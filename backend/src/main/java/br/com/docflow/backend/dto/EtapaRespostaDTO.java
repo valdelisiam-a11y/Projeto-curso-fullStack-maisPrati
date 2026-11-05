@@ -18,6 +18,10 @@ public class EtapaRespostaDTO {
     private Long responsavelId;
     private String responsavelNome;
 
+    private String observacaoRecente;
+    private LocalDateTime dataObservacao;
+    private String autorObservacao;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -48,11 +52,15 @@ public class EtapaRespostaDTO {
     public Long getResponsavelId() { return responsavelId; }
     public void setResponsavelId(Long responsavelId) { this.responsavelId = responsavelId; }
 
-    public String getResponsavelNome() {
-        return responsavelNome;
-    }
+    public String getResponsavelNome() { return responsavelNome; }
+    public void setResponsavelNome(String responsavelNome) { this.responsavelNome = responsavelNome; }
 
-    public void setResponsavelNome(String responsavelNome) {
-        this.responsavelNome = responsavelNome;
-    }
+    public String getObservacaoRecente() { return observacaoRecente; }
+    public void setObservacaoRecente(String observacaoRecente) { this.observacaoRecente = observacaoRecente; }
+
+    public LocalDateTime getDataObservacao() { return dataObservacao; }
+    public void setDataObservacao(LocalDateTime dataObservacao) { this.dataObservacao = dataObservacao; }
+
+    public String getAutorObservacao() { return autorObservacao; }
+    public void setAutorObservacao(String autorObservacao) { this.autorObservacao = autorObservacao; }
 }

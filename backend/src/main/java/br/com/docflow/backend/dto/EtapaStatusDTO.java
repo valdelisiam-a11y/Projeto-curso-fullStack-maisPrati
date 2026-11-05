@@ -8,13 +8,11 @@ public class EtapaStatusDTO {
     @NotNull(message = "O status é obrigatório")
     private StatusTrabalho status;
 
-    // Usuário que está fazendo a alteração (registrado no histórico)
-    @NotNull(message = "O usuário é obrigatório")
-    private Long usuarioId;
+    public StatusTrabalho getStatus() {
+        return status;
+    }
 
-    public StatusTrabalho getStatus() { return status; }
-    public void setStatus(StatusTrabalho status) { this.status = status; }
-
-    public Long getUsuarioId() { return usuarioId; }
-    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
+    public void setStatus(StatusTrabalho status) {
+        this.status = status;
+    }
 }

@@ -24,6 +24,10 @@ import br.com.docflow.backend.repository.UsuarioTrabalhoRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import br.com.docflow.backend.dto.ObservacaoEtapaDTO;
+import br.com.docflow.backend.entity.EventoTrabalho;
+import br.com.docflow.backend.entity.TipoEventoTrabalho;
+import br.com.docflow.backend.repository.EventoTrabalhoRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,6 +44,7 @@ public class EtapaService {
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
     private final UsuarioTrabalhoRepository usuarioTrabalhoRepository;
     private final TrabalhoService trabalhoService;
+    private final EventoTrabalhoRepository eventoTrabalhoRepository;
 
     public EtapaService(
             EtapaRepository etapaRepository,
@@ -49,7 +54,8 @@ public class EtapaService {
             UsuarioAutenticadoService usuarioAutenticadoService,
             UsuarioEmpresaRepository usuarioEmpresaRepository,
             UsuarioTrabalhoRepository usuarioTrabalhoRepository,
-            TrabalhoService trabalhoService) {
+            TrabalhoService trabalhoService,
+            EventoTrabalhoRepository eventoTrabalhoRepository) {
 
         this.etapaRepository = etapaRepository;
         this.historicoEtapaRepository = historicoEtapaRepository;
@@ -59,6 +65,9 @@ public class EtapaService {
         this.usuarioEmpresaRepository = usuarioEmpresaRepository;
         this.usuarioTrabalhoRepository = usuarioTrabalhoRepository;
         this.trabalhoService = trabalhoService;
+        this.eventoTrabalhoRepository = eventoTrabalhoRepository;
+
+
     }
 
     @Transactional
@@ -85,6 +94,19 @@ public class EtapaService {
         etapa.setOrdem(etapaRepository.buscarMaiorOrdem(trabalhoId) + 1);
 
         Etapa etapaSalva = etapaRepository.save(etapa);
+
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        EventoTrabalho evento = new EventoTrabalho();
+
+        evento.setTipo(TipoEventoTrabalho.ETAPA_CRIADA);
+        evento.setDescricao("Etapa criada: " + etapaSalva.getTitulo());
+        evento.setValorNovo(etapaSalva.getTitulo());
+        evento.setTrabalho(trabalho);
+        evento.setEtapa(etapaSalva);
+        evento.setUsuario(usuario);
+
+        eventoTrabalhoRepository.save(evento);
 
         if (dto.getOrdem() != null) {
             posicionar(etapaSalva, dto.getOrdem());
@@ -174,10 +196,53 @@ public class EtapaService {
 
         Etapa etapa = buscarEntidadeComAcesso(id);
 
-        etapa.setTitulo(dto.getTitulo());
-        etapa.setDescricao(dto.getDescricao());
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
-        // dataAtualizacao é atualizada pelo @PreUpdate da entidade
+        String tituloAnterior = etapa.getTitulo();
+        String descricaoAnterior = etapa.getDescricao();
+
+        boolean tituloAlterado =
+                !java.util.Objects.equals(tituloAnterior, dto.getTitulo());
+
+        boolean descricaoAlterada =
+                !java.util.Objects.equals(descricaoAnterior, dto.getDescricao());
+
+        if (!tituloAlterado && !descricaoAlterada) {
+            return converterParaResposta(etapa);
+        }
+
+        if (tituloAlterado) {
+            EventoTrabalho evento = new EventoTrabalho();
+
+            evento.setTipo(TipoEventoTrabalho.ETAPA_EDITADA);
+            evento.setDescricao("Título da etapa alterado");
+            evento.setValorAnterior(tituloAnterior);
+            evento.setValorNovo(dto.getTitulo());
+            evento.setTrabalho(etapa.getTrabalho());
+            evento.setEtapa(etapa);
+            evento.setUsuario(usuario);
+
+            eventoTrabalhoRepository.save(evento);
+
+            etapa.setTitulo(dto.getTitulo());
+        }
+
+        if (descricaoAlterada) {
+            EventoTrabalho evento = new EventoTrabalho();
+
+            evento.setTipo(TipoEventoTrabalho.ETAPA_EDITADA);
+            evento.setDescricao("Descrição da etapa alterada");
+            evento.setValorAnterior(descricaoAnterior);
+            evento.setValorNovo(dto.getDescricao());
+            evento.setTrabalho(etapa.getTrabalho());
+            evento.setEtapa(etapa);
+            evento.setUsuario(usuario);
+
+            eventoTrabalhoRepository.save(evento);
+
+            etapa.setDescricao(dto.getDescricao());
+        }
+
         Etapa etapaAtualizada = etapaRepository.save(etapa);
 
         return converterParaResposta(etapaAtualizada);
@@ -185,38 +250,63 @@ public class EtapaService {
 
     @Transactional
     public EtapaRespostaDTO alterarStatus(Long id, EtapaStatusDTO dto) {
-
-        Etapa etapa = buscarEntidadeComAcesso(id);
-
+        Etapa etapa = buscarEtapaComAcessoOperacional(id);
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
         StatusTrabalho statusAnterior = etapa.getStatus();
+        int percentualAnterior = etapa.getPercentualConclusao();
 
         if (statusAnterior == dto.getStatus()) {
-            throw new EtapaStatusInalteradoException(
-                    "A etapa já está com este status"
+            throw new EtapaStatusInalteradoException("A etapa já está com este status");
+        }
+
+        if (statusAnterior == StatusTrabalho.CANCELADO
+                && dto.getStatus() == StatusTrabalho.CONCLUIDO) {
+            throw new IllegalArgumentException(
+                    "Uma etapa cancelada deve ser reaberta como pendente ou em andamento."
             );
         }
 
         etapa.setStatus(dto.getStatus());
 
-        // Regra: etapa concluída tem sempre 100% de conclusão
+        // Etapa concluída tem sempre 100% de conclusão
+        // Mantém o percentual coerente com o status da etapa
         if (dto.getStatus() == StatusTrabalho.CONCLUIDO) {
             etapa.setPercentualConclusao(100);
+
+        } else if (dto.getStatus() == StatusTrabalho.PENDENTE) {
+            etapa.setPercentualConclusao(0);
+
+        } else if (dto.getStatus() == StatusTrabalho.EM_ANDAMENTO) {
+            if (statusAnterior == StatusTrabalho.CONCLUIDO) {
+                etapa.setPercentualConclusao(99);
+            } else if (percentualAnterior == 0) {
+                etapa.setPercentualConclusao(1);
+            }
+        }
+
+        int percentualNovo = etapa.getPercentualConclusao();
+
+        // Registra o evento somente se o percentual realmente mudou
+        if (percentualAnterior != percentualNovo) {
+            EventoTrabalho evento = new EventoTrabalho();
+            evento.setTipo(TipoEventoTrabalho.PERCENTUAL_ALTERADO);
+            evento.setDescricao("Percentual de conclusão da etapa alterado");
+            evento.setValorAnterior(String.valueOf(percentualAnterior));
+            evento.setValorNovo(String.valueOf(percentualNovo));
+            evento.setTrabalho(etapa.getTrabalho());
+            evento.setEtapa(etapa);
+            evento.setUsuario(usuario);
+
+            eventoTrabalhoRepository.save(evento);
         }
 
         Etapa etapaAtualizada = etapaRepository.save(etapa);
 
-        registrarHistorico(
-                etapaAtualizada,
-                statusAnterior,
-                dto.getStatus(),
-                usuario
-        );
+        // O histórico de status continua sendo registrado separadamente
+        registrarHistorico(etapaAtualizada, statusAnterior, dto.getStatus(), usuario);
 
-        trabalhoService.sincronizarStatusComEtapas(
-                etapaAtualizada.getTrabalho().getId()
-        );
+        trabalhoService.sincronizarStatusComEtapas(etapaAtualizada.getTrabalho().getId());
 
         return converterParaResposta(etapaAtualizada);
     }
@@ -224,27 +314,54 @@ public class EtapaService {
     @Transactional
     public EtapaRespostaDTO atualizarPercentual(Long id, EtapaPercentualDTO dto) {
 
-        Etapa etapa = buscarEntidadeComAcesso(id);
+        Etapa etapa = buscarEtapaComAcessoOperacional(id);
+
+        if (etapa.getStatus() == StatusTrabalho.CANCELADO) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT,
+                    "Não é possível atualizar o percentual de uma etapa cancelada. Reabra a etapa primeiro."
+            );
+        }
 
         Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
         StatusTrabalho statusAnterior = etapa.getStatus();
-        int percentual = dto.getPercentualConclusao();
+        int percentualAnterior = etapa.getPercentualConclusao();
+        int percentualNovo = dto.getPercentualConclusao();
 
-        etapa.setPercentualConclusao(percentual);
+        boolean percentualAlterado = percentualAnterior != percentualNovo;
 
-        if (percentual == 100) {
-            // Ao chegar em 100%, a etapa é concluída
+        etapa.setPercentualConclusao(percentualNovo);
+
+        // Mantém o status coerente com o percentual
+        if (percentualNovo == 100) {
             etapa.setStatus(StatusTrabalho.CONCLUIDO);
 
-        } else if (statusAnterior == StatusTrabalho.CONCLUIDO) {
-            // Se estava concluída e o percentual baixou, a etapa é reaberta
+        } else if (percentualNovo == 0) {
+            etapa.setStatus(StatusTrabalho.PENDENTE);
+
+        } else {
             etapa.setStatus(StatusTrabalho.EM_ANDAMENTO);
+        }
+
+        // Registra o percentual somente quando houver alteração real
+        if (percentualAlterado) {
+            EventoTrabalho evento = new EventoTrabalho();
+
+            evento.setTipo(TipoEventoTrabalho.PERCENTUAL_ALTERADO);
+            evento.setDescricao("Percentual de conclusão da etapa alterado");
+            evento.setValorAnterior(String.valueOf(percentualAnterior));
+            evento.setValorNovo(String.valueOf(percentualNovo));
+            evento.setTrabalho(etapa.getTrabalho());
+            evento.setEtapa(etapa);
+            evento.setUsuario(usuario);
+
+            eventoTrabalhoRepository.save(evento);
         }
 
         Etapa etapaAtualizada = etapaRepository.save(etapa);
 
-        // Só registra histórico se o percentual mudou o status
+        // O histórico de status continua sendo registrado separadamente
         if (etapaAtualizada.getStatus() != statusAnterior) {
             registrarHistorico(
                     etapaAtualizada,
@@ -266,15 +383,61 @@ public class EtapaService {
 
         Etapa etapa = buscarEntidadeComAcesso(id);
 
-        if (dto.getResponsavelId() == null) {
-            // Sem ID: remove o responsável
-            etapa.setResponsavel(null);
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
 
-        } else {
-            etapa.setResponsavel(
-                    buscarResponsavel(dto.getResponsavelId(), etapa.getTrabalho())
+        Usuario responsavelAnterior = etapa.getResponsavel();
+        Usuario responsavelNovo = null;
+
+        if (dto.getResponsavelId() != null) {
+            responsavelNovo = buscarResponsavel(
+                    dto.getResponsavelId(),
+                    etapa.getTrabalho()
             );
         }
+
+        Long idAnterior = responsavelAnterior != null
+                ? responsavelAnterior.getId()
+                : null;
+
+        Long idNovo = responsavelNovo != null
+                ? responsavelNovo.getId()
+                : null;
+
+        // Não registra evento se o responsável não mudou.
+        if (java.util.Objects.equals(idAnterior, idNovo)) {
+            return converterParaResposta(etapa);
+        }
+
+        EventoTrabalho evento = new EventoTrabalho();
+
+        evento.setTipo(TipoEventoTrabalho.RESPONSAVEL_ALTERADO);
+        evento.setTrabalho(etapa.getTrabalho());
+        evento.setEtapa(etapa);
+        evento.setUsuario(usuario);
+
+        evento.setValorAnterior(
+                responsavelAnterior != null
+                        ? responsavelAnterior.getNome()
+                        : "Sem responsável"
+        );
+
+        evento.setValorNovo(
+                responsavelNovo != null
+                        ? responsavelNovo.getNome()
+                        : "Sem responsável"
+        );
+
+        if (responsavelAnterior == null) {
+            evento.setDescricao("Responsável atribuído à etapa");
+        } else if (responsavelNovo == null) {
+            evento.setDescricao("Responsável removido da etapa");
+        } else {
+            evento.setDescricao("Responsável da etapa alterado");
+        }
+
+        eventoTrabalhoRepository.save(evento);
+
+        etapa.setResponsavel(responsavelNovo);
 
         Etapa etapaAtualizada = etapaRepository.save(etapa);
 
@@ -286,7 +449,30 @@ public class EtapaService {
 
         Etapa etapa = buscarEntidadeComAcesso(id);
 
+        int ordemAnterior = etapa.getOrdem();
+
+        // Reposiciona a etapa e renumera as demais automaticamente.
         posicionar(etapa, dto.getOrdem());
+
+        int ordemNova = etapa.getOrdem();
+
+        // Registra somente se a posição realmente mudou.
+        if (ordemAnterior != ordemNova) {
+
+            Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+            EventoTrabalho evento = new EventoTrabalho();
+
+            evento.setTipo(TipoEventoTrabalho.ORDEM_ALTERADA);
+            evento.setDescricao("Ordem da etapa alterada");
+            evento.setValorAnterior(String.valueOf(ordemAnterior));
+            evento.setValorNovo(String.valueOf(ordemNova));
+            evento.setTrabalho(etapa.getTrabalho());
+            evento.setEtapa(etapa);
+            evento.setUsuario(usuario);
+
+            eventoTrabalhoRepository.save(evento);
+        }
 
         return converterParaResposta(etapa);
     }
@@ -508,6 +694,16 @@ public class EtapaService {
             resposta.setResponsavelId(etapa.getResponsavel().getId());
             resposta.setResponsavelNome(etapa.getResponsavel().getNome());
         }
+        eventoTrabalhoRepository
+                .findFirstByEtapaIdAndTipoOrderByDataEventoDesc(
+                        etapa.getId(),
+                        TipoEventoTrabalho.OBSERVACAO_REGISTRADA
+                )
+                .ifPresent(evento -> {
+                    resposta.setObservacaoRecente(evento.getDescricao());
+                    resposta.setDataObservacao(evento.getDataEvento());
+                    resposta.setAutorObservacao(evento.getUsuario().getNome());
+                });
         return resposta;
     }
 
@@ -524,5 +720,27 @@ public class EtapaService {
         resposta.setUsuarioNome(historico.getUsuario().getNome());
 
         return resposta;
+    }
+
+    @Transactional
+    public EtapaRespostaDTO registrarObservacao(
+            Long id,
+            ObservacaoEtapaDTO dto) {
+
+        Etapa etapa = buscarEtapaComAcessoOperacional(id);
+
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        EventoTrabalho evento = new EventoTrabalho();
+
+        evento.setTipo(TipoEventoTrabalho.OBSERVACAO_REGISTRADA);
+        evento.setDescricao(dto.getTexto().trim());
+        evento.setTrabalho(etapa.getTrabalho());
+        evento.setEtapa(etapa);
+        evento.setUsuario(usuario);
+
+        eventoTrabalhoRepository.save(evento);
+
+        return converterParaResposta(etapa);
     }
 }

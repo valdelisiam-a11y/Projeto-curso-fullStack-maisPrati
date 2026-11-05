@@ -9,6 +9,7 @@ import br.com.docflow.backend.dto.EtapaResponsavelDTO;
 import br.com.docflow.backend.dto.EtapaStatusDTO;
 import br.com.docflow.backend.dto.HistoricoEtapaRespostaDTO;
 import br.com.docflow.backend.dto.MinhaEtapaRespostaDTO;
+import br.com.docflow.backend.dto.ObservacaoEtapaDTO;
 import br.com.docflow.backend.service.EtapaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -103,6 +104,15 @@ public class EtapaController {
             @PathVariable Long id) {
 
         return ResponseEntity.ok(etapaService.listarHistorico(id));
+    }
+
+    @PostMapping("/etapas/{id}/observacoes")
+    public ResponseEntity<EtapaRespostaDTO> registrarObservacao(
+            @PathVariable Long id,
+            @Valid @RequestBody ObservacaoEtapaDTO dto) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(etapaService.registrarObservacao(id, dto));
     }
 
     @DeleteMapping("/etapas/{id}")

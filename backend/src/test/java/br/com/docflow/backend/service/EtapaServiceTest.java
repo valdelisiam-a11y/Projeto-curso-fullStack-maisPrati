@@ -57,6 +57,9 @@ class EtapaServiceTest {
     private UsuarioTrabalhoRepository usuarioTrabalhoRepository;
 
     @Mock
+    private EventoTrabalhoRepository eventoTrabalhoRepository;
+
+    @Mock
     private TrabalhoService trabalhoService;
 
     @InjectMocks
@@ -170,8 +173,7 @@ class EtapaServiceTest {
         etapa.setTrabalho(trabalho);
 
         EtapaStatusDTO dto = new EtapaStatusDTO();
-        dto.setStatus(StatusTrabalho.EM_ANDAMENTO);
-        dto.setUsuarioId(999L); // ID diferente do usuário autenticado
+        dto.setStatus(StatusTrabalho.EM_ANDAMENTO); // ID diferente do usuário autenticado
 
         when(etapaRepository.findById(20L))
                 .thenReturn(Optional.of(etapa));
@@ -197,7 +199,6 @@ class EtapaServiceTest {
         HistoricoEtapa historicoSalvo = captor.getValue();
 
         assertEquals(2L, historicoSalvo.getUsuario().getId());
-        assertNotEquals(999L, historicoSalvo.getUsuario().getId());
         assertEquals(StatusTrabalho.PENDENTE, historicoSalvo.getStatusAnterior());
         assertEquals(StatusTrabalho.EM_ANDAMENTO, historicoSalvo.getStatusNovo());
     }

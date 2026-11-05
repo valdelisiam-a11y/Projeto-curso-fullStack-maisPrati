@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import br.com.docflow.backend.dto.EmpresaResumoDTO;
 import br.com.docflow.backend.dto.MembroEmpresaDTO;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -164,6 +165,11 @@ public class UsuarioEmpresaService {
 
         return usuarioEmpresaRepository.findByUsuario(usuario)
                 .stream()
+                .sorted(Comparator.comparing(
+                        (UsuarioEmpresa vinculo) ->
+                                vinculo.getEmpresa().getDataCadastro(),
+                        Comparator.nullsLast(Comparator.reverseOrder())
+                ))
                 .map(vinculo -> {
                     EmpresaResumoDTO dto = new EmpresaResumoDTO();
                     dto.setId(vinculo.getEmpresa().getId());

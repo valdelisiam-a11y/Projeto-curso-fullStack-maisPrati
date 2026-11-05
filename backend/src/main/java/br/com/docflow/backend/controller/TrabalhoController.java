@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import br.com.docflow.backend.dto.HistoricoTrabalhoRespostaDTO;
+import br.com.docflow.backend.dto.LinhaDoTempoRespostaDTO;
 
 import java.util.List;
 
@@ -82,6 +83,16 @@ public class TrabalhoController {
                 trabalhoService.listarHistorico(id);
 
         return ResponseEntity.ok(historico);
+    }
+
+    @GetMapping("/{id}/linha-do-tempo")
+    public ResponseEntity<List<LinhaDoTempoRespostaDTO>> listarLinhaDoTempo(
+            @PathVariable Long id) {
+
+        List<LinhaDoTempoRespostaDTO> linhaDoTempo =
+                trabalhoService.listarLinhaDoTempo(id);
+
+        return ResponseEntity.ok(linhaDoTempo);
     }
 
     @DeleteMapping("/{id}")
