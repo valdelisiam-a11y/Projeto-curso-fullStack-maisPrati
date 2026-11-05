@@ -32,7 +32,8 @@
 }
 
 .editar-etapa-campo input,
-.editar-etapa-campo textarea {
+.editar-etapa-campo textarea,
+.editar-etapa-campo select {
   box-sizing: border-box;
   width: 100%;
   padding: 11px 13px;
@@ -57,7 +58,8 @@
 }
 
 .editar-etapa-campo input:focus,
-.editar-etapa-campo textarea:focus {
+.editar-etapa-campo textarea:focus,
+.editar-etapa-campo select:focus {
   border-color: var(--primary, oklch(61% 0.19 305));
   box-shadow: 0 0 0 3px var(--primary-soft, oklch(95% 0.035 310));
 }
@@ -104,6 +106,12 @@
 .editar-etapa-acoes button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.editar-etapa-campo select {
+  min-height: 44px;
+  padding: 11px 13px;
+  cursor: pointer;
 }
 
 @media (max-width: 600px) {

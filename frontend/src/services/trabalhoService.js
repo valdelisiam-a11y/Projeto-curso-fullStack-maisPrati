@@ -144,3 +144,27 @@ export async function listarMinhasEtapas(empresaId) {
 
   return resposta.json();
 }
+
+export async function definirResponsavelEtapa(etapaId, responsavelId) {
+  const resposta = await apiFetch(`/etapas/${etapaId}/responsavel`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      responsavelId:
+        responsavelId === "" || responsavelId == null
+          ? null
+          : Number(responsavelId),
+    }),
+  });
+
+  if (!resposta.ok) {
+    const mensagem = await resposta.text();
+    throw new Error(
+      mensagem || `Erro ao definir responsável (${resposta.status}).`
+    );
+  }
+
+  return resposta.json();
+}

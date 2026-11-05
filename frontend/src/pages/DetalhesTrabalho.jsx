@@ -13,7 +13,9 @@ import {
   listarHistoricoTrabalho,
   alterarStatusEtapa,
   atualizarEtapa,
+  definirResponsavelEtapa,
 } from "../services/trabalhoService";
+import { listarMembrosEmpresa } from "../services/empresaService";
 import "./DetalhesTrabalho.css";
 
 function normalizarStatus(status) {
@@ -76,6 +78,9 @@ export default function DetalhesTrabalho() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const { usuario } = useAuth();
+  const [membros, setMembros] = useState([]);
+  const [carregandoMembros, setCarregandoMembros] = useState(false);
+  const [erroMembros, setErroMembros] = useState("");
 
   useEffect(() => {
     async function carregarDetalhes() {
@@ -121,6 +126,46 @@ export default function DetalhesTrabalho() {
     carregarDetalhes();
   }, [id]);
 
+  useEffect(() => {
+  const empresaId = trabalho?.empresaId;
+
+  if (!empresaId) {
+    setMembros([]);
+    setErroMembros("");
+    return;
+  }
+
+  async function carregarMembros() {
+    setCarregandoMembros(true);
+    setErroMembros("");
+
+    try {
+      const lista = await listarMembrosEmpresa(empresaId);
+
+      const membrosNormalizados = lista
+        .map((membro) => ({
+          id: membro.usuarioId ?? membro.id,
+          nome:
+            membro.usuarioNome ??
+            membro.nome ??
+            membro.nomeUsuario ??
+            membro.email,
+        }))
+        .filter((membro) => membro.id != null && membro.nome);
+
+      setMembros(membrosNormalizados);
+    } catch (erroApi) {
+      setErroMembros(
+        erroApi.message || "Não foi possível carregar os colaboradores."
+      );
+    } finally {
+      setCarregandoMembros(false);
+    }
+  }
+
+  carregarMembros();
+}, [trabalho?.empresaId]);
+
   const etapaAtualObj =
     etapas.find((etapa) => etapa.id === etapaSelecionadaId) ?? null;
 
@@ -138,20 +183,39 @@ export default function DetalhesTrabalho() {
   }
 
   async function salvarEdicaoEtapa(dados) {
-  if (!etapaAtualObj?.id) {
-    throw new Error("Nenhuma etapa foi selecionada.");
+    if (!etapaAtualObj?.id) {
+      throw new Error("Nenhuma etapa foi selecionada.");
+    }
+
+    await atualizarEtapa(etapaAtualObj.id, dados);
+
+    const etapasAtualizadas = await listarEtapasDoTrabalho(trabalho.id);
+
+    setEtapas(
+      etapasAtualizadas
+        .map(mapearEtapa)
+        .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+    );
   }
 
-  await atualizarEtapa(etapaAtualObj.id, dados);
+  async function salvarResponsavelEtapa(responsavelId) {
+    if (!etapaAtualObj?.id) {
+      throw new Error("Nenhuma etapa foi selecionada.");
+    }
 
-  const etapasAtualizadas = await listarEtapasDoTrabalho(trabalho.id);
+    const etapaAtualizada = await definirResponsavelEtapa(
+      etapaAtualObj.id,
+      responsavelId
+    );
 
-  setEtapas(
-    etapasAtualizadas
-      .map(mapearEtapa)
-      .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
-  );
-}
+    setEtapas((anteriores) =>
+      anteriores.map((etapa) =>
+        etapa.id === etapaAtualizada.id
+          ? mapearEtapa(etapaAtualizada)
+          : etapa
+      )
+    );
+  }
 
   async function marcarEtapaConcluida() {
       if (!etapaAtualObj) {
@@ -265,6 +329,10 @@ export default function DetalhesTrabalho() {
         }
         onMarcarConcluida={marcarEtapaConcluida}
         onSalvarEdicao={salvarEdicaoEtapa}
+        membros={membros}
+        carregandoMembros={carregandoMembros}
+        erroMembros={erroMembros}
+        onSalvarResponsavel={salvarResponsavelEtapa}
       />
 
       <HistoricoTrabalho historico={historico} />

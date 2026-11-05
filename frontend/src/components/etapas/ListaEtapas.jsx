@@ -66,7 +66,10 @@ export default function ListaEtapas({
                       .toLowerCase()
                       .replace(/\s+/g, "-")}`}
                   >
-                    {etapa.status}
+                  {etapa.status}
+                  </span>
+                    <span className="etapa-card-responsavel">
+                    Responsável: {etapa.responsavel || "Não atribuído"}
                   </span>
                 </span>
               </div>

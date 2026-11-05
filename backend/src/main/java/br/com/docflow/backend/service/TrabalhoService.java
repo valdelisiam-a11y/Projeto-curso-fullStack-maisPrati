@@ -41,6 +41,7 @@ public class TrabalhoService {
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
     private final EtapaRepository etapaRepository;
 
+
     public TrabalhoService(
             TrabalhoRepository trabalhoRepository,
             EmpresaRepository empresaRepository,
@@ -367,6 +368,22 @@ public class TrabalhoService {
 
         List<Etapa> etapas = etapaRepository
                 .findByTrabalhoIdOrderByOrdemAsc(trabalho.getId());
+
+        Etapa etapaAtual = etapas.stream()
+                .filter(etapa -> etapa.getStatus() != StatusTrabalho.CONCLUIDO
+                        && etapa.getStatus() != StatusTrabalho.CANCELADO)
+                .findFirst()
+                .orElse(null);
+
+        resposta.setEtapaAtualId(
+                etapaAtual != null ? etapaAtual.getId() : null
+        );
+
+        resposta.setEtapaAtualTitulo(
+                etapaAtual != null
+                        ? etapaAtual.getTitulo()
+                        : null
+        );
 
         int progresso = etapas.isEmpty()
                 ? 0

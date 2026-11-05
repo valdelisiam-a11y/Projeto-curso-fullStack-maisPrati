@@ -258,7 +258,9 @@ export default function MeusTrabalhos() {
                   <div className="etapa-atual-box">
                     <span>
                       Etapa atual:{' '}
-                      <strong>Consulte as etapas do trabalho</strong>
+                      <strong>
+                        {trabalho.etapaAtualTitulo || 'Nenhuma etapa em andamento'}
+                      </strong>
                     </span>
                   </div>
 

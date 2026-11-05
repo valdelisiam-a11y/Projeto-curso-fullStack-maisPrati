@@ -19,6 +19,8 @@ public class TrabalhoRespostaDTO {
     private TipoTrabalho tipo;
     private Integer progresso;
     private String criadoPorNome;
+    private Long etapaAtualId;
+    private String etapaAtualTitulo;
 
     public Long getId() {
         return id;
@@ -110,6 +112,22 @@ public class TrabalhoRespostaDTO {
 
     public String getCriadoPorNome() {
         return criadoPorNome;
+    }
+
+    public Long getEtapaAtualId() {
+        return etapaAtualId;
+    }
+
+    public void setEtapaAtualId(Long etapaAtualId) {
+        this.etapaAtualId = etapaAtualId;
+    }
+
+    public String getEtapaAtualTitulo() {
+        return etapaAtualTitulo;
+    }
+
+    public void setEtapaAtualTitulo(String etapaAtualTitulo) {
+        this.etapaAtualTitulo = etapaAtualTitulo;
     }
 
     public void setCriadoPorNome(String criadoPorNome) {

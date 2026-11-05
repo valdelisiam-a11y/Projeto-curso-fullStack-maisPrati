@@ -235,7 +235,9 @@ function Inicio() {
 
                     <div className="trabalho-card__etapa">
                       <span>Etapa atual: </span>
-                      <strong>Consulte as etapas do trabalho</strong>
+                      <strong>
+                        {trabalho.etapaAtualTitulo || 'Nenhuma etapa em andamento'}
+                      </strong>
                     </div>
 
                     <div className="trabalho-card__progresso">

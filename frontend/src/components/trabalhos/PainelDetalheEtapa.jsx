@@ -26,6 +26,10 @@ export default function PainelDetalheEtapa({
   onSalvarObservacao,
   onMarcarConcluida,
   onSalvarEdicao,
+  membros,
+  carregandoMembros,
+  erroMembros,
+  onSalvarResponsavel,
 }) {
   const [documentos, setDocumentos] = useState([]);
   const [carregandoDocumentos, setCarregandoDocumentos] = useState(false);
@@ -35,6 +39,8 @@ export default function PainelDetalheEtapa({
   const [tituloEdicao, setTituloEdicao] = useState("");
   const [descricaoEdicao, setDescricaoEdicao] = useState("");
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
+  const [responsavelSelecionadoId, setResponsavelSelecionadoId] = useState("");
+  const [salvandoResponsavel, setSalvandoResponsavel] = useState(false);
 
   const carregarDocumentos = useCallback(async () => {
     if (!etapaAtualObj?.id) {
@@ -67,11 +73,19 @@ export default function PainelDetalheEtapa({
     setEditando(false);
   }, [etapaAtualObj?.id]);
 
-  if (!etapaAtualObj) return null;
+  useEffect(() => {
+    setResponsavelSelecionadoId(
+      etapaAtualObj?.responsavelId != null
+        ? String(etapaAtualObj.responsavelId)
+        : ""
+    );
+  }, [etapaAtualObj?.id, etapaAtualObj?.responsavelId]);
 
-  async function obterArquivo(documento) {
-    return baixarArquivo(etapaAtualObj.id, documento.id);
-  }
+    if (!etapaAtualObj) return null;
+
+    async function obterArquivo(documento) {
+      return baixarArquivo(etapaAtualObj.id, documento.id);
+    }
 
   async function baixarDocumento(documento) {
     try {
@@ -110,6 +124,20 @@ export default function PainelDetalheEtapa({
     } catch (error) {
       novaAba.close();
       window.alert(error.message || "Não foi possível visualizar o documento.");
+    }
+  }
+
+  async function salvarResponsavel() {
+    try {
+      setSalvandoResponsavel(true);
+
+      await onSalvarResponsavel(responsavelSelecionadoId);
+    } catch (error) {
+      window.alert(
+        error.message || "Não foi possível atualizar o responsável."
+      );
+    } finally {
+      setSalvandoResponsavel(false);
     }
   }
 
@@ -237,6 +265,58 @@ export default function PainelDetalheEtapa({
               value={descricaoEdicao}
               onChange={(e) => setDescricaoEdicao(e.target.value)}
             />
+          </div>
+
+          <div className="editar-etapa-campo">
+            <label htmlFor="responsavel-etapa">
+              Colaborador responsável
+            </label>
+
+            <select
+              id="responsavel-etapa"
+              value={responsavelSelecionadoId}
+              onChange={(e) =>
+                setResponsavelSelecionadoId(e.target.value)
+              }
+              disabled={
+                carregandoMembros ||
+                salvandoResponsavel ||
+                !!erroMembros
+              }
+            >
+              <option value="">Sem responsável</option>
+
+              {membros.map((membro) => (
+                <option key={membro.id} value={String(membro.id)}>
+                  {membro.nome}
+                </option>
+              ))}
+            </select>
+
+            {carregandoMembros && (
+              <p>Carregando colaboradores...</p>
+            )}
+
+            {erroMembros && (
+              <p>{erroMembros}</p>
+            )}
+          </div>
+
+          <div className="editar-etapa-acoes">
+            <button
+              type="button"
+              className="editar-etapa-salvar"
+              onClick={salvarResponsavel}
+              disabled={
+                salvandoResponsavel ||
+                carregandoMembros ||
+                !!erroMembros
+              }
+            >
+              {salvandoResponsavel
+                ? "Salvando responsável..."
+                : "Salvar responsável"}
+            </button>
           </div>
 
           <div className="editar-etapa-acoes">
