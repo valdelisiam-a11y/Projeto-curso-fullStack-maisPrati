@@ -27,8 +27,24 @@ function Sidebar() {
     empresas,
     empresaSelecionada,
     selecionarEmpresa,
+    carregandoEmpresas,
+    minhasEtapas,
+    carregandoEtapas,
   } = useContextoTrabalho();
   const [menuEmpresasAberto, setMenuEmpresasAberto] = useState(false);
+  const [avisoEmpresa, setAvisoEmpresa] = useState(false);
+
+function handleSelecionarEmpresa() {
+  if (carregandoEmpresas) return;
+
+  if (empresas.length === 0) {
+    setAvisoEmpresa(true);
+    return;
+  }
+
+  setAvisoEmpresa(false);
+  selecionarContexto("empresa");
+}
 
   function fecharMenu() {
     setMenuAberto(false);
@@ -91,13 +107,33 @@ function Sidebar() {
             <button
               type="button"
               className={contexto === "empresa" ? "ativo" : ""}
-              onClick={() => selecionarContexto("empresa")}
+              onClick={handleSelecionarEmpresa}
               aria-pressed={contexto === "empresa"}
             >
               <Building2 size={16} />
               <span>Empresa</span>
             </button>
           </div>
+
+          {avisoEmpresa && (
+            <div className="sidebar__empresa-aviso" role="status">
+              <strong>Você ainda não possui uma empresa.</strong>
+
+              <p>
+                Para utilizar o modo Empresa, cadastre uma empresa em Configurações.
+              </p>
+
+              <NavLink
+                to="/configuracoes#empresas"
+                onClick={() => {
+                  setAvisoEmpresa(false);
+                  fecharMenu();
+                }}
+              >
+                Ir para Configurações
+              </NavLink>
+            </div>
+          )}
 
           {contexto === "empresa" && (
             <div className="sidebar__empresa">
@@ -153,13 +189,15 @@ function Sidebar() {
                 </NavLink>
               </li>
 
-              {contexto === "empresa" && (
-                <li>
-                  <NavLink to="/minhas-etapas" onClick={fecharMenu}>
-                    <ListChecks size={20} />
-                    <span>Minhas etapas</span>
-                  </NavLink>
-                </li>
+              {contexto === "empresa" &&
+                !carregandoEtapas &&
+                minhasEtapas.length > 0 && (
+                  <li>
+                    <NavLink to="/minhas-etapas" onClick={fecharMenu}>
+                      <ListChecks size={20} />
+                      <span>Minhas etapas</span>
+                    </NavLink>
+                  </li>
               )}
 
               <li>

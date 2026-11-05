@@ -168,3 +168,23 @@ export async function definirResponsavelEtapa(etapaId, responsavelId) {
 
   return resposta.json();
 }
+
+export async function registrarObservacaoEtapa(etapaId, texto) {
+  const resposta = await apiFetch(`/etapas/${etapaId}/observacoes`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ texto }),
+  });
+
+  if (!resposta.ok) {
+    const mensagem = await resposta.text();
+
+    throw new Error(
+      mensagem || `Erro ao registrar observação (${resposta.status}).`
+    );
+  }
+
+  return resposta.json();
+}

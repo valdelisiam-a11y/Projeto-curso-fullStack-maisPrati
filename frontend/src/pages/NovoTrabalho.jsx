@@ -27,20 +27,7 @@ export default function NovoTrabalho() {
   const [descricao, setDescricao] = useState("");
   const [prazo, setPrazo] = useState("");
 
-  const [etapas, setEtapas] = useState([
-    {
-      id: 1,
-      titulo: "Receber documentos",
-      responsavelId: "",
-      arquivo: null,
-    },
-    {
-      id: 2,
-      titulo: "Conferir documentação",
-      responsavelId: "",
-      arquivo: null,
-    },
-  ]);
+  const [etapas, setEtapas] = useState([]);
 
   const [membros, setMembros] = useState([]);
   const [carregandoMembros, setCarregandoMembros] = useState(false);
@@ -195,9 +182,7 @@ export default function NovoTrabalho() {
       novosErros.prazo = "O prazo é obrigatório.";
     }
 
-    if (etapas.length === 0) {
-      novosErros.etapas = "Adicione pelo menos uma etapa.";
-    } else if (etapas.some((etapa) => !etapa.titulo.trim())) {
+    if (etapas.some((etapa) => !etapa.titulo.trim())) {
       novosErros.etapas = "Todas as etapas precisam ter um título.";
     }
 

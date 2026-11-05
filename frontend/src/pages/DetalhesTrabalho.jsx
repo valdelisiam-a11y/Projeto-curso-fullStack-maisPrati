@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import ListaEtapas from "../components/etapas/ListaEtapas";
@@ -10,12 +10,15 @@ import { useAuth } from "../contexts/useAuth.js";
 import {
   buscarTrabalhoPorId,
   listarEtapasDoTrabalho,
+  registrarObservacaoEtapa,
   listarHistoricoTrabalho,
   alterarStatusEtapa,
   atualizarEtapa,
   definirResponsavelEtapa,
+  cadastrarEtapa,
 } from "../services/trabalhoService";
 import { listarMembrosEmpresa } from "../services/empresaService";
+import { useContextoTrabalho } from "../contexts/ContextoTrabalho";
 import "./DetalhesTrabalho.css";
 
 function normalizarStatus(status) {
@@ -53,15 +56,32 @@ function mapearEtapa(etapa) {
 }
 
 function mapearHistorico(item) {
-  const statusAnterior = normalizarStatus(item.statusAnterior);
-  const statusNovo = normalizarStatus(item.statusNovo);
+  const tipos = {
+    OBSERVACAO_REGISTRADA: "observacao",
+    STATUS: "andamento",
+    ETAPA_CRIADA: "andamento",
+    PERCENTUAL_ALTERADO: "andamento",
+    RESPONSAVEL_ALTERADO: "andamento",
+    TRABALHO_CRIADO: "andamento",
+  };
+
+  const tipo = tipos[item.tipo] ?? "andamento";
+
+  let texto = item.texto;
+
+  if (item.tipo === "STATUS") {
+    const statusAnterior = normalizarStatus(item.statusAnterior);
+    const statusNovo = normalizarStatus(item.statusNovo);
+
+    texto = `Status alterado de ${statusAnterior} para ${statusNovo}.`;
+  }
 
   return {
-    id: item.id,
-    tipo: statusNovo === "Concluído" ? "concluido" : "andamento",
-    texto: `Status alterado de ${statusAnterior} para ${statusNovo}${
-      item.usuarioNome ? ` por ${item.usuarioNome}` : ""
-    }.`,
+    id: `${tipo}-${item.id}`,
+    tipo,
+    texto: `${texto ?? "Evento registrado"}${
+      item.etapaTitulo ? ` (Etapa: ${item.etapaTitulo})` : ""
+    }${item.usuarioNome ? ` — ${item.usuarioNome}` : ""}`,
     data: formatarData(item.dataAlteracao),
   };
 }
@@ -69,6 +89,12 @@ function mapearHistorico(item) {
 export default function DetalhesTrabalho() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { contexto, empresaSelecionada } = useContextoTrabalho();
+  const contextoAtual = contexto === "empresa"
+    ? `empresa-${empresaSelecionada?.id ?? ""}`
+    : "pessoal";
+
+  const contextoAnteriorRef = useRef(contextoAtual);
 
   const [trabalho, setTrabalho] = useState(null);
   const [etapas, setEtapas] = useState([]);
@@ -127,6 +153,29 @@ export default function DetalhesTrabalho() {
   }, [id]);
 
   useEffect(() => {
+  if (!trabalho) return;
+
+  if (contextoAnteriorRef.current === contextoAtual) return;
+
+  contextoAnteriorRef.current = contextoAtual;
+
+  const trabalhoPertenceAoContexto =
+    contexto === "empresa"
+      ? Number(trabalho.empresaId) === Number(empresaSelecionada?.id)
+      : trabalho.empresaId == null;
+
+  if (!trabalhoPertenceAoContexto) {
+    navigate("/trabalhos", { replace: true });
+  }
+}, [
+  contextoAtual,
+  contexto,
+  empresaSelecionada?.id,
+  trabalho,
+  navigate,
+]);
+
+  useEffect(() => {
   const empresaId = trabalho?.empresaId;
 
   if (!empresaId) {
@@ -182,6 +231,28 @@ export default function DetalhesTrabalho() {
     }
   }
 
+  async function adicionarEtapa(titulo) {
+    const tituloFormatado = titulo.trim();
+
+    if (!tituloFormatado) {
+      throw new Error("Informe o título da etapa.");
+    }
+
+    const novaEtapa = await cadastrarEtapa(trabalho.id, {
+      titulo: tituloFormatado,
+      ordem: etapas.length + 1,
+    });
+
+    const etapasAtualizadas = await listarEtapasDoTrabalho(trabalho.id);
+
+    const etapasMapeadas = etapasAtualizadas
+      .map(mapearEtapa)
+      .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+
+    setEtapas(etapasMapeadas);
+    setEtapaSelecionadaId(novaEtapa.id);
+  }
+
   async function salvarEdicaoEtapa(dados) {
     if (!etapaAtualObj?.id) {
       throw new Error("Nenhuma etapa foi selecionada.");
@@ -217,6 +288,42 @@ export default function DetalhesTrabalho() {
     );
   }
 
+    async function salvarObservacaoEtapa() {
+    const texto = observacao.trim();
+
+    if (!etapaAtualObj?.id) {
+      alert("Selecione uma etapa para registrar a observação.");
+      return;
+    }
+
+    if (!texto) {
+      alert("Digite uma observação antes de salvar.");
+      return;
+    }
+
+    try {
+      const etapaAtualizada = await registrarObservacaoEtapa(
+        etapaAtualObj.id,
+        texto
+      );
+
+      setEtapas((anteriores) =>
+        anteriores.map((etapa) =>
+          etapa.id === etapaAtualizada.id
+            ? mapearEtapa(etapaAtualizada)
+            : etapa
+        )
+      );
+
+      const historicoAtualizado = await listarHistoricoTrabalho(id);
+      setHistorico(historicoAtualizado.map(mapearHistorico));
+
+      setObservacao("");
+    } catch (erroApi) {
+      alert(erroApi.message || "Não foi possível registrar a observação.");
+    }
+  }
+
   async function marcarEtapaConcluida() {
       if (!etapaAtualObj) {
         alert("Selecione uma etapa para concluir.");
@@ -234,9 +341,8 @@ export default function DetalhesTrabalho() {
       }
 
       try {
-        await alterarStatusEtapa(etapaAtualObj.id, {
+       await alterarStatusEtapa(etapaAtualObj.id, {
           status: "CONCLUIDO",
-          usuarioId: usuario.id,
         });
 
         const [etapasApi, historicoApi, trabalhoApi] = await Promise.all([
@@ -308,6 +414,13 @@ export default function DetalhesTrabalho() {
         Voltar
       </button>
 
+      {contexto === "empresa" && empresaSelecionada && (
+        <div className="detalhes-empresa">
+          <span>Empresa selecionada</span>
+          <h2>{empresaSelecionada.nome}</h2>
+        </div>
+      )}
+
       <TopoTrabalho
         trabalho={trabalho}
         getTopBadgeClass={getTopBadgeClass}
@@ -317,6 +430,8 @@ export default function DetalhesTrabalho() {
         etapas={etapas}
         etapaSelecionadaId={etapaSelecionadaId}
         onSelecionarEtapa={setEtapaSelecionadaId}
+        onAdicionarEtapa={adicionarEtapa}
+        contexto={contexto}
       />
 
       <PainelDetalheEtapa
@@ -324,15 +439,14 @@ export default function DetalhesTrabalho() {
         getTopBadgeClass={getTopBadgeClass}
         observacao={observacao}
         setObservacao={setObservacao}
-        onSalvarObservacao={() =>
-          alert("As observações ainda não estão integradas à API.")
-        }
+        onSalvarObservacao={salvarObservacaoEtapa}
         onMarcarConcluida={marcarEtapaConcluida}
         onSalvarEdicao={salvarEdicaoEtapa}
         membros={membros}
         carregandoMembros={carregandoMembros}
         erroMembros={erroMembros}
         onSalvarResponsavel={salvarResponsavelEtapa}
+        contexto={contexto}
       />
 
       <HistoricoTrabalho historico={historico} />

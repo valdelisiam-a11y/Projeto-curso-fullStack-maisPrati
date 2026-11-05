@@ -10,6 +10,10 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { alterarSenha } from "../services/authService";
+import {
+  listarMinhasEmpresas,
+  listarMembrosEmpresa,
+} from "../services/empresaService";
 
 export default function Configuracoes() {
   const [profileData, setProfileData] = useState({
@@ -32,6 +36,11 @@ export default function Configuracoes() {
 
   const [feedback, setFeedback] = useState("");
 
+  const [empresaRecente, setEmpresaRecente] = useState(null);
+  const [quantidadeMembros, setQuantidadeMembros] = useState(0);
+  const [carregandoEmpresa, setCarregandoEmpresa] = useState(true);
+  const [erroEmpresa, setErroEmpresa] = useState("");
+
   useEffect(() => {
     if (preferences.useDarkMode) {
       document.body.classList.add("dark-theme");
@@ -41,6 +50,62 @@ export default function Configuracoes() {
       localStorage.setItem("docflow_dark_mode", "false");
     }
   }, [preferences.useDarkMode]);
+
+  useEffect(() => {
+    if (window.location.hash === "#empresas") {
+      requestAnimationFrame(() => {
+        document.getElementById("empresas")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarEmpresaRecente() {
+      setCarregandoEmpresa(true);
+      setErroEmpresa("");
+
+      try {
+        const empresas = await listarMinhasEmpresas();
+
+        if (!ativo) return;
+
+        if (empresas.length === 0) {
+          setEmpresaRecente(null);
+          setQuantidadeMembros(0);
+          return;
+        }
+
+        const empresa = empresas[0];
+        const membros = await listarMembrosEmpresa(empresa.id);
+
+        if (!ativo) return;
+
+        setEmpresaRecente(empresa);
+        setQuantidadeMembros(membros.length);
+      } catch (erro) {
+        if (!ativo) return;
+
+        setErroEmpresa(
+          "Não foi possível carregar os dados da empresa."
+        );
+      } finally {
+        if (ativo) {
+          setCarregandoEmpresa(false);
+        }
+      }
+    }
+
+    carregarEmpresaRecente();
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
@@ -190,9 +255,27 @@ const handleChangePassword = async (e) => {
 
         <div className="empresa-resumo">
           <div>
-            <h3>DocFlow Tecnologia</h3>
-            <p>Perfil: Criador</p>
-            <p>3 de 5 usuários</p>
+            {carregandoEmpresa ? (
+              <p>Carregando dados da empresa...</p>
+            ) : erroEmpresa ? (
+              <p>{erroEmpresa}</p>
+            ) : empresaRecente ? (
+              <>
+                <h3>{empresaRecente.nome}</h3>
+                <p>
+                  Perfil:{" "}
+                  {empresaRecente.papel === "CRIADOR"
+                    ? "Criador"
+                    : "Colaborador"}
+                </p>
+                <p>{quantidadeMembros} de 5 usuários</p>
+              </>
+            ) : (
+              <>
+                <h3>Nenhuma empresa cadastrada</h3>
+                <p>Você ainda não está vinculado a uma empresa.</p>
+              </>
+            )}
           </div>
 
           <button
@@ -209,7 +292,7 @@ const handleChangePassword = async (e) => {
       </div>
 
       {/* CARD 3: SEGURANÇA */}
-      <div className="config-card">
+      <div className="config-card" id="empresas">
         <div className="config-card-title">
           <Lock className="icon-title" />
           <span>Segurança</span>

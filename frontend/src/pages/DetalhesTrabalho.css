@@ -124,6 +124,39 @@
 }
 
 /* ==========================================================================
+   IDENTIFICAÇÃO DA EMPRESA SELECIONADA
+   ========================================================================== */
+
+.detalhes-empresa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  padding: 0.85rem 1rem;
+
+  background: var(--primary-soft);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: 8px;
+}
+
+.detalhes-empresa span {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.detalhes-empresa h2 {
+  margin: 0;
+
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================================
    4. STATUS E BADGES
    ========================================================================== */
 

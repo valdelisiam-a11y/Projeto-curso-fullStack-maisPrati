@@ -20,6 +20,7 @@ import "./EditarEtapa.css";
 
 export default function PainelDetalheEtapa({
   etapaAtualObj,
+  contexto,
   getTopBadgeClass,
   observacao,
   setObservacao,
@@ -81,11 +82,11 @@ export default function PainelDetalheEtapa({
     );
   }, [etapaAtualObj?.id, etapaAtualObj?.responsavelId]);
 
-    if (!etapaAtualObj) return null;
+  if (!etapaAtualObj) return null;
 
-    async function obterArquivo(documento) {
-      return baixarArquivo(etapaAtualObj.id, documento.id);
-    }
+  async function obterArquivo(documento) {
+    return baixarArquivo(etapaAtualObj.id, documento.id);
+  }
 
   async function baixarDocumento(documento) {
     try {
@@ -110,7 +111,9 @@ export default function PainelDetalheEtapa({
     const novaAba = window.open("", "_blank");
 
     if (!novaAba) {
-      window.alert("Permita a abertura de novas abas para visualizar o documento.");
+      window.alert(
+        "Permita a abertura de novas abas para visualizar o documento."
+      );
       return;
     }
 
@@ -144,23 +147,28 @@ export default function PainelDetalheEtapa({
   return (
     <div className="detalhe-etapa-card">
       <div className="etapa-detalhe-header">
-       <div>
+        <div>
           <h3>{etapaAtualObj.titulo}</h3>
+
           {etapaAtualObj.descricao && (
             <p>{etapaAtualObj.descricao}</p>
           )}
 
           <div className="etapa-detalhe-info">
-            <p>
-              Responsável: {etapaAtualObj.responsavel || "Não atribuído"}
-            </p>
+            {contexto === "empresa" && (
+              <p>
+                Responsável: {etapaAtualObj.responsavel || "Não atribuído"}
+              </p>
+            )}
 
             <p>Data: {etapaAtualObj.data}</p>
           </div>
         </div>
 
         <span
-          className={`badge-status-geral ${getTopBadgeClass(etapaAtualObj.status)}`}
+          className={`badge-status-geral ${getTopBadgeClass(
+            etapaAtualObj.status
+          )}`}
         >
           <span>{etapaAtualObj.status}</span>
         </span>
@@ -241,32 +249,8 @@ export default function PainelDetalheEtapa({
         </button>
       </div>
 
-      {editando && (
-        <div className="editar-etapa-form">
-          <h4>Editar etapa</h4>
-
-          <div className="editar-etapa-campo">
-            <label htmlFor="titulo-etapa">Título</label>
-            <input
-              id="titulo-etapa"
-              type="text"
-              value={tituloEdicao}
-              onChange={(e) => setTituloEdicao(e.target.value)}
-              maxLength={200}
-              required
-            />
-          </div>
-
-          <div className="editar-etapa-campo">
-            <label htmlFor="descricao-etapa">Descrição</label>
-            <textarea
-              id="descricao-etapa"
-              rows={3}
-              value={descricaoEdicao}
-              onChange={(e) => setDescricaoEdicao(e.target.value)}
-            />
-          </div>
-
+      {contexto === "empresa" && (
+        <>
           <div className="editar-etapa-campo">
             <label htmlFor="responsavel-etapa">
               Colaborador responsável
@@ -297,9 +281,7 @@ export default function PainelDetalheEtapa({
               <p>Carregando colaboradores...</p>
             )}
 
-            {erroMembros && (
-              <p>{erroMembros}</p>
-            )}
+            {erroMembros && <p>{erroMembros}</p>}
           </div>
 
           <div className="editar-etapa-acoes">
@@ -317,6 +299,34 @@ export default function PainelDetalheEtapa({
                 ? "Salvando responsável..."
                 : "Salvar responsável"}
             </button>
+          </div>
+        </>
+      )}
+
+      {editando && (
+        <div className="editar-etapa-form">
+          <h4>Editar etapa</h4>
+
+          <div className="editar-etapa-campo">
+            <label htmlFor="titulo-etapa">Título</label>
+            <input
+              id="titulo-etapa"
+              type="text"
+              value={tituloEdicao}
+              onChange={(e) => setTituloEdicao(e.target.value)}
+              maxLength={200}
+              required
+            />
+          </div>
+
+          <div className="editar-etapa-campo">
+            <label htmlFor="descricao-etapa">Descrição</label>
+            <textarea
+              id="descricao-etapa"
+              rows={3}
+              value={descricaoEdicao}
+              onChange={(e) => setDescricaoEdicao(e.target.value)}
+            />
           </div>
 
           <div className="editar-etapa-acoes">

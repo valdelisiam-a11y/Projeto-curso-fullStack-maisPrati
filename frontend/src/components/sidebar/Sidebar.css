@@ -283,6 +283,45 @@
   white-space: nowrap;
 }
 
+.sidebar__empresa-aviso {
+  margin: -12px 12px 24px;
+  padding: 12px;
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius);
+  background: var(--primary-soft);
+  color: var(--foreground);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sidebar__empresa-aviso strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+  font-size: 13px;
+}
+
+.sidebar__empresa-aviso p {
+  margin: 0 0 10px;
+  color: var(--muted-foreground);
+}
+
+.sidebar__empresa-aviso a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sidebar__empresa-aviso a:hover {
+  text-decoration: underline;
+}
+
+.sidebar__empresa-aviso a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 
 /* Navegação em telas pequenas */
 @media (max-width: 767px) {
