@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.access.AccessDeniedException;
+import br.com.docflow.backend.dto.AtualizarPerfilDTO;
+import br.com.docflow.backend.dto.AtualizarPerfilRespostaDTO;
 
 import java.time.LocalDateTime;
 
@@ -16,13 +18,16 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public UsuarioService(
             UsuarioRepository usuarioRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
 
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -55,5 +60,34 @@ public class UsuarioService {
 
         usuario.setSenha(passwordEncoder.encode(novaSenha));
         usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public AtualizarPerfilRespostaDTO atualizarPerfil(
+            Usuario usuario,
+            AtualizarPerfilDTO dto) {
+
+        usuarioRepository.findByEmail(dto.getEmail())
+                .ifPresent(usuarioExistente -> {
+                    if (!usuarioExistente.getId().equals(usuario.getId())) {
+                        throw new EmailJaCadastradoException(
+                                "E-mail já cadastrado."
+                        );
+                    }
+                });
+
+        usuario.setNome(dto.getNome());
+        usuario.setEmail(dto.getEmail());
+
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+
+        String novoToken = jwtService.gerarToken(usuarioAtualizado);
+
+        return new AtualizarPerfilRespostaDTO(
+                usuarioAtualizado.getId(),
+                usuarioAtualizado.getNome(),
+                usuarioAtualizado.getEmail(),
+                novoToken
+        );
     }
 }

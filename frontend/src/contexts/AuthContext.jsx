@@ -68,6 +68,20 @@ export function AuthProvider({ children }) {
     setUsuario(null);
     }
 
+    function atualizarSessao(dados) {
+        const usuarioAtualizado = {
+            id: dados.id,
+            nome: dados.nome,
+            email: dados.email,
+        };
+
+        localStorage.setItem('token', dados.token);
+        localStorage.setItem('usuario', JSON.stringify(usuarioAtualizado));
+
+        setToken(dados.token);
+        setUsuario(usuarioAtualizado);
+    }
+
     return (
         <AuthContext.Provider
             value={{    
@@ -76,6 +90,7 @@ export function AuthProvider({ children }) {
                 autenticado,
                 login,
                 logout,
+                atualizarSessao,
             }}
         >
             {children}

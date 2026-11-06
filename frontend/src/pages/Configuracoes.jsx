@@ -9,16 +9,18 @@ import {
   Building2,
   ArrowRight,
 } from "lucide-react";
-import { alterarSenha } from "../services/authService";
+import { alterarSenha, atualizarPerfil } from "../services/authService";
+import { useAuth } from "../contexts/useAuth";
 import {
   listarMinhasEmpresas,
   listarMembrosEmpresa,
 } from "../services/empresaService";
 
 export default function Configuracoes() {
+  const { usuario, atualizarSessao } = useAuth();
   const [profileData, setProfileData] = useState({
-    nome: "Maria",
-    email: "maria@exemplo.com.br",
+    nome: usuario?.nome || "",
+    email: usuario?.email || "",
   });
 
   const [preferences, setPreferences] = useState(() => {
@@ -107,10 +109,41 @@ export default function Configuracoes() {
     };
   }, []);
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
-    setFeedback("Alterações salvas com sucesso!");
-    setTimeout(() => setFeedback(""), 3000);
+    setFeedback("");
+
+    try {
+      const resposta = await atualizarPerfil(
+        profileData.nome,
+        profileData.email
+      );
+
+      if (!resposta.ok) {
+        const erro = await resposta.json().catch(() => null);
+
+        setFeedback(
+          erro?.message ||
+          erro?.mensagem ||
+          "Não foi possível atualizar o perfil."
+        );
+        return;
+      }
+
+      const dados = await resposta.json();
+
+      atualizarSessao(dados);
+
+      setProfileData({
+        nome: dados.nome,
+        email: dados.email,
+      });
+
+      setFeedback("Perfil atualizado com sucesso!");
+      setTimeout(() => setFeedback(""), 3000);
+    } catch {
+      setFeedback("Não foi possível conectar ao servidor.");
+    }
   };
 
   

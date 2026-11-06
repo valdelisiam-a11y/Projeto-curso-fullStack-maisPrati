@@ -14,17 +14,25 @@ import br.com.docflow.backend.service.EmailJaCadastradoException;
 import org.springframework.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import br.com.docflow.backend.dto.AtualizarPerfilDTO;
+import br.com.docflow.backend.dto.AtualizarPerfilRespostaDTO;
+import br.com.docflow.backend.service.UsuarioAutenticadoService;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/usuarios")
 
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final UsuarioAutenticadoService usuarioAutenticadoService;
     private static final Logger log =
             LoggerFactory.getLogger(UsuarioController.class);
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(
+            UsuarioService usuarioService,
+            UsuarioAutenticadoService usuarioAutenticadoService) {
         this.usuarioService = usuarioService;
+        this.usuarioAutenticadoService = usuarioAutenticadoService;
     }
 
     @PostMapping
@@ -48,5 +56,17 @@ public class UsuarioController {
                     .status(HttpStatus.CONFLICT)
                     .build();
         }
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<AtualizarPerfilRespostaDTO> atualizarPerfil(
+            @Valid @RequestBody AtualizarPerfilDTO dto) {
+
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        AtualizarPerfilRespostaDTO resposta =
+                usuarioService.atualizarPerfil(usuario, dto);
+
+        return ResponseEntity.ok(resposta);
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.security.access.AccessDeniedException;
 import br.com.docflow.backend.service.LimiteMembrosEmpresaException;
+import br.com.docflow.backend.service.EmailJaCadastradoException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -70,6 +71,21 @@ public class GlobalExceptionHandler {
         ErroRespostaDTO erro = new ErroRespostaDTO(
                 HttpStatus.CONFLICT.value(),
                 "Limite de membros atingido",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(EmailJaCadastradoException.class)
+    public ResponseEntity<ErroRespostaDTO> handleEmailJaCadastrado(
+            EmailJaCadastradoException ex) {
+
+        ErroRespostaDTO erro = new ErroRespostaDTO(
+                HttpStatus.CONFLICT.value(),
+                "E-mail já cadastrado",
                 ex.getMessage()
         );
 

@@ -35,3 +35,15 @@ export async function alterarSenha(senhaAtual, novaSenha) {
 
     return resposta;
 }
+
+export async function atualizarPerfil(nome, email) {
+    const resposta = await apiFetch('/usuarios/me', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nome, email }),
+    });
+
+    return resposta;
+}
