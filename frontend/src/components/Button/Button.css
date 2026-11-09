@@ -15,6 +15,7 @@ padding: 12px 24px;
 font-size: 16px;
 font-weight: 600;
 cursor: pointer;
+
 /* Transição suave de fundo e texto adicionada para a troca de tema */
 transition: background-color 0.2s ease, color 0.2s ease, opacity 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
 width: 100%;
