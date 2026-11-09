@@ -1,15 +1,6 @@
 .docflow-message {
-/* Variáveis locais do Tema Claro */
---msg-radius: 8px;
---msg-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
---msg-info: #0284c7;
---msg-info-soft: #e0f2fe;
---msg-destructive: #dc2626;
---msg-destructive-soft: #fef2f2;
---msg-destructive-foreground: #ffffff;
-
 padding: 12px 16px;
-border-radius: var(--msg-radius);
+border-radius: var(--radius);
 font-size: 14px;
 font-weight: 500;
 margin-bottom: 16px;
@@ -19,31 +10,20 @@ display: flex;
 align-items: center;
 box-sizing: border-box;
 font-family: inherit;
-box-shadow: var(--msg-shadow);
-
-/* Transição suave adicionada para o Dark Mode */
-transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-/* Quando o body tiver dark-theme, muda as variáveis apenas da mensagem */
-body.dark-theme .docflow-message {
---msg-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
---msg-info: #38bdf8;
---msg-info-soft: rgba(56, 189, 248, 0.15);
---msg-destructive: #ef4444;
---msg-destructive-soft: rgba(239, 68, 68, 0.15);
+box-shadow: var(--shadow-soft);
+transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Sucesso / Info */
 .docflow-message-success {
-background-color: var(--msg-info-soft);
-color: var(--msg-info);
-border: 1px solid var(--msg-info);
+background-color: var(--info-soft);
+color: var(--info);
+border: 1px solid var(--info);
 }
 
 /* Erro / Destrutivo */
 .docflow-message-error {
-background-color: var(--msg-destructive-soft, var(--msg-destructive));
-color: var(--msg-destructive-foreground);
-border: 1px solid var(--msg-destructive);
+background-color: var(--destructive);
+color: var(--primary-foreground);
+border: 1px solid var(--destructive);
 }
