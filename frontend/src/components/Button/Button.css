@@ -1,34 +1,51 @@
 .docflow-btn {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border: none;
-  border-radius: var(--radius);
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
-  width: 100%;
-  max-width: 400px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: var(--shadow-soft);
-  font-family: inherit;
+/* Variáveis locais do Tema Claro */
+--btn-primary: #2563eb;
+--btn-foreground: #ffffff;
+--btn-muted: #e2e8f0;
+--btn-muted-foreground: #64748b;
+--btn-radius: 8px;
+--btn-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+background-color: var(--btn-primary);
+color: var(--btn-foreground);
+border: none;
+border-radius: var(--btn-radius);
+padding: 12px 24px;
+font-size: 16px;
+font-weight: 600;
+cursor: pointer;
+/* Transição suave de fundo e texto adicionada para a troca de tema */
+transition: background-color 0.2s ease, color 0.2s ease, opacity 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+width: 100%;
+max-width: 400px;
+display: flex;
+justify-content: center;
+align-items: center;
+box-shadow: var(--btn-shadow);
+font-family: inherit;
+}
+
+/* Suporte ao Dark Mode isolado no componente */
+body.dark-theme .docflow-btn {
+--btn-primary: #3b82f6;
+--btn-muted: #1e293b;
+--btn-muted-foreground: #94a3b8;
+--btn-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
 }
 
 .docflow-btn:hover:not(:disabled) {
-  opacity: 0.9;
+opacity: 0.9;
 }
 
 .docflow-btn:active:not(:disabled) {
-  transform: scale(0.98);
+transform: scale(0.98);
 }
 
 .docflow-btn:disabled {
-  background-color: var(--muted);
-  color: var(--muted-foreground);
-  cursor: not-allowed;
-  opacity: 0.7;
-  box-shadow: none;
+background-color: var(--btn-muted);
+color: var(--btn-muted-foreground);
+cursor: not-allowed;
+opacity: 0.7;
+box-shadow: none;
 }
