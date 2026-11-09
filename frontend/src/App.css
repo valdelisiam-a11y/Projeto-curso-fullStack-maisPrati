@@ -17,3 +17,43 @@
     padding: 72px 16px 24px;
   }
 }
+
+/* =========================================
+   VARIAVEIS DE SUPORTE AO LIGHT / DARK MODE
+   ========================================= */
+:root {
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --primary-soft: rgba(37, 99, 235, 0.15);
+  --foreground: #1e293b;
+  --background: #ffffff;
+  --border: #cbd5e1;
+  --muted: #e2e8f0;
+  --muted-foreground: #64748b;
+  --radius: 8px;
+  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --info: #0284c7;
+  --info-soft: #e0f2fe;
+  --destructive: #dc2626;
+}
+
+body.dark-theme {
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --primary-soft: rgba(59, 130, 246, 0.25);
+  --foreground: #f8fafc;
+  --background: #0f172a;
+  --border: #334155;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --info: #38bdf8;
+  --info-soft: rgba(56, 189, 248, 0.15);
+  --destructive: #ef4444;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
