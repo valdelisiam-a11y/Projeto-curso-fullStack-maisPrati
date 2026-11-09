@@ -1,36 +1,57 @@
 .docflow-input-container {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-  width: 100%;
-  max-width: 400px;
+/* Variáveis locais do Tema Claro */
+--inp-foreground: #1e293b;
+--inp-background: #ffffff;
+--inp-border: #cbd5e1;
+--inp-primary: #2563eb;
+--inp-primary-soft: rgba(37, 99, 235, 0.15);
+--inp-muted-foreground: #64748b;
+--inp-radius: 8px;
+
+display: flex;
+flex-direction: column;
+margin-bottom: 16px;
+width: 100%;
+max-width: 400px;
+}
+
+/* Suporte ao Dark Mode isolado no componente */
+body.dark-theme .docflow-input-container {
+--inp-foreground: #f8fafc;
+--inp-background: #0f172a;
+--inp-border: #334155;
+--inp-primary: #3b82f6;
+--inp-primary-soft: rgba(59, 130, 246, 0.25);
+--inp-muted-foreground: #94a3b8;
 }
 
 .docflow-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--foreground);
-  margin-bottom: 6px;
-  font-family: inherit;
+font-size: 14px;
+font-weight: 500;
+color: var(--inp-foreground);
+margin-bottom: 6px;
+font-family: inherit;
+transition: color 0.2s ease; /* Transição suave para o texto */
 }
 
 .docflow-input {
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background-color: var(--background);
-  color: var(--foreground);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  outline: none;
-  font-family: inherit;
+padding: 12px;
+font-size: 16px;
+border: 1px solid var(--inp-border);
+border-radius: var(--inp-radius);
+background-color: var(--inp-background);
+color: var(--inp-foreground);
+/* Transição suave combinada para bordas e cores de fundo */
+transition: background-color 0.2s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+outline: none;
+font-family: inherit;
 }
 
 .docflow-input::placeholder {
-  color: var(--muted-foreground);
+color: var(--inp-muted-foreground);
 }
 
 .docflow-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-soft);
+border-color: var(--inp-primary);
+box-shadow: 0 0 0 3px var(--inp-primary-soft);
 }
