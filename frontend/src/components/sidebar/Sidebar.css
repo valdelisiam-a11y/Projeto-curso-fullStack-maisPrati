@@ -284,14 +284,37 @@
 }
 
 .sidebar__empresa-aviso {
+  position: relative;
   margin: -12px 12px 24px;
-  padding: 12px;
+  padding: 34px 12px 12px;
   border: 1px solid var(--sidebar-border);
   border-radius: var(--radius);
   background: var(--primary-soft);
   color: var(--foreground);
   font-size: 12px;
   line-height: 1.5;
+}
+
+.sidebar__empresa-aviso-fechar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.sidebar__empresa-aviso-fechar:hover {
+  background: var(--muted);
+  color: var(--foreground);
 }
 
 .sidebar__empresa-aviso strong {

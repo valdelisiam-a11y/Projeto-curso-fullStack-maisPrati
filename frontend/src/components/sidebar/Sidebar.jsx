@@ -48,6 +48,7 @@ function handleSelecionarEmpresa() {
 
   function fecharMenu() {
     setMenuAberto(false);
+    setAvisoEmpresa(false);
   }
 
   return (
@@ -117,6 +118,15 @@ function handleSelecionarEmpresa() {
 
           {avisoEmpresa && (
             <div className="sidebar__empresa-aviso" role="status">
+              <button
+                type="button"
+                className="sidebar__empresa-aviso-fechar"
+                onClick={() => setAvisoEmpresa(false)}
+                aria-label="Fechar aviso"
+              >
+                <X size={16} />
+              </button>
+
               <strong>Você ainda não possui uma empresa.</strong>
 
               <p>
