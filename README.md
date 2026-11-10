@@ -1,46 +1,79 @@
-# Projeto-curso-fullStack-maisPrati
-Projeto Final do Curso Full Stack +PraTi. Aplicação web para gerenciamento e organização de processos.
+# DocFlow
 
-#
+**Gerenciador Inteligente de Trabalhos para Pequenas Empresas e Uso Pessoal**
 
-
-
-### Nome Provisório - DocFlow
-
-O **DocFlow** é uma aplicação web desenvolvida como projeto final do curso Full Stack da +PraTi.
-
-A proposta é oferecer uma solução simples para **organização e gerenciamento de processos**, permitindo acompanhar etapas, tarefas e documentos de forma centralizada e intuitiva.
+O DocFlow é uma aplicação web desenvolvida para organizar trabalhos, acompanhar etapas, distribuir responsabilidades e centralizar documentos. Pode ser utilizado individualmente ou em equipes de pequenas empresas.
 
 ## Objetivo
 
-Desenvolver uma aplicação que facilite a organização de processos para pequenos negócios e profissionais, reduzindo a dependência de planilhas, mensagens e diferentes ferramentas para acompanhar suas atividades.
+Simplificar o gerenciamento de trabalhos e atividades, oferecendo visibilidade sobre o andamento das etapas, os responsáveis e os documentos relacionados.
 
-## Status do Projeto
+## Funcionalidades
 
-**Em desenvolvimento**
-
-Neste primeiro momento, o projeto está sendo desenvolvido com foco no **Front-end**, utilizando React. As etapas de Back-end e banco de dados serão incorporadas posteriormente.
+- **Gestão de trabalhos:** cadastro, consulta, edição e acompanhamento do status.
+- **Gestão de etapas:** organização das etapas, definição de ordem, atualização de status e percentual de conclusão.
+- **Colaboração:** compartilhamento de trabalhos e atribuição de responsáveis às etapas.
+- **Gestão de empresas:** criação de empresas e gerenciamento de membros, respeitando o limite de usuários.
+- **Minhas Etapas:** visualização das etapas atribuídas ao usuário.
+- **Documentos:** envio e acesso aos documentos vinculados às etapas.
+- **Histórico e acompanhamento:** registro de alterações e visualização da evolução dos trabalhos.
+- **Conta do usuário:** cadastro, autenticação e atualização de perfil.
 
 ## Tecnologias
 
-* React
-* JavaScript
-* HTML
-* CSS
-* Git e GitHub
-* Java
-* Banco de dados
-* API REST
+**Frontend**
+- React
+- JavaScript
+- Vite
+- HTML5 e CSS3
 
-##  Estrutura do Projeto
+**Backend**
+- Java 21
+- Spring Boot
+- Spring Security
+- API REST
+- JWT
+- Maven
 
- A estrutura será atualizada conforme o desenvolvimento do projeto avançar.
+**Banco de dados e armazenamento**
+- PostgreSQL (Neon)
+- Backblaze B2 para armazenamento de documentos
 
-##  Equipe
 
-Projeto desenvolvido pelos alunos do curso Full Stack +PraTi. Grupo 38
+## Arquitetura
 
-##  Observação
+O projeto utiliza uma arquitetura separada entre frontend e backend:
 
-Este repositório será utilizado para versionamento e acompanhamento do desenvolvimento do projeto final do curso.
+- **Frontend:** interface e interação com o usuário.
+- **Backend:** API REST responsável pelas regras de negócio, autenticação e processamento das operações.
+- **Banco de dados:** armazenamento das informações da aplicação.
+- **Armazenamento externo:** guarda os documentos enviados pelos usuários.
 
+## Estrutura do projeto
+
+```text
+Projeto-curso-fullStack-maisPrati/
+├── backend/       # API REST em Java e Spring Boot
+├── frontend/      # Aplicação web em React
+├── docs/          # Documentação técnica
+└── README.md
+```
+
+## Documentação
+
+- [Documentação da API](docs/API.md)
+- [Configuração e execução com Docker](docs/DOCKER.md)
+
+## Equipe — Grupo 38
+
+- Camila dos Santos Regner
+- Erik Fernando Rodrigues da Silva
+- Francisco de Assis de Vasconcelos Souza
+- Gean Oldra
+- Jonatas Bernardo Santos da Silva
+- Joshua Abdi de Morais
+- Thaís dos Santos Jorge
+- Valdelisia Queiros Monteiro
+- Verenice Almeida Pires
+
+Projeto desenvolvido como parte da formação Full Stack da +PraTi.

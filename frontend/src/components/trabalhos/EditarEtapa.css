@@ -1,0 +1,130 @@
+
+.editar-etapa-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--card, #ffffff);
+}
+
+.editar-etapa-form h4 {
+  margin: 0 0 4px;
+  color: var(--foreground, #292333);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.editar-etapa-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+}
+
+.editar-etapa-campo label {
+  color: var(--foreground, #292333);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.editar-etapa-campo input,
+.editar-etapa-campo textarea,
+.editar-etapa-campo select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border, #ded9e5);
+  border-radius: 8px;
+  background: var(--background, #ffffff);
+  color: var(--foreground, #292333);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.editar-etapa-campo input {
+  min-height: 44px;
+}
+
+.editar-etapa-campo textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.editar-etapa-campo input:focus,
+.editar-etapa-campo textarea:focus,
+.editar-etapa-campo select:focus {
+  border-color: var(--primary, oklch(61% 0.19 305));
+  box-shadow: 0 0 0 3px var(--primary-soft, oklch(95% 0.035 310));
+}
+
+.editar-etapa-acoes {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.editar-etapa-acoes button {
+  min-height: 40px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.editar-etapa-salvar {
+  border: 1px solid var(--primary, oklch(61% 0.19 305));
+  background: var(--primary, oklch(61% 0.19 305));
+  color: white;
+}
+
+.editar-etapa-salvar:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.editar-etapa-cancelar {
+  border: 1px solid var(--border, #ded9e5);
+  background: transparent;
+  color: var(--foreground, #292333);
+}
+
+.editar-etapa-cancelar:hover:not(:disabled) {
+  background: var(--primary-soft, oklch(95% 0.035 310));
+}
+
+.editar-etapa-acoes button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.editar-etapa-campo select {
+  min-height: 44px;
+  padding: 11px 13px;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .editar-etapa-form {
+    padding: 15px;
+  }
+
+  .editar-etapa-acoes {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .editar-etapa-acoes button {
+    width: 100%;
+  }
+}

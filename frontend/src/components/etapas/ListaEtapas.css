@@ -1,0 +1,258 @@
+
+/* Seção de etapas */
+.etapas-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.etapas-secao-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.etapas-secao-cabecalho .secao-titulo {
+  margin: 0;
+}
+
+/* Botão adicionar etapa */
+.btn-adicionar-etapa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid var(--primary, oklch(61% 0.19 305));
+  border-radius: 8px;
+  background: var(--primary, oklch(61% 0.19 305));
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.btn-adicionar-etapa:hover {
+  filter: brightness(0.95);
+}
+
+.btn-adicionar-etapa:active {
+  transform: scale(0.98);
+}
+
+/* Texto auxiliar */
+.etapas-secao .secao-subtitulo {
+  margin: 0;
+  color: var(--muted-foreground, #777080);
+  font-size: 13px;
+}
+
+/* Formulário de nova etapa */
+.form-adicionar-etapa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--primary-soft, oklch(95% 0.035 310));
+}
+
+.form-adicionar-etapa input {
+  flex: 1 1 220px;
+  min-width: 0;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #ded9e5);
+  border-radius: 8px;
+  background: var(--background, #ffffff);
+  color: var(--foreground, #292333);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-adicionar-etapa input::placeholder {
+  color: var(--muted-foreground, #9992a2);
+}
+
+.form-adicionar-etapa input:focus {
+  border-color: var(--primary, oklch(61% 0.19 305));
+  box-shadow: 0 0 0 3px var(--primary-soft, oklch(95% 0.035 310));
+}
+
+.form-adicionar-etapa button {
+  min-height: 40px;
+  padding: 9px 15px;
+  border: 1px solid var(--border, #ded9e5);
+  border-radius: 8px;
+  background: var(--background, #ffffff);
+  color: var(--foreground, #292333);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.form-adicionar-etapa button[type="submit"] {
+  border-color: var(--primary, oklch(61% 0.19 305));
+  background: var(--primary, oklch(61% 0.19 305));
+  color: #ffffff;
+}
+
+.form-adicionar-etapa button:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.form-adicionar-etapa button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Mensagem de erro */
+.erro-adicionar-etapa {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--destructive, #c2413a);
+  font-size: 13px;
+}
+
+/* Mensagem quando não existem etapas */
+.etapas-secao .preview-vazio {
+  margin: 0;
+  padding: 20px;
+  border: 1px dashed var(--border, #ded9e5);
+  border-radius: 10px;
+  color: var(--muted-foreground, #777080);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Cards das etapas */
+.etapas-horizontal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.etapa-card-item {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--card, #ffffff);
+  color: var(--foreground, #292333);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.etapa-card-item:hover {
+  border-color: var(--primary, oklch(61% 0.19 305));
+}
+
+.etapa-card-item.selecionada {
+  border-color: var(--primary, oklch(61% 0.19 305));
+  background: var(--primary-soft, oklch(95% 0.035 310));
+  box-shadow: 0 0 0 2px var(--primary-soft, oklch(95% 0.035 310));
+}
+
+.etapa-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.icone-etapa-status {
+  display: flex;
+  flex: 0 0 27px;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: var(--muted, #eeeaf2);
+  color: var(--foreground, #292333);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.icone-etapa-status.concluido {
+  background: #e2f4e9;
+  color: #26834b;
+}
+
+.icone-etapa-status.andamento {
+  background: #e9e2f8;
+  color: var(--primary, #8050b5);
+}
+
+.icone-etapa-status.atencao,
+.icone-etapa-status.atrasado {
+  background: #fff0df;
+  color: #b66a19;
+}
+
+.etapa-card-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.etapa-card-titulo {
+  color: var(--foreground, #292333);
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.etapa-card-substatus {
+  color: var(--muted-foreground, #777080);
+  font-size: 12px;
+}
+
+.etapa-card-responsavel {
+  color: var(--muted-foreground, #777080);
+  font-size: 12px;
+}
+
+/* Telas menores */
+@media (max-width: 600px) {
+  .etapas-secao-cabecalho {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .btn-adicionar-etapa {
+    width: 100%;
+  }
+
+  .form-adicionar-etapa {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-adicionar-etapa input {
+    width: 100%;
+  }
+
+  .form-adicionar-etapa button {
+    width: 100%;
+  }
+
+  .etapas-horizontal-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,522 @@
+
+/* ==========================================
+   CONTAINER E CARD PRINCIPAL
+   ========================================== */
+
+.detalhes-etapa-container {
+  width: 100%;
+  max-width: 1000px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.detalhes-etapa-container .btn-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: #514568;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.detalhes-etapa-container .btn-voltar:hover {
+  color: #8050b5;
+}
+
+.detalhes-card {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 30px;
+  background: #ffffff;
+  border: 1px solid #eee8f5;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(39, 31, 61, 0.045);
+}
+
+/* ==========================================
+   CABEÇALHO DA ETAPA
+   ========================================== */
+
+.detalhes-header-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eeeaf3;
+}
+
+.detalhes-header-content h1 {
+  margin: 0 0 10px;
+  color: #271f3d;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.detalhes-subtitulo {
+  margin: 0 0 7px;
+  color: #625b70;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.detalhes-meta {
+  margin: 0;
+  color: #898394;
+  font-size: 13px;
+}
+
+/* ==========================================
+   STATUS
+   ========================================== */
+
+.detalhes-header-content .badge-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 7px 13px;
+  border: 1px solid #e8ddf5;
+  border-radius: 20px;
+  background: #f5effb;
+  color: #70449b;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   PROGRESSO DA ETAPA
+   ========================================== */
+
+.detalhes-card > .input-group {
+  gap: 12px;
+}
+
+.detalhes-card > .input-group label {
+  color: #393047;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.progresso-etapa {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.progresso-etapa-barra {
+  flex: 1;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #eeeaf3;
+}
+
+.progresso-etapa-preenchimento {
+  height: 100%;
+  border-radius: inherit;
+  background: #9866c5;
+  transition: width 0.3s ease;
+}
+
+.progresso-etapa > span {
+  min-width: 42px;
+  color: #514568;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ==========================================
+   SEÇÃO DE DOCUMENTOS
+   ========================================== */
+
+.documentos-etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 24px;
+  border-top: 1px solid #eeeaf3;
+}
+
+.documentos-etapa-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.documentos-etapa-header h2 {
+  margin: 0 0 6px;
+  color: #271f3d;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.documentos-etapa-header p {
+  margin: 0;
+  color: #898394;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Botão de adicionar documento */
+
+.btn-adicionar-documento {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 10px 16px;
+  border: 1px solid #e5d8f1;
+  border-radius: 10px;
+  background: #f5effb;
+  color: #654184;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.btn-adicionar-documento:hover {
+  background: #eee3f8;
+  border-color: #d7c2e9;
+}
+
+.btn-adicionar-documento:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================
+   LISTA DE DOCUMENTOS
+   ========================================== */
+
+.lista-documentos-etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.documento-etapa-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding: 15px 16px;
+  border: 1px solid #eeeaf3;
+  border-radius: 12px;
+  background: #ffffff;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.documento-etapa-item:hover {
+  background: #fcfaff;
+  border-color: #e2d5ef;
+  box-shadow: 0 2px 8px rgba(39, 31, 61, 0.035);
+}
+
+.documento-etapa-info {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  flex: 1;
+  min-width: 0;
+}
+
+.documento-etapa-info > svg {
+  flex-shrink: 0;
+  color: #9265b8;
+}
+
+.documento-etapa-info > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.documento-etapa-info strong {
+  color: #393047;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.documento-etapa-info span {
+  color: #898394;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Ações de visualizar e baixar */
+
+.documento-etapa-acoes {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.documento-etapa-acoes button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: #f7f4fa;
+  color: #70568c;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.documento-etapa-acoes button:hover {
+  background: #eee5f6;
+  border-color: #e1d3ef;
+  color: #51336f;
+}
+
+.documento-etapa-acoes button:focus-visible,
+.btn-adicionar-documento:focus-visible,
+.detalhes-etapa-container .btn-voltar:focus-visible {
+  outline: 2px solid #9866c5;
+  outline-offset: 3px;
+}
+
+/* ==========================================
+   ESTADO VAZIO E ERROS
+   ========================================== */
+
+.documentos-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 150px;
+  padding: 24px;
+  border: 1px dashed #ded5e8;
+  border-radius: 12px;
+  background: #fcfaff;
+  text-align: center;
+}
+
+.documentos-vazio svg {
+  color: #a18bb5;
+}
+
+.documentos-vazio p {
+  margin: 0;
+  color: #898394;
+  font-size: 13px;
+}
+
+.erro-documentos {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #f0d9d9;
+  border-radius: 10px;
+  background: #fff8f8;
+  color: #a13d3d;
+  font-size: 13px;
+}
+
+.erro-documentos button {
+  padding: 5px 9px;
+  border: none;
+  border-radius: 6px;
+  background: #f8e9e9;
+  color: #963737;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ==========================================
+   COMPATIBILIDADE COM ESTILOS ANTERIORES
+   ========================================== */
+
+.form-edicao-etapa,
+.visualizacao-etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detalhes-etapa-container .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detalhes-etapa-container .input-group label {
+  color: #393047;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.detalhes-etapa-container .input-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e5dfea;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #393047;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.detalhes-etapa-container .input-group textarea:focus {
+  border-color: #9866c5;
+}
+
+.texto-observacao-estatico {
+  margin: 0;
+  color: #514568;
+  font-size: 14px;
+}
+
+.btn-salvar-obs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #f3eef9;
+  color: #654184;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-salvar-obs:hover {
+  background: #eae0f4;
+}
+
+.aviso-visualizacao-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border: 1px solid #eee8f5;
+  border-radius: 10px;
+  background: #faf8fc;
+  color: #756d80;
+  font-size: 13px;
+}
+
+/* ==========================================
+   RESPONSIVIDADE
+   ========================================== */
+
+@media (max-width: 768px) {
+  .detalhes-etapa-container {
+    padding: 16px;
+  }
+
+  .detalhes-card {
+    gap: 22px;
+    padding: 22px;
+    border-radius: 14px;
+  }
+
+  .detalhes-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding-bottom: 20px;
+  }
+
+  .detalhes-header-content h1 {
+    font-size: 21px;
+  }
+
+  .documentos-etapa-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .btn-adicionar-documento {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .detalhes-etapa-container {
+    padding: 12px;
+  }
+
+  .detalhes-card {
+    padding: 18px;
+    gap: 20px;
+  }
+
+  .detalhes-header-content h1 {
+    font-size: 19px;
+  }
+
+  .documentos-etapa-header h2 {
+    font-size: 16px;
+  }
+
+  .documento-etapa-item {
+    align-items: flex-start;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .documento-etapa-info {
+    gap: 9px;
+  }
+
+  .documento-etapa-info strong {
+    font-size: 12px;
+  }
+
+  .documento-etapa-acoes {
+    gap: 4px;
+  }
+
+  .documento-etapa-acoes button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .progresso-etapa {
+    gap: 10px;
+  }
+}

@@ -1,0 +1,400 @@
+
+/* ==============================
+   CONTAINER PRINCIPAL
+============================== */
+
+.login {
+    width: 960px;
+    height: 560px;
+
+    display: flex;
+    margin: 70px auto;
+
+    border-radius: 24px;
+    overflow: hidden;
+
+    background-color: var(--card);
+    box-shadow: var(--shadow-soft);
+
+    box-sizing: border-box;
+}
+
+/* ==============================
+   PAINEL DA IMAGEM
+============================== */
+
+.login-image {
+    width: 50%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background-color: var(--primary-soft);
+}
+
+.image-placeholder {
+    width: 400px;
+    height: 400px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.image-placeholder img {
+    width: 105%;
+    height: 105%;
+
+    object-fit: fill;
+    display: block;
+
+    border-radius: 24px;
+}
+
+.login-message {
+    margin-top: 24px;
+
+    text-align: center;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+
+    color: var(--primary);
+}
+
+/* ==============================
+   PAINEL DO FORMULÁRIO
+============================== */
+
+.login-form {
+    width: 50%;
+    height: 100%;
+
+    padding: 50px;
+
+    box-sizing: border-box;
+
+    background-color: var(--card);
+}
+
+/* LOGO */
+
+.login-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+
+    color: var(--foreground);
+}
+
+.login-logo .sidebar__logo-icon {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+        135deg,
+        oklch(55% 0.22 300),
+        oklch(68% 0.18 335)
+    );
+
+    color: white;
+}
+
+.login-logo .sidebar__logo-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* TÍTULO */
+
+.login-form h1 {
+    margin-top: 40px;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+
+    color: var(--foreground);
+}
+
+/* ==============================
+   CAMPOS DO FORMULÁRIO
+============================== */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    margin-top: 18px;
+}
+
+.form-group + .form-group {
+    margin-top: 16px;
+}
+
+.form-group label {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+
+    color: var(--foreground);
+}
+
+.form-group input {
+    width: 100%;
+    max-width: 400px;
+    height: 46px;
+
+    box-sizing: border-box;
+
+    background-color: var(--card);
+
+    border: 1px solid var(--input);
+    border-radius: 11px;
+
+    padding-left: 14px;
+    padding-right: 26px;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
+
+    color: var(--foreground);
+}
+
+.form-group input::placeholder {
+    color: var(--muted-foreground);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px var(--primary-soft);
+}
+
+/* ==============================
+   MENSAGENS
+============================== */
+
+.login-error-container {
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+}
+
+.login-error,
+.login-success {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border-radius: 8px;
+    padding: 8px;
+    margin: 0;
+
+    font-size: 13px;
+    text-align: center;
+}
+
+.login-error {
+    color: var(--error);
+    background-color: var(--error-soft);
+    border: 1px solid var(--error-border);
+}
+
+.login-success {
+    color: var(--success);
+    background-color: var(--success-soft);
+    border: 1px solid var(--success-border);
+}
+
+/* ==============================
+   BOTÃO ENTRAR
+============================== */
+
+.login-button {
+    width: 100%;
+    max-width: 400px;
+    height: 46px;
+
+    margin-top: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    background-color: var(--primary);
+
+    border: none;
+    border-radius: 11px;
+
+    color: var(--primary-foreground);
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: opacity 0.2s ease;
+}
+
+.login-button:hover {
+    opacity: 0.9;
+}
+
+/* ==============================
+   LINKS
+============================== */
+
+.login-form a {
+    display: block;
+
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+
+    color: var(--primary);
+    text-decoration: none;
+
+    transition: color 0.2s ease;
+}
+
+.login-button + a {
+    margin-top: 20px;
+}
+
+.login-form a + a {
+    margin-top: 13px;
+}
+
+.login-form a:hover {
+    color: var(--accent-foreground);
+    text-decoration: underline;
+}
+
+/* ==============================
+   RESPONSIVIDADE - TABLETS
+============================== */
+
+@media (max-width: 960px) {
+    .login {
+        width: calc(100% - 40px);
+        margin: 40px auto;
+    }
+
+    .image-placeholder {
+        width: min(400px, calc(100% - 32px));
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    .login-form {
+        padding: 36px;
+    }
+
+    .login-form h1 {
+        font-size: 22px;
+        margin-top: 32px;
+    }
+}
+
+/* ==============================
+   RESPONSIVIDADE - CELULARES
+============================== */
+
+@media (max-width: 700px) {
+    .login {
+        width: calc(100% - 24px);
+        height: auto;
+
+        flex-direction: column;
+
+        margin: 20px auto;
+        border-radius: 20px;
+    }
+
+    .login-image {
+        width: 100%;
+        height: auto;
+
+        padding: 24px 16px 18px;
+
+        box-sizing: border-box;
+    }
+
+    .image-placeholder {
+        width: min(280px, 100%);
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    .login-message {
+        margin-top: 18px;
+        font-size: 14px;
+    }
+
+    .login-form {
+        width: 100%;
+        height: auto;
+
+        padding: 32px 28px;
+    }
+
+    .login-form h1 {
+        margin-top: 24px;
+        font-size: 22px;
+    }
+
+    .form-group input,
+    .login-button {
+        max-width: none;
+    }
+}
+
+/* ==============================
+   CELULARES PEQUENOS
+============================== */
+
+@media (max-width: 400px) {
+    .login {
+        width: calc(100% - 16px);
+        margin: 12px auto;
+    }
+
+    .image-placeholder {
+        width: min(220px, 100%);
+    }
+
+    .login-form {
+        padding: 28px 20px;
+    }
+
+    .login-form h1 {
+        font-size: 20px;
+    }
+}
