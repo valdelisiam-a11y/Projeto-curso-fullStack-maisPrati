@@ -16,6 +16,7 @@ import {
 } from "../../services/trabalhoService";
 
 import { enviarDocumento } from "../../services/documentoService";
+import { useAuth } from "../../contexts/useAuth";
 
 const TAMANHO_MAXIMO = 10 * 1024 * 1024;
 
@@ -36,9 +37,14 @@ function ModalUploadDocumento({
   onAdicionar,
   trabalhoIdInicial = "",
   etapaIdInicial = "",
+  contexto,
+  empresaSelecionada,
+  minhasEtapas = [],
 }) {
   const [trabalhos, setTrabalhos] = useState([]);
   const [etapas, setEtapas] = useState([]);
+
+  const { usuario } = useAuth();
 
   const [trabalhoId, setTrabalhoId] = useState(
     trabalhoIdInicial ? String(trabalhoIdInicial) : ""
@@ -56,6 +62,7 @@ function ModalUploadDocumento({
 
   const [erro, setErro] = useState("");
 
+  // Carrega somente os trabalhos e as etapas permitidos ao usuário.
   useEffect(() => {
     if (!aberto) return;
 
@@ -64,55 +71,191 @@ function ModalUploadDocumento({
         setCarregandoTrabalhos(true);
         setErro("");
 
-        const dados = await listarTrabalhos();
-        setTrabalhos(dados);
+        // Limpa opções anteriores para evitar exibir dados
+        // da empresa ou do contexto selecionado anteriormente.
+        setTrabalhos([]);
+        setEtapas([]);
+        setTrabalhoId("");
+        setEtapaId("");
 
+        const dados = await listarTrabalhos();
+
+        const lista = Array.isArray(dados)
+          ? dados
+          : dados?.content ?? [];
+
+        let trabalhosDisponiveis = [];
+
+        // CONTEXTO PESSOAL
+        if (contexto === "pessoal") {
+          const trabalhosPessoais = lista.filter(
+            (trabalho) =>
+              trabalho.tipo === "PESSOAL" &&
+              Number(trabalho.criadoPorId) === Number(usuario?.id)
+          );
+
+          trabalhosDisponiveis = await Promise.all(
+            trabalhosPessoais.map(async (trabalho) => {
+              const etapasTrabalho = await listarEtapasDoTrabalho(
+                trabalho.id
+              );
+
+              return {
+                ...trabalho,
+                ehCriador: true,
+                etapasDisponiveis: etapasTrabalho,
+              };
+            })
+          );
+        }
+
+        // CONTEXTO EMPRESA
+        if (contexto === "empresa" && empresaSelecionada?.id) {
+          // Trabalhos criados pelo usuário na empresa selecionada.
+          const trabalhosCriados = lista.filter(
+            (trabalho) =>
+              trabalho.tipo === "EMPRESA" &&
+              Number(trabalho.empresaId) ===
+                Number(empresaSelecionada.id) &&
+              Number(trabalho.criadoPorId) === Number(usuario?.id)
+          );
+
+          const trabalhosDoCriador = await Promise.all(
+            trabalhosCriados.map(async (trabalho) => {
+              const etapasTrabalho = await listarEtapasDoTrabalho(
+                trabalho.id
+              );
+
+              return {
+                ...trabalho,
+                ehCriador: true,
+                etapasDisponiveis: etapasTrabalho,
+              };
+            })
+          );
+
+          // Evita duplicar trabalhos que também apareçam
+          // em minhasEtapas.
+          const idsCriados = new Set(
+            trabalhosDoCriador.map((trabalho) =>
+              Number(trabalho.id)
+            )
+          );
+
+          // Agrupa as etapas atribuídas ao colaborador por trabalho.
+          const grupos = {};
+
+          minhasEtapas.forEach((etapa) => {
+            if (
+              Number(etapa.empresaId) !==
+                Number(empresaSelecionada.id) ||
+              idsCriados.has(Number(etapa.trabalhoId))
+            ) {
+              return;
+            }
+
+            if (!grupos[etapa.trabalhoId]) {
+              grupos[etapa.trabalhoId] = {
+                id: etapa.trabalhoId,
+                titulo: etapa.trabalhoTitulo,
+                tipo: "EMPRESA",
+                ehCriador: false,
+                etapasDisponiveis: [],
+              };
+            }
+
+            grupos[etapa.trabalhoId].etapasDisponiveis.push({
+              id: etapa.etapaId,
+              titulo: etapa.etapaTitulo,
+            });
+          });
+
+          trabalhosDisponiveis = [
+            ...trabalhosDoCriador,
+            ...Object.values(grupos),
+          ];
+        }
+
+        setTrabalhos(trabalhosDisponiveis);
+
+        // Restaura o trabalho inicial somente se ele
+        // estiver entre as opções permitidas.
+        if (
+          trabalhoIdInicial &&
+          trabalhosDisponiveis.some(
+            (trabalho) =>
+              String(trabalho.id) === String(trabalhoIdInicial)
+          )
+        ) {
+          setTrabalhoId(String(trabalhoIdInicial));
+        }
       } catch (error) {
-        setErro(error.message || "Não foi possível carregar os trabalhos.");
+        console.error("Erro ao carregar trabalhos:", error);
+
+        setErro(
+          error.message || "Não foi possível carregar os trabalhos."
+        );
       } finally {
         setCarregandoTrabalhos(false);
       }
     }
 
     carregarTrabalhos();
-  }, [aberto]);
+  }, [
+    aberto,
+    contexto,
+    empresaSelecionada?.id,
+    minhasEtapas,
+    usuario?.id,
+    trabalhoIdInicial,
+  ]);
 
+  // Carrega as etapas que já foram filtradas para cada trabalho.
+  // Não realiza novas consultas ao backend para trabalhos de colaboradores.
   useEffect(() => {
     if (!aberto || !trabalhoId) {
       setEtapas([]);
       return;
     }
 
-    async function carregarEtapas() {
-      try {
-        setCarregandoEtapas(true);
-        setErro("");
-        setEtapas([]);
-        setEtapaId("");
+    const trabalhoSelecionado = trabalhos.find(
+      (trabalho) =>
+        String(trabalho.id) === String(trabalhoId)
+    );
 
-        const dados = await listarEtapasDoTrabalho(trabalhoId);
-
-        setEtapas(dados);
-
-        if (etapaIdInicial) {
-          const etapaExiste = dados.some(
-            (etapa) => String(etapa.id) === String(etapaIdInicial)
-          );
-
-          if (etapaExiste) {
-            setEtapaId(String(etapaIdInicial));
-          }
-        }
-
-      } catch (error) {
-        setErro(error.message || "Não foi possível carregar as etapas.");
-      } finally {
-        setCarregandoEtapas(false);
-      }
+    if (!trabalhoSelecionado) {
+      setEtapas([]);
+      setEtapaId("");
+      return;
     }
 
-    carregarEtapas();
-  }, [aberto, trabalhoId, etapaIdInicial]);
+    setCarregandoEtapas(true);
+
+    const etapasDisponiveis =
+      trabalhoSelecionado.etapasDisponiveis ?? [];
+
+    setEtapas(etapasDisponiveis);
+
+    // Restaura a etapa inicial somente se ela estiver autorizada
+    // entre as etapas disponíveis para o usuário.
+    if (
+      etapaIdInicial &&
+      etapasDisponiveis.some(
+        (etapa) => String(etapa.id) === String(etapaIdInicial)
+      )
+    ) {
+      setEtapaId(String(etapaIdInicial));
+    } else {
+      setEtapaId("");
+    }
+
+    setCarregandoEtapas(false);
+  }, [
+    aberto,
+    trabalhoId,
+    trabalhos,
+    etapaIdInicial,
+  ]);
 
   if (!aberto) return null;
 
@@ -197,15 +340,18 @@ function ModalUploadDocumento({
         trabalhoId: Number(trabalhoId),
         trabalho: trabalhoSelecionado?.titulo,
         etapa: etapaSelecionada?.titulo,
-        tipo: arquivo.type.startsWith("image/") ? "Imagem" : "PDF",
+        tipo: arquivo.type.startsWith("image/")
+          ? "Imagem"
+          : "PDF",
         data: new Date().toLocaleDateString("pt-BR"),
       });
 
       limparFormulario();
       onFechar();
-
     } catch (error) {
-      setErro(error.message || "Não foi possível enviar o documento.");
+      setErro(
+        error.message || "Não foi possível enviar o documento."
+      );
     } finally {
       setEnviando(false);
     }
@@ -275,7 +421,11 @@ function ModalUploadDocumento({
                 setArquivo(null);
                 setErro("");
               }}
-              disabled={carregandoTrabalhos || enviando || !!trabalhoIdInicial}
+              disabled={
+                carregandoTrabalhos ||
+                enviando ||
+                !!trabalhoIdInicial
+              }
               required
             >
               <option value="">
@@ -323,7 +473,9 @@ function ModalUploadDocumento({
             {!carregandoEtapas &&
               trabalhoId &&
               etapas.length === 0 && (
-                <small>Este trabalho ainda não possui etapas.</small>
+                <small>
+                  Este trabalho ainda não possui etapas disponíveis.
+                </small>
               )}
           </div>
 

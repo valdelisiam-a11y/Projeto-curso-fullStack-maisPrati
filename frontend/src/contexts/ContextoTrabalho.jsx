@@ -23,13 +23,15 @@ export function ContextoTrabalhoProvider({ children }) {
   const [minhasEtapas, setMinhasEtapas] = useState([]);
   const [carregandoEtapas, setCarregandoEtapas] = useState(false);
 
+  // Recupera as empresas e restaura a última seleção do usuário.
   useEffect(() => {
     let ativo = true;
 
-    // Limpa os dados da sessão anterior.
     setEmpresas([]);
     setEmpresaSelecionada(null);
     setContexto("pessoal");
+    setMinhasEtapas([]);
+    setCarregandoEtapas(false);
     setErroEmpresas("");
 
     async function carregarEmpresas() {
@@ -50,12 +52,47 @@ export function ContextoTrabalhoProvider({ children }) {
           : [];
 
         setEmpresas(empresasReais);
-        setEmpresaSelecionada(empresasReais[0] ?? null);
+
+        const chave = `docflow-contexto-trabalho-${usuario.id}`;
+
+        let selecaoSalva = null;
+
+        try {
+          selecaoSalva = JSON.parse(
+            localStorage.getItem(chave)
+          );
+        } catch {
+          localStorage.removeItem(chave);
+        }
+
+        const empresaSalva = empresasReais.find(
+          (empresa) =>
+            Number(empresa.id) ===
+            Number(selecaoSalva?.empresaId)
+        );
+
+        const contextoSalvo = selecaoSalva?.contexto;
+
+        if (
+          contextoSalvo === "empresa" &&
+          empresaSalva
+        ) {
+          setContexto("empresa");
+          setEmpresaSelecionada(empresaSalva);
+        } else {
+          setContexto("pessoal");
+
+          setEmpresaSelecionada(
+            empresaSalva ?? empresasReais[0] ?? null
+          );
+        }
       } catch (error) {
         if (!ativo) return;
 
         setEmpresas([]);
         setEmpresaSelecionada(null);
+        setContexto("pessoal");
+
         setErroEmpresas(
           error.message || "Não foi possível carregar as empresas."
         );
@@ -73,6 +110,7 @@ export function ContextoTrabalhoProvider({ children }) {
     };
   }, [usuario?.id]);
 
+  // Carrega somente as etapas da empresa selecionada.
   useEffect(() => {
     let ativo = true;
 
@@ -111,19 +149,48 @@ export function ContextoTrabalhoProvider({ children }) {
       }
     }
 
-  carregarMinhasEtapas();
+    carregarMinhasEtapas();
 
-  return () => {
-    ativo = false;
-  };
-}, [usuario?.id, contexto, empresaSelecionada?.id]);
+    return () => {
+      ativo = false;
+    };
+  }, [usuario?.id, contexto, empresaSelecionada?.id]);
+
+  function salvarSelecao(novoContexto, empresaId) {
+    if (!usuario?.id) return;
+
+    const chave = `docflow-contexto-trabalho-${usuario.id}`;
+
+    localStorage.setItem(
+      chave,
+      JSON.stringify({
+        contexto: novoContexto,
+        empresaId: empresaId ?? null,
+      })
+    );
+  }
 
   function selecionarContexto(novoContexto) {
-    if (novoContexto !== "pessoal" && novoContexto !== "empresa") {
+    if (
+      novoContexto !== "pessoal" &&
+      novoContexto !== "empresa"
+    ) {
+      return;
+    }
+
+    if (
+      novoContexto === "empresa" &&
+      !empresaSelecionada
+    ) {
       return;
     }
 
     setContexto(novoContexto);
+
+    salvarSelecao(
+      novoContexto,
+      empresaSelecionada?.id
+    );
   }
 
   function selecionarEmpresa(id) {
@@ -133,6 +200,8 @@ export function ContextoTrabalhoProvider({ children }) {
 
     if (empresa) {
       setEmpresaSelecionada(empresa);
+
+      salvarSelecao(contexto, empresa.id);
     }
   }
 
