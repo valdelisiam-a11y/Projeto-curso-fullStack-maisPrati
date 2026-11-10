@@ -18,6 +18,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -65,13 +66,19 @@ class UsuarioEmpresaServiceTest {
         vinculoCriador.setUsuario(criador);
         vinculoCriador.setEmpresa(empresa);
         vinculoCriador.setPapel(PapelUsuarioEmpresa.CRIADOR);
+    }
 
+    private void configurarAutenticacaoComoCriador() {
         when(usuarioAutenticadoService.obterUsuario())
                 .thenReturn(criador);
+    }
 
+    private void configurarEmpresaComBloqueio() {
         when(empresaRepository.findByIdComBloqueio(1L))
                 .thenReturn(Optional.of(empresa));
+    }
 
+    private void configurarVinculoCriador() {
         when(usuarioEmpresaRepository.findByUsuarioAndEmpresa(
                 criador, empresa))
                 .thenReturn(Optional.of(vinculoCriador));
@@ -79,6 +86,10 @@ class UsuarioEmpresaServiceTest {
 
     @Test
     void deveAdicionarMembroQuandoCriadorEHaVaga() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+        configurarVinculoCriador();
+
         when(usuarioRepository.findByEmail("membro@exemplo.com"))
                 .thenReturn(Optional.of(membro));
 
@@ -97,7 +108,11 @@ class UsuarioEmpresaServiceTest {
 
     @Test
     void deveRejeitarInclusaoQuandoUsuarioNaoECriador() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+
         vinculoCriador.setPapel(PapelUsuarioEmpresa.MEMBRO);
+        configurarVinculoCriador();
 
         assertThrows(
                 AccessDeniedException.class,
@@ -111,6 +126,10 @@ class UsuarioEmpresaServiceTest {
 
     @Test
     void deveRejeitarInclusaoQuandoLimiteFoiAtingido() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+        configurarVinculoCriador();
+
         when(usuarioRepository.findByEmail("membro@exemplo.com"))
                 .thenReturn(Optional.of(membro));
 
@@ -133,6 +152,10 @@ class UsuarioEmpresaServiceTest {
 
     @Test
     void deveImpedirCriadorDeRemoverProprioVinculo() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+        configurarVinculoCriador();
+
         assertThrows(
                 AccessDeniedException.class,
                 () -> usuarioEmpresaService.removerMembro(1L, 10L)
@@ -142,9 +165,12 @@ class UsuarioEmpresaServiceTest {
                 .delete(any(UsuarioEmpresa.class));
     }
 
-
     @Test
     void deveRejeitarInclusaoQuandoEmailNaoEstaCadastrado() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+        configurarVinculoCriador();
+
         when(usuarioRepository.findByEmail("inexistente@exemplo.com"))
                 .thenReturn(Optional.empty());
 
@@ -160,6 +186,10 @@ class UsuarioEmpresaServiceTest {
 
     @Test
     void deveRejeitarInclusaoQuandoUsuarioJaEstaVinculado() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+        configurarVinculoCriador();
+
         when(usuarioRepository.findByEmail("membro@exemplo.com"))
                 .thenReturn(Optional.of(membro));
 
@@ -177,9 +207,12 @@ class UsuarioEmpresaServiceTest {
                 .save(any(UsuarioEmpresa.class));
     }
 
-
     @Test
     void deveAdicionarMembroComPapelMEMBRO() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+        configurarVinculoCriador();
+
         when(usuarioRepository.findByEmail("membro@exemplo.com"))
                 .thenReturn(Optional.of(membro));
 
@@ -196,7 +229,7 @@ class UsuarioEmpresaServiceTest {
         UsuarioEmpresa resultado = usuarioEmpresaService.adicionarMembro(
                 1L, "membro@exemplo.com");
 
-        org.junit.jupiter.api.Assertions.assertEquals(
+        assertEquals(
                 PapelUsuarioEmpresa.MEMBRO,
                 resultado.getPapel()
         );
@@ -204,7 +237,11 @@ class UsuarioEmpresaServiceTest {
 
     @Test
     void deveRejeitarRemocaoQuandoUsuarioNaoECriador() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+
         vinculoCriador.setPapel(PapelUsuarioEmpresa.MEMBRO);
+        configurarVinculoCriador();
 
         assertThrows(
                 AccessDeniedException.class,
@@ -217,6 +254,10 @@ class UsuarioEmpresaServiceTest {
 
     @Test
     void deveRemoverVinculoQuandoCriadorSolicita() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+        configurarVinculoCriador();
+
         UsuarioEmpresa vinculoMembro = new UsuarioEmpresa();
         vinculoMembro.setUsuario(membro);
         vinculoMembro.setEmpresa(empresa);
@@ -234,5 +275,51 @@ class UsuarioEmpresaServiceTest {
         verify(usuarioEmpresaRepository).delete(vinculoMembro);
     }
 
+    @Test
+    void deveRejeitarInclusaoQuandoUsuarioEstiverInativo() {
+        configurarAutenticacaoComoCriador();
+        configurarEmpresaComBloqueio();
+        configurarVinculoCriador();
 
+        membro.setAtivo(false);
+
+        when(usuarioRepository.findByEmail("membro@exemplo.com"))
+                .thenReturn(Optional.of(membro));
+
+        when(usuarioEmpresaRepository.existsByUsuarioAndEmpresa(
+                membro, empresa))
+                .thenReturn(false);
+
+        when(usuarioEmpresaRepository.countByEmpresa(empresa))
+                .thenReturn(1L);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> usuarioEmpresaService.adicionarMembro(
+                        1L, "membro@exemplo.com")
+        );
+
+        verify(usuarioEmpresaRepository, never())
+                .save(any(UsuarioEmpresa.class));
+    }
+
+    @Test
+    void deveRejeitarListagemDeMembrosDisponiveisQuandoUsuarioNaoECriador() {
+        configurarAutenticacaoComoCriador();
+
+        vinculoCriador.setPapel(PapelUsuarioEmpresa.MEMBRO);
+
+        when(empresaRepository.findById(1L))
+                .thenReturn(Optional.of(empresa));
+
+        configurarVinculoCriador();
+
+        assertThrows(
+                AccessDeniedException.class,
+                () -> usuarioEmpresaService.listarMembrosDisponiveis(1L)
+        );
+
+        verify(usuarioRepository, never())
+                .findUsuariosAtivosDisponiveisNaEmpresa(1L);
+    }
 }
