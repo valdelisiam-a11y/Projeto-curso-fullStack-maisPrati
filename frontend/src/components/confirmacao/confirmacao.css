@@ -45,7 +45,7 @@
   color: #4b5563;
   font-size: 15px;
   line-height: 1.6;
-
+  white-space: pre-line;
   overflow-wrap: anywhere;
 }
 
@@ -79,21 +79,23 @@
 .confirmacao-botao-cancelar:hover:not(:disabled) {
   background-color: #d1d5db;
 }
-
 .confirmacao-botao-confirmar {
   color: #ffffff;
-  background-color: #2563eb;
+  background-color: var(--primary);
 }
 
 .confirmacao-botao-confirmar:hover:not(:disabled) {
-  background-color: #1d4ed8;
+  background-color: color-mix(
+    in oklch,
+    var(--primary) 85%,
+    black
+  );
 }
 
 .confirmacao-botao:focus-visible {
-  outline: 3px solid #93c5fd;
+  outline: 3px solid var(--primary);
   outline-offset: 3px;
 }
-
 .confirmacao-botao:disabled {
   opacity: 0.6;
   cursor: not-allowed;

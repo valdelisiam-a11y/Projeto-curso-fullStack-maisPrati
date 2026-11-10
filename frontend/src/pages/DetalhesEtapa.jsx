@@ -1,186 +1,343 @@
-import React, { useState } from "react";
+
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  PlayCircle,
-  AlertTriangle,
-  Check,
+  AlertCircle,
+  FileText,
+  Download,
   Eye,
-  Pencil,
-  ChevronDown,
+  Upload,
+  LoaderCircle,
 } from "lucide-react";
-import "./DetalhesEtapa.css";
+
+import { useContextoTrabalho } from "../contexts/ContextoTrabalho";
+import {
+  listarDocumentos,
+  baixarDocumento,
+} from "../services/documentoService";
+import ModalUploadDocumento from "../components/documentosUpload/ModalUploadDocumento.jsx";
+
+import './DetalhesEtapa.css';
+
+function normalizarStatus(status) {
+  const statusMapeados = {
+    EM_ANDAMENTO: "Em andamento",
+    CONCLUIDO: "Concluído",
+    CONCLUIDA: "Concluído",
+    PENDENTE: "Pendente",
+    CANCELADO: "Cancelado",
+  };
+
+  return statusMapeados[status] ?? status ?? "Pendente";
+}
+
+function formatarTamanho(bytes) {
+  if (bytes == null) return "Tamanho não informado";
+
+  if (bytes < 1024) return `${bytes} bytes`;
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatarData(data) {
+  if (!data) return "Data não informada";
+
+  const dataFormatada = new Date(data);
+
+  if (Number.isNaN(dataFormatada.getTime())) {
+    return "Data não informada";
+  }
+
+  return dataFormatada.toLocaleDateString("pt-BR");
+}
 
 export default function DetalhesEtapa() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const etapasMock = [
-    {
-      id: "1",
-      nome: "Conferir notas fiscais",
-      trabalho: "Reforma da loja centro",
-      empresa: "Construtora Acácias",
-      status: "Em andamento",
-      permissao: "editar",
-      compartilhadoPor: "Carlos",
-      data: "17/08/2026",
-      observacao: "Separar as notas de julho e agosto.",
-    },
-    {
-      id: "2",
-      nome: "Revisar relatório final",
-      trabalho: "Auditoria trimestral",
-      empresa: "Souza Serviços",
-      status: "Precisa de atenção",
-      permissao: "visualizar",
-      compartilhadoPor: "João",
-      data: "20/08/2026",
-      observacao: "Nenhuma observação.",
-    },
-  ];
+  const {
+    contexto,
+    empresaSelecionada,
+    minhasEtapas,
+    carregandoEtapas,
+  } = useContextoTrabalho();
 
-  const etapaAtual = etapasMock.find((e) => e.id === id) || etapasMock[0];
+  const [etapa, setEtapa] = useState(null);
+  const [documentos, setDocumentos] = useState([]);
+  const [carregandoDocumentos, setCarregandoDocumentos] = useState(false);
+  const [erroDocumentos, setErroDocumentos] = useState("");
+  const [erro, setErro] = useState("");
+  const [modalAberto, setModalAberto] = useState(false);
 
-  const [status, setStatus] = useState(etapaAtual.status);
-  const [observacao, setObservacao] = useState(etapaAtual.observacao);
-  const [salvo, setSalvo] = useState(false);
+  const etapaPermitida = minhasEtapas.find(
+    (item) =>
+      Number(item.etapaId) === Number(id) &&
+      Number(item.empresaId) === Number(empresaSelecionada?.id)
+  );
 
-  // Estado para controlar a abertura do select customizado
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  useEffect(() => {
+    if (carregandoEtapas) return;
 
-  const opcoesStatus = [
-    "Não iniciado",
-    "Em andamento",
-    "Precisa de atenção",
-    "Concluído",
-    "Atrasado",
-  ];
+    if (contexto !== "empresa" || !empresaSelecionada) {
+      setEtapa(null);
+      setErro("Esta etapa não está disponível no contexto atual.");
+      return;
+    }
 
-  const handleSalvar = (e) => {
-    e.preventDefault();
-    setSalvo(true);
-    setTimeout(() => setSalvo(false), 2500);
-  };
+    if (!etapaPermitida) {
+      setEtapa(null);
+      setErro("Etapa não encontrada ou você não tem acesso a ela.");
+      return;
+    }
+
+    setErro("");
+
+    setEtapa({
+      id: etapaPermitida.etapaId,
+      titulo: etapaPermitida.etapaTitulo,
+      status: normalizarStatus(etapaPermitida.status),
+      percentualConclusao: etapaPermitida.percentualConclusao ?? 0,
+      ordem: etapaPermitida.ordem,
+      trabalhoId: etapaPermitida.trabalhoId,
+      trabalhoTitulo: etapaPermitida.trabalhoTitulo,
+      empresaId: etapaPermitida.empresaId,
+      empresaNome: etapaPermitida.empresaNome,
+    });
+  }, [
+    id,
+    contexto,
+    empresaSelecionada?.id,
+    carregandoEtapas,
+    etapaPermitida,
+  ]);
+
+  const carregarDocumentos = useCallback(async () => {
+    if (!etapa?.id) return;
+
+    setCarregandoDocumentos(true);
+    setErroDocumentos("");
+
+    try {
+      const lista = await listarDocumentos(etapa.id);
+      setDocumentos(lista);
+    } catch (erroApi) {
+      setErroDocumentos(
+        erroApi.message || "Não foi possível carregar os documentos."
+      );
+    } finally {
+      setCarregandoDocumentos(false);
+    }
+  }, [etapa?.id]);
+
+  useEffect(() => {
+    carregarDocumentos();
+  }, [carregarDocumentos]);
+
+  async function abrirDocumento(documento) {
+    try {
+      const arquivo = await baixarDocumento(etapa.id, documento.id);
+      const url = URL.createObjectURL(arquivo);
+
+      window.open(url, "_blank", "noopener,noreferrer");
+
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (erroApi) {
+      setErroDocumentos(
+        erroApi.message || "Não foi possível visualizar o documento."
+      );
+    }
+  }
+
+  async function fazerDownload(documento) {
+    try {
+      const arquivo = await baixarDocumento(etapa.id, documento.id);
+      const url = URL.createObjectURL(arquivo);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = documento.nomeOriginal;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(url);
+    } catch (erroApi) {
+      setErroDocumentos(
+        erroApi.message || "Não foi possível baixar o documento."
+      );
+    }
+  }
+
+  if (carregandoEtapas) {
+    return (
+      <div className="detalhes-etapa-container">
+        <p>Carregando etapa...</p>
+      </div>
+    );
+  }
+
+  if (erro || !etapa) {
+    return (
+      <div className="detalhes-etapa-container">
+        <div className="detalhes-card">
+          <AlertCircle size={22} />
+          <p>{erro || "Etapa não encontrada."}</p>
+
+          <button
+            type="button"
+            className="btn-voltar"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft size={16} />
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="detalhes-etapa-container">
-      {/* Botão Voltar */}
-      <button className="btn-voltar" onClick={() => navigate(-1)}>
-        <ArrowLeft size={16} /> Voltar
+      <button
+        type="button"
+        className="btn-voltar"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft size={16} />
+        Voltar
       </button>
 
       <div className="detalhes-card">
-        {/* Badge de Permissão no Topo */}
-        <div className="topo-permissao">
-          {etapaAtual.permissao === "editar" ? (
-            <span className="badge-permissao pode-editar">
-              <Pencil size={12} /> Pode editar
-            </span>
-          ) : (
-            <span className="badge-permissao pode-visualizar">
-              <Eye size={12} /> Pode visualizar
-            </span>
-          )}
-        </div>
-
-        {/* Cabeçalho do Card */}
         <div className="detalhes-header-content">
           <div>
-            <h1>{etapaAtual.nome}</h1>
+            <h1>{etapa.titulo}</h1>
+
             <p className="detalhes-subtitulo">
-              Do trabalho “{etapaAtual.trabalho}” · {etapaAtual.empresa}
+              Do trabalho “{etapa.trabalhoTitulo}” · {etapa.empresaNome}
             </p>
+
             <p className="detalhes-meta">
-              Responsável: {etapaAtual.compartilhadoPor} · Data:{" "}
-              {etapaAtual.data}
+              Etapa {etapa.ordem ?? ""}
             </p>
           </div>
 
-          <div>
-            {status === "Em andamento" ? (
-              <span className="badge-status em-andamento">
-                <PlayCircle size={14} /> Em andamento
-              </span>
-            ) : (
-              <span className="badge-status precisa-atencao">
-                <AlertTriangle size={14} /> Precisa de atenção
-              </span>
-            )}
-          </div>
+          <span className="badge-status">
+            {etapa.status}
+          </span>
         </div>
 
-        {/* SE CENÁRIO 1: PERMISSÃO DE EDITAR */}
-        {etapaAtual.permissao === "editar" ? (
-          <form onSubmit={handleSalvar} className="form-edicao-etapa">
-            <div className="input-group">
-              <label>Situação da etapa</label>
+        <div className="input-group">
+          <label>Progresso da etapa</label>
 
-              {/* SELECT CUSTOMIZADO */}
+          <div className="progresso-etapa">
+            <div className="progresso-etapa-barra">
               <div
-                className={`custom-select-wrapper ${isDropdownOpen ? "open" : ""}`}
-              >
-                <div
-                  className="custom-select-trigger"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
-                  <span>{status}</span>
-                  <ChevronDown size={16} color="#6b7280" />
-                </div>
-
-                {isDropdownOpen && (
-                  <ul className="custom-options-list">
-                    {opcoesStatus.map((opcao) => {
-                      const selecionado = status === opcao;
-                      return (
-                        <li
-                          key={opcao}
-                          className={`custom-option ${selecionado ? "selected" : ""}`}
-                          onClick={() => {
-                            setStatus(opcao);
-                            setIsDropdownOpen(false);
-                          }}
-                        >
-                          <span>{opcao}</span>
-                          {selecionado && <Check size={16} color="#271f3d" />}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-            </div>
-
-            <div className="input-group">
-              <label htmlFor="observacoes-textarea">Observações</label>
-              <textarea
-                id="observacoes-textarea"
-                rows={4}
-                value={observacao}
-                onChange={(e) => setObservacao(e.target.value)}
+                className="progresso-etapa-preenchimento"
+                style={{
+                  width: `${Math.min(
+                    100,
+                    Math.max(0, etapa.percentualConclusao)
+                  )}%`,
+                }}
               />
             </div>
 
-            <button type="submit" className="btn-salvar-obs">
-              <Check size={14} />{" "}
-              {salvo ? "Salvo com sucesso!" : "Salvar observação"}
-            </button>
-          </form>
-        ) : (
-          /* SE CENÁRIO 2: PERMISSÃO APENAS DE VISUALIZAÇÃO */
-          <div className="visualizacao-etapa">
-            <div className="input-group">
-              <label>Observações</label>
-              <p className="texto-observacao-estatico">{observacao}</p>
+            <span>{etapa.percentualConclusao}%</span>
+          </div>
+        </div>
+
+        <section className="documentos-etapa">
+          <div className="documentos-etapa-header">
+            <div>
+              <h2>Documentos da etapa</h2>
+              <p>Arquivos vinculados a esta etapa.</p>
             </div>
 
-            <div className="aviso-visualizacao-container">
-              <Eye size={16} />
-              <span>Você pode apenas visualizar esta etapa.</span>
-            </div>
+            <button
+              type="button"
+              className="btn-adicionar-documento"
+              onClick={() => setModalAberto(true)}
+            >
+              <Upload size={16} />
+              Adicionar documento
+            </button>
           </div>
-        )}
+
+          {carregandoDocumentos ? (
+            <p>Carregando documentos...</p>
+          ) : erroDocumentos ? (
+            <div className="erro-documentos">
+              <AlertCircle size={16} />
+              <span>{erroDocumentos}</span>
+
+              <button type="button" onClick={carregarDocumentos}>
+                Tentar novamente
+              </button>
+            </div>
+          ) : documentos.length === 0 ? (
+            <div className="documentos-vazio">
+              <FileText size={28} />
+              <p>Nenhum documento foi adicionado a esta etapa.</p>
+            </div>
+          ) : (
+            <div className="lista-documentos-etapa">
+              {documentos.map((documento) => (
+                <div
+                  className="documento-etapa-item"
+                  key={documento.id}
+                >
+                  <div className="documento-etapa-info">
+                    <FileText size={20} />
+
+                    <div>
+                      <strong>{documento.nomeOriginal}</strong>
+
+                      <span>
+                        {formatarTamanho(documento.tamanho)} ·{" "}
+                        {formatarData(documento.dataUpload)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="documento-etapa-acoes">
+                    <button
+                      type="button"
+                      title="Visualizar documento"
+                      onClick={() => abrirDocumento(documento)}
+                    >
+                      <Eye size={17} />
+                    </button>
+
+                    <button
+                      type="button"
+                      title="Baixar documento"
+                      onClick={() => fazerDownload(documento)}
+                    >
+                      <Download size={17} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
+
+      <ModalUploadDocumento
+        aberto={modalAberto}
+        onFechar={() => setModalAberto(false)}
+        onAdicionar={carregarDocumentos}
+        trabalhoIdInicial={etapa.trabalhoId}
+        etapaIdInicial={etapa.id}
+        contexto={contexto}
+        empresaSelecionada={empresaSelecionada}
+        minhasEtapas={minhasEtapas}
+      />
     </div>
   );
 }

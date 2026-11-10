@@ -94,27 +94,30 @@ function handleSelecionarEmpresa() {
             <h1>DocFlow</h1>
           </div>
 
-          <div className="sidebar__contexto">
-            <button
-              type="button"
-              className={contexto === "pessoal" ? "ativo" : ""}
-              onClick={() => selecionarContexto("pessoal")}
-              aria-pressed={contexto === "pessoal"}
-            >
-              <User size={16} />
-              <span>Pessoal</span>
-            </button>
+          {!carregandoEmpresas && (
+            <div className="sidebar__contexto">
+              <button
+                type="button"
+                className={contexto === "pessoal" ? "ativo" : ""}
+                onClick={() => selecionarContexto("pessoal")}
+                aria-pressed={contexto === "pessoal"}
+              >
+                <User size={16} />
+                <span>Pessoal</span>
+              </button>
 
-            <button
-              type="button"
-              className={contexto === "empresa" ? "ativo" : ""}
-              onClick={handleSelecionarEmpresa}
-              aria-pressed={contexto === "empresa"}
-            >
-              <Building2 size={16} />
-              <span>Empresa</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                className={contexto === "empresa" ? "ativo" : ""}
+                onClick={handleSelecionarEmpresa}
+                aria-pressed={contexto === "empresa"}
+              >
+                <Building2 size={16} />
+                <span>Empresa</span>
+              </button>
+            </div>
+
+          )}
 
           {avisoEmpresa && (
             <div className="sidebar__empresa-aviso" role="status">

@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
+
 import {
   Search,
   Plus,
@@ -9,8 +10,10 @@ import {
   Download,
   Trash2,
 } from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
 import { useContextoTrabalho } from "../contexts/ContextoTrabalho";
+import { useAuth } from "../contexts/useAuth";
 
 import "./Documentos.css";
 import ModalUploadDocumento from "../components/documentosUpload/ModalUploadDocumento.jsx";
@@ -23,7 +26,11 @@ import {
 import {
   listarDocumentos,
   baixarDocumento as baixarArquivo,
+  excluirDocumento,
 } from "../services/documentoService";
+
+import Confirmacao from "../components/confirmacao/confirmacao.jsx";
+import Feedback from "../components/feedback/feedback.jsx";
 
 function formatarData(data) {
   if (!data) return "Data não informada";
@@ -58,68 +65,171 @@ function Documentos() {
   const [erro, setErro] = useState("");
 
   const navigate = useNavigate();
-  const { contexto, empresaSelecionada } = useContextoTrabalho();
 
-const carregarDocumentos = useCallback(async () => {
-  try {
-    setCarregando(true);
-    setErro("");
+  const {
+    contexto,
+    empresaSelecionada,
+    minhasEtapas,
+    carregandoEtapas,
+  } = useContextoTrabalho();
 
-    const dados = await listarTrabalhos();
-    const lista = Array.isArray(dados) ? dados : dados.content ?? [];
+  const { usuario } = useAuth();
 
-    const trabalhos = lista.filter((trabalho) => {
+  const [excluindo, setExcluindo] = useState(false);
+  const [documentoParaExcluir, setDocumentoParaExcluir] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+
+  const carregarDocumentos = useCallback(async () => {
+    try {
+      setCarregando(true);
+      setErro("");
+      setDocumentos([]);
+
+      // Aguarda o carregamento das etapas da empresa selecionada.
+      // Isso evita consultar dados antes de receber as permissões
+      // de acesso do colaborador.
+      if (contexto === "empresa" && carregandoEtapas) {
+        return;
+      }
+
+      const dados = await listarTrabalhos();
+
+      const lista = Array.isArray(dados)
+        ? dados
+        : dados?.content ?? [];
+
+      let trabalhosDisponiveis = [];
+
+      // CONTEXTO PESSOAL
+      // O usuário visualiza somente seus próprios trabalhos pessoais.
       if (contexto === "pessoal") {
-        return trabalho.tipo === "PESSOAL";
+        trabalhosDisponiveis = lista
+          .filter(
+            (trabalho) =>
+              trabalho.tipo === "PESSOAL" &&
+              Number(trabalho.criadoPorId) === Number(usuario?.id)
+          )
+          .map((trabalho) => ({
+            ...trabalho,
+            etapasPermitidas: null,
+          }));
       }
 
-      if (contexto === "empresa") {
-        return (
-          trabalho.tipo === "EMPRESA" &&
-          empresaSelecionada?.id != null &&
-          Number(trabalho.empresaId) === Number(empresaSelecionada.id)
+      // CONTEXTO EMPRESA
+      if (contexto === "empresa" && empresaSelecionada?.id) {
+        // Trabalhos criados pelo usuário:
+        // ele pode consultar todas as etapas.
+        const trabalhosCriados = lista
+          .filter(
+            (trabalho) =>
+              trabalho.tipo === "EMPRESA" &&
+              Number(trabalho.empresaId) ===
+                Number(empresaSelecionada.id) &&
+              Number(trabalho.criadoPorId) === Number(usuario?.id)
+          )
+          .map((trabalho) => ({
+            ...trabalho,
+            etapasPermitidas: null,
+          }));
+
+        const idsCriados = new Set(
+          trabalhosCriados.map((trabalho) => Number(trabalho.id))
         );
+
+        // Trabalhos em que o usuário participa como colaborador:
+        // utiliza somente as etapas retornadas pelo backend
+        // em minhasEtapas.
+        const grupos = {};
+
+        (minhasEtapas ?? []).forEach((etapa) => {
+          if (
+            Number(etapa.empresaId) !==
+              Number(empresaSelecionada.id) ||
+            idsCriados.has(Number(etapa.trabalhoId))
+          ) {
+            return;
+          }
+
+          if (!grupos[etapa.trabalhoId]) {
+            grupos[etapa.trabalhoId] = {
+              id: etapa.trabalhoId,
+              titulo: etapa.trabalhoTitulo,
+              tipo: "EMPRESA",
+              etapasPermitidas: [],
+            };
+          }
+
+          grupos[etapa.trabalhoId].etapasPermitidas.push({
+            id: etapa.etapaId,
+            titulo: etapa.etapaTitulo,
+          });
+        });
+
+        trabalhosDisponiveis = [
+          ...trabalhosCriados,
+          ...Object.values(grupos),
+        ];
       }
 
-      return false;
-    });
+      // Busca documentos somente das etapas permitidas.
+      const documentosPorTrabalho = await Promise.all(
+        trabalhosDisponiveis.map(async (trabalho) => {
+          const etapas =
+            trabalho.etapasPermitidas ??
+            await listarEtapasDoTrabalho(trabalho.id);
 
-    const documentosPorTrabalho = await Promise.all(
-      trabalhos.map(async (trabalho) => {
-        const etapas = await listarEtapasDoTrabalho(trabalho.id);
+          const documentosPorEtapa = await Promise.all(
+            etapas.map(async (etapa) => {
+              const documentosEtapa = await listarDocumentos(etapa.id);
 
-        const documentosPorEtapa = await Promise.all(
-          etapas.map(async (etapa) => {
-            const documentosEtapa = await listarDocumentos(etapa.id);
+              return documentosEtapa.map((documento) => ({
+                ...documento,
+                nome: documento.nomeOriginal,
+                tipo: identificarTipo(documento),
+                trabalho: trabalho.titulo,
+                trabalhoId: trabalho.id,
+                etapa: etapa.titulo,
+                etapaId: etapa.id,
+                data: formatarData(documento.dataUpload),
+              }));
+            })
+          );
 
-            return documentosEtapa.map((documento) => ({
-              ...documento,
-              nome: documento.nomeOriginal,
-              tipo: identificarTipo(documento),
-              trabalho: trabalho.titulo,
-              trabalhoId: trabalho.id,
-              etapa: etapa.titulo,
-              data: formatarData(documento.dataUpload),
-            }));
-          })
-        );
+          return documentosPorEtapa.flat();
+        })
+      );
 
-        return documentosPorEtapa.flat();
-      })
-    );
+      setDocumentos(documentosPorTrabalho.flat());
+    } catch (error) {
+      console.error("Erro ao carregar documentos:", error);
 
-    setDocumentos(documentosPorTrabalho.flat());
-
-  } catch (error) {
-    setErro(error.message || "Não foi possível carregar os documentos.");
-  } finally {
-    setCarregando(false);
-  }
-}, [contexto, empresaSelecionada?.id]);
+      setErro(
+        error.message || "Não foi possível carregar os documentos."
+      );
+    } finally {
+      setCarregando(false);
+    }
+  }, [
+    contexto,
+    empresaSelecionada?.id,
+    minhasEtapas,
+    carregandoEtapas,
+    usuario?.id,
+  ]);
 
   useEffect(() => {
     carregarDocumentos();
   }, [carregarDocumentos]);
+
+  useEffect(() => {
+    if (feedback?.tipo !== "sucesso") return;
+
+    const temporizador = setTimeout(() => {
+      setFeedback(null);
+    }, 3500);
+
+    return () => clearTimeout(temporizador);
+  }, [feedback]);
 
   const documentosFiltrados = documentos.filter((documento) => {
     const termo = busca.trim().toLowerCase();
@@ -153,7 +263,49 @@ const carregarDocumentos = useCallback(async () => {
 
       URL.revokeObjectURL(url);
     } catch (error) {
-      window.alert(error.message || "Não foi possível baixar o documento.");
+      setFeedback({
+        tipo: "erro",
+        titulo: "Erro ao baixar documento",
+        mensagem: error.message || "Não foi possível baixar o documento.",
+      });
+    }
+  }
+
+  async function confirmarExclusaoDocumento() {
+    if (!documentoParaExcluir) return;
+
+    const documento = documentoParaExcluir;
+
+    try {
+      setExcluindo(true);
+
+      await excluirDocumento(documento.etapaId, documento.id);
+
+      setDocumentos((atuais) =>
+        atuais.filter(
+          (item) =>
+            item.id !== documento.id ||
+            item.etapaId !== documento.etapaId
+        )
+      );
+
+      setDocumentoParaExcluir(null);
+
+      setFeedback({
+        tipo: "sucesso",
+        titulo: "Documento excluído",
+        mensagem: "O documento foi excluído com sucesso.",
+      });
+    } catch (error) {
+      setDocumentoParaExcluir(null);
+
+      setFeedback({
+        tipo: "erro",
+        titulo: "Erro ao excluir documento",
+        mensagem: error.message || "Não foi possível excluir o documento.",
+      });
+    } finally {
+      setExcluindo(false);
     }
   }
 
@@ -161,7 +313,12 @@ const carregarDocumentos = useCallback(async () => {
     const novaAba = window.open("", "_blank");
 
     if (!novaAba) {
-      window.alert("Permita a abertura de novas abas para visualizar o documento.");
+      setFeedback({
+        tipo: "aviso",
+        titulo: "Visualização bloqueada",
+        mensagem:
+          "Permita a abertura de novas abas no navegador para visualizar o documento.",
+      });
       return;
     }
 
@@ -174,12 +331,46 @@ const carregarDocumentos = useCallback(async () => {
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (error) {
       novaAba.close();
-      window.alert(error.message || "Não foi possível visualizar o documento.");
+
+      setFeedback({
+        tipo: "erro",
+        titulo: "Erro ao visualizar documento",
+        mensagem:
+          error.message || "Não foi possível visualizar o documento.",
+      });
     }
   }
 
   return (
     <main className="documentos">
+      {feedback && (
+        <Feedback
+          tipo={feedback.tipo}
+          titulo={feedback.titulo}
+          mensagem={feedback.mensagem}
+          fechavel={true}
+          className="feedback--flutuante"
+          onClose={() => setFeedback(null)}
+        />
+      )}
+
+      <Confirmacao
+        aberto={Boolean(documentoParaExcluir)}
+        titulo="Excluir documento?"
+        mensagem={
+          documentoParaExcluir
+            ? `Documento: ${documentoParaExcluir.nome}\n\nEste documento pertence ao trabalho:\n${documentoParaExcluir.trabalho}\n\nA exclusão é definitiva e não poderá ser desfeita.`
+            : ""
+        }
+        textoConfirmar="Excluir documento"
+        textoCancelar="Cancelar"
+        onConfirmar={confirmarExclusaoDocumento}
+        onCancelar={() => {
+          if (!excluindo) setDocumentoParaExcluir(null);
+        }}
+        carregando={excluindo}
+      />
+
       <header className="documentos__cabecalho">
         <div className="documentos__introducao">
           <h1>Meus documentos</h1>
@@ -265,7 +456,10 @@ const carregarDocumentos = useCallback(async () => {
           </div>
         ) : documentosFiltrados.length > 0 ? (
           documentosFiltrados.map((documento) => (
-            <article className="documento-card" key={`${documento.etapaId}-${documento.id}`}>
+            <article
+              className="documento-card"
+              key={`${documento.etapaId}-${documento.id}`}
+            >
               <div className="documento-card__icone" aria-hidden="true">
                 {documento.tipo === "Imagem" ? (
                   <ImageIcon size={24} />
@@ -326,7 +520,8 @@ const carregarDocumentos = useCallback(async () => {
                   className="documento-card__acao-excluir"
                   aria-label={`Excluir ${documento.nome}`}
                   title="Excluir"
-                  disabled
+                  disabled={excluindo}
+                  onClick={() => setDocumentoParaExcluir(documento)}
                 >
                   <Trash2 size={18} />
                   <span>Excluir</span>
@@ -351,6 +546,9 @@ const carregarDocumentos = useCallback(async () => {
         aberto={modalAberto}
         onFechar={() => setModalAberto(false)}
         onAdicionar={carregarDocumentos}
+        contexto={contexto}
+        empresaSelecionada={empresaSelecionada}
+        minhasEtapas={minhasEtapas}
       />
     </main>
   );

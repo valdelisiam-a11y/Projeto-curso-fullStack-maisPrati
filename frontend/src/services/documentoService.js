@@ -46,3 +46,20 @@ export async function baixarDocumento(etapaId, documentoId) {
 
   return resposta.blob();
 }
+
+
+export async function excluirDocumento(etapaId, documentoId) {
+  const resposta = await apiFetch(
+    `/etapas/${etapaId}/documentos/${documentoId}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  if (!resposta.ok) {
+    const mensagem = await resposta.text();
+    throw new Error(
+      mensagem || `Erro ao excluir documento (${resposta.status}).`
+    );
+  }
+}

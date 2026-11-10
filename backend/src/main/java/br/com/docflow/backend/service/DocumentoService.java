@@ -17,6 +17,11 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +35,9 @@ import java.util.zip.ZipInputStream;
 public class DocumentoService {
 
     private static final long TAMANHO_MAXIMO = 10 * 1024 * 1024;
+
+    private static final Logger log =
+            LoggerFactory.getLogger(DocumentoService.class);
 
     private final DocumentoRepository documentoRepository;
     private final EtapaService etapaService;
@@ -51,7 +59,7 @@ public class DocumentoService {
     @Transactional
     public DocumentoRespostaDTO enviar(Long etapaId, MultipartFile arquivo) {
 
-        Etapa etapa = etapaService.buscarEntidadeComAcesso(etapaId);
+        Etapa etapa = etapaService.buscarEtapaComAcessoAosDocumentos(etapaId);
 
         if (arquivo == null || arquivo.isEmpty()) {
             throw new IllegalArgumentException("Selecione um arquivo.");
@@ -124,7 +132,7 @@ public class DocumentoService {
     @Transactional(readOnly = true)
     public List<DocumentoRespostaDTO> listar(Long etapaId) {
 
-        etapaService.buscarEntidadeComAcesso(etapaId);
+        etapaService.buscarEtapaComAcessoAosDocumentos(etapaId);
 
         return documentoRepository
                 .findByEtapaIdOrderByDataUploadDesc(etapaId)
@@ -136,7 +144,7 @@ public class DocumentoService {
     @Transactional(readOnly = true)
     public DocumentoDownload baixar(Long etapaId, Long documentoId) {
 
-        etapaService.buscarEntidadeComAcesso(etapaId);
+        etapaService.buscarEtapaComAcessoAosDocumentos(etapaId);
 
         Documento documento = documentoRepository
                 .findByIdAndEtapaId(documentoId, etapaId)
@@ -167,11 +175,28 @@ public class DocumentoService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Documento não encontrado."));
 
-        excluirObjetoB2(documento.getChaveArquivo());
+        String chaveArquivo = documento.getChaveArquivo();
 
         documentoRepository.delete(documento);
-    }
 
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+
+                    @Override
+                    public void afterCommit() {
+                        try {
+                            excluirObjetoB2(chaveArquivo);
+                        } catch (RuntimeException e) {
+                            log.error(
+                                    "Não foi possível excluir o arquivo {} do Backblaze B2.",
+                                    chaveArquivo,
+                                    e
+                            );
+                        }
+                    }
+                }
+        );
+    }
     private String obterExtensao(String nomeArquivo) {
 
         int posicao = nomeArquivo.lastIndexOf('.');

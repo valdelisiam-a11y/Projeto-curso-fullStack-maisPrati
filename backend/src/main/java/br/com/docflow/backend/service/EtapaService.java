@@ -676,6 +676,40 @@ public class EtapaService {
         return etapa;
     }
 
+
+    // Valida o acesso específico às operações com documentos da etapa.
+// O responsável pode consultar, enviar e baixar documentos,
+// mas não recebe permissão para excluir documentos.
+    @Transactional(readOnly = true)
+    public Etapa buscarEtapaComAcessoAosDocumentos(Long id) {
+
+        Etapa etapa = etapaRepository.findById(id)
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException(
+                                "Etapa não encontrada"
+                        )
+                );
+
+        Trabalho trabalho = etapa.getTrabalho();
+        Usuario usuario = usuarioAutenticadoService.obterUsuario();
+
+        boolean criador = trabalho.getCriadoPor().getId()
+                .equals(usuario.getId());
+
+        boolean responsavel = etapa.getResponsavel() != null
+                && etapa.getResponsavel().getId().equals(usuario.getId())
+                && mesmaEmpresa(usuario, trabalho);
+
+        if (!criador && !responsavel) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para acessar os documentos desta etapa."
+            );
+        }
+
+        return etapa;
+    }
+
+
     private EtapaRespostaDTO converterParaResposta(Etapa etapa) {
 
         EtapaRespostaDTO resposta = new EtapaRespostaDTO();
