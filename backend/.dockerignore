@@ -1,0 +1,6 @@
+target/
+.idea/
+.git/
+*.log
+erro-backend.log
+src/main/resources/application-local.properties
