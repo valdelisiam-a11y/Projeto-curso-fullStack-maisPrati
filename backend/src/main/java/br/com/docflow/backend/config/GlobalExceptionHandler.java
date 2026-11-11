@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.security.access.AccessDeniedException;
 import br.com.docflow.backend.service.LimiteMembrosEmpresaException;
 import br.com.docflow.backend.service.EmailJaCadastradoException;
+import br.com.docflow.backend.service.AutenticacaoInvalidaException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -91,6 +92,21 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .body(erro);
+    }
+
+    @ExceptionHandler(AutenticacaoInvalidaException.class)
+    public ResponseEntity<ErroRespostaDTO> handleAutenticacaoInvalida(
+            AutenticacaoInvalidaException ex) {
+
+        ErroRespostaDTO erro = new ErroRespostaDTO(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Não autorizado",
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
                 .body(erro);
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
+
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -27,14 +28,14 @@ public class AuthService {
 
         Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() ->
-                        new RuntimeException("E-mail ou senha inválidos."));
+                        new AutenticacaoInvalidaException("E-mail ou senha inválidos."));
 
         if (!passwordEncoder.matches(dto.getSenha(), usuario.getSenha())) {
-            throw new RuntimeException("E-mail ou senha inválidos.");
+            throw new AutenticacaoInvalidaException("E-mail ou senha inválidos.");
         }
 
         if (!usuario.getAtivo()) {
-            throw new RuntimeException("Usuário inativo.");
+            throw new AutenticacaoInvalidaException("Usuário inativo.");
         }
 
         String token = jwtService.gerarToken(usuario);
