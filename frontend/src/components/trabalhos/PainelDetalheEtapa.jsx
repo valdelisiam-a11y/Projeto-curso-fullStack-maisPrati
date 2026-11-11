@@ -21,6 +21,9 @@ import "./EditarEtapa.css";
 export default function PainelDetalheEtapa({
   etapaAtualObj,
   contexto,
+  empresaSelecionada,
+  minhasEtapas,
+  trabalhoIdInicial,
   getTopBadgeClass,
   observacao,
   setObservacao,
@@ -30,7 +33,7 @@ export default function PainelDetalheEtapa({
   membros,
   carregandoMembros,
   erroMembros,
-  onSalvarResponsavel,
+  onSalvarResponsavel
 }) {
   const [documentos, setDocumentos] = useState([]);
   const [carregandoDocumentos, setCarregandoDocumentos] = useState(false);
@@ -394,8 +397,11 @@ export default function PainelDetalheEtapa({
         aberto={modalAberto}
         onFechar={() => setModalAberto(false)}
         onAdicionar={carregarDocumentos}
-        trabalhoIdInicial={etapaAtualObj.trabalhoId}
+        trabalhoIdInicial={trabalhoIdInicial}
         etapaIdInicial={etapaAtualObj.id}
+        contexto={contexto}
+        empresaSelecionada={empresaSelecionada}
+        minhasEtapas={minhasEtapas}
       />
     </div>
   );

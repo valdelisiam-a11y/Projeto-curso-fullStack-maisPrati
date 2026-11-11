@@ -31,6 +31,8 @@ const FORMATOS_PERMITIDOS = [
   ".png",
 ];
 
+const LISTA_ETAPAS_VAZIA = [];
+
 function ModalUploadDocumento({
   aberto,
   onFechar,
@@ -39,7 +41,7 @@ function ModalUploadDocumento({
   etapaIdInicial = "",
   contexto,
   empresaSelecionada,
-  minhasEtapas = [],
+  minhasEtapas = LISTA_ETAPAS_VAZIA,
 }) {
   const [trabalhos, setTrabalhos] = useState([]);
   const [etapas, setEtapas] = useState([]);

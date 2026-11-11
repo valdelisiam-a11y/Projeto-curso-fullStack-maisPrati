@@ -89,7 +89,7 @@ function mapearHistorico(item) {
 export default function DetalhesTrabalho() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { contexto, empresaSelecionada } = useContextoTrabalho();
+  const { contexto, empresaSelecionada, minhasEtapas } = useContextoTrabalho();
   const contextoAtual = contexto === "empresa"
     ? `empresa-${empresaSelecionada?.id ?? ""}`
     : "pessoal";
@@ -433,7 +433,6 @@ export default function DetalhesTrabalho() {
         onAdicionarEtapa={adicionarEtapa}
         contexto={contexto}
       />
-
       <PainelDetalheEtapa
         etapaAtualObj={etapaAtualObj}
         getTopBadgeClass={getTopBadgeClass}
@@ -447,7 +446,11 @@ export default function DetalhesTrabalho() {
         erroMembros={erroMembros}
         onSalvarResponsavel={salvarResponsavelEtapa}
         contexto={contexto}
+        empresaSelecionada={empresaSelecionada}
+        minhasEtapas={minhasEtapas}
+        trabalhoIdInicial={trabalho?.id}
       />
+
 
       <HistoricoTrabalho historico={historico} />
     </div>

@@ -1,7 +1,9 @@
 
 const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
-const BASE_URL = import.meta.env.DEV ? '/api' : API_ORIGIN;
+const BASE_URL = import.meta.env.DEV
+    ? '/api'
+    : (API_ORIGIN || '/api');
 
 export async function apiFetch(endpoint, options = {}) {
     const token = localStorage.getItem('token');
